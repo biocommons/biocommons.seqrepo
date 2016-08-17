@@ -22,7 +22,13 @@ help:
 #=> develop: install package in develop mode
 #=> install: install package
 .PHONY: develop
-develop install: %: etc/%.reqs
+develop: %: etc/install.reqs etc/%.reqs
+	pip install --upgrade -r $(word 1,$^)
+	pip install --upgrade -r $(word 2,$^)
+	python setup.py $*
+.PHONY: install
+install: %: etc/%.reqs 
+	pip install --upgrade -r $<
 	pip install --upgrade -r $<
 	python setup.py $*
 etc/%.reqs:
