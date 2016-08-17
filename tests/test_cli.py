@@ -5,9 +5,6 @@ import pytest
 
 from seqrepo.cli import (init, load_fasta)
 
-from support import require_min_sqlite_version
-pytestmark = require_min_sqlite_version
-
 
 @pytest.fixture
 def opts():

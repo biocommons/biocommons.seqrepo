@@ -15,8 +15,3 @@ before_install:
 install: pip install tox-travis
 
 script: tox
-
-#addons:
-#  apt:
-#    packages:
-#      - tabix

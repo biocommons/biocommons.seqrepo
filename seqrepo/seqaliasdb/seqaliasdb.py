@@ -5,24 +5,17 @@ import sqlite3
 import pkg_resources
 import yoyo
 
-from ..exceptions import SeqRepoError
-
 logger = logging.getLogger(__name__)
 
 expected_schema_version = 1
 
 
-def _check_sqlite_version():
-    """ensure that sqlite version meets minimum required version
-
-    https://github.com/biocommons/seqrepo/issues/1
-    """
-    min_sqlite_version_info = (3, 8, 0)
-    if sqlite3.sqlite_version_info < min_sqlite_version_info:
-        min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
-        msg = "{} requires sqlite3 >= {} but {} is installed".format(
-            __package__, min_sqlite_version, sqlite3.sqlite_version)
-        raise SeqRepoError(msg)
+min_sqlite_version_info = (3, 8, 0)
+if sqlite3.sqlite_version_info < min_sqlite_version_info:
+    min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
+    msg = "{} requires sqlite3 >= {} but {} is installed".format(
+        __package__, min_sqlite_version, sqlite3.sqlite_version)
+    raise ImportError(msg)
 
 
 class SeqAliasDB(object):
@@ -31,8 +24,6 @@ class SeqAliasDB(object):
     """
 
     def __init__(self, db_path):
-        _check_sqlite_version()
-
         self._db_path = db_path
         self._db = None
 

@@ -4,8 +4,6 @@ import tempfile
 
 from seqrepo.seqaliasdb import SeqAliasDB
 
-from support import require_min_sqlite_version
-pytestmark = require_min_sqlite_version
 
 def test_seqinfo():
     # PY2BAGGAGE: Switch to TemporaryDirectory

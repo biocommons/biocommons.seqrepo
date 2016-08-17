@@ -2,9 +2,6 @@ import pytest
 
 from seqrepo.seqrepo import SeqRepo
 
-from support import require_min_sqlite_version
-pytestmark = require_min_sqlite_version
-
 
 @pytest.fixture(scope="session")
 def seqrepo(tmpdir_factory):
