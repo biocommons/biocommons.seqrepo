@@ -12,3 +12,4 @@ addons:
       - travis-ci/sqlite3
     packages:
       - sqlite3
+      - tabix
