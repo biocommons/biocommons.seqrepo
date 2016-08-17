@@ -10,7 +10,10 @@ setup(
     license = "Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)",
     long_description = long_description,
     name = package_name,
-    package_data={package_name: ["_data/*"]},
+    package_data={
+        "seqrepo.fastadir": ["_data/migrations/*"],
+        "seqrepo.seqaliasdb": ["_data/migrations/*"],
+        },
     packages = find_packages(),
     use_scm_version = True,
     zip_safe = True,
@@ -28,6 +31,8 @@ setup(
     ],
 
     install_requires = [
+        "biopython>=1.66",
+        "bioutils>=0.1.5",
         "pysam",
         "yoyo-migrations",
     ],

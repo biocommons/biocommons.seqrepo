@@ -151,7 +151,7 @@ class FastaDir(BaseReader, BaseWriter):
 
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""
-        migration_path = "_data"
+        migration_path = "_data/migrations"
         sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
