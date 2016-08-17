@@ -1,4 +1,5 @@
-sudo: false
+sudo: required
+dist: trusty
 language: python
 python:
   - "2.7"
@@ -8,8 +9,5 @@ script: tox
 
 addons:
   apt:
-    sources:
-      - travis-ci/sqlite3
     packages:
-      - sqlite3
       - tabix
