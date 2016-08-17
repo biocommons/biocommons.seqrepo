@@ -1,8 +1,8 @@
 biocommons.fastadir
 ===================
 
-Python package for accessing a non-redundant collection of biological
-sequences.
+Python package for writing and reading a non-redundant, journalled,
+filesystem-backed collection of biological sequences.
 
 
 Features/Goals
