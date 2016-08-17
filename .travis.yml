@@ -1,13 +1,22 @@
 sudo: required
+
 dist: trusty
+
 language: python
+
 python:
   - "2.7"
   - "3.5"
+
+before_install:
+  - wget https://launchpad.net/ubuntu/+source/htslib/1.2.1-2ubuntu1/+build/8443430/+files/tabix_1.2.1-2ubuntu1_amd64.deb
+  - sudo dpkg -i tabix_1.2.1-2ubuntu1_amd64.deb
+
 install: pip install tox-travis
+
 script: tox
 
-addons:
-  apt:
-    packages:
-      - tabix
+#addons:
+#  apt:
+#    packages:
+#      - tabix
