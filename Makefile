@@ -15,19 +15,22 @@ default: help
 help:
 	@sbin/makefile-extract-documentation "${SELF}"
 
+
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
 #=> develop: install package in develop mode
-.PHONY: develop
-develop: %:
-	[ -f requirements.txt ] && pip install --upgrade -r requirements.txt || true
-	python setup.py $*
-
 #=> install: install package
-#=> bdist bdist_egg bdist_wheel build build_sphinx install sdist
-.PHONY: bdist bdist_egg bdist_wheel build build_sphinx install sdist
-bdist bdist_egg bdist_wheel build build_sphinx install sdist: %:
+.PHONY: develop
+develop install: %: etc/%.reqs
+	pip install --upgrade -r $<
+	python setup.py $*
+etc/%.reqs:
+	@touch $@
+
+#=> bdist bdist_egg bdist_wheel build build_sphinx sdist
+.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist
+bdist bdist_egg bdist_wheel build build_sphinx sdist: %:
 	python setup.py $@
 
 #=> upload: upload to pypi
@@ -78,7 +81,7 @@ clean:
 #=> cleaner: remove files and directories that are easily rebuilt
 .PHONY: cleaner
 cleaner: clean
-	rm -fr *.egg-info build dist
+	rm -fr .cache *.egg-info build dist doc/_build
 	find . \( -name \*.pyc -o -name \*.orig \) -print0 | xargs -0r rm
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 
