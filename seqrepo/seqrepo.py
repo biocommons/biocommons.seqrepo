@@ -40,6 +40,7 @@ class SeqRepo(object):
         self._pending_sequences = 0
         self._pending_sequences_len = 0
         self._pending_aliases = 0
+        self._logger = logger   # avoids issue with logger going out of scope before __del__
 
         makedirs(self._root_dir, exist_ok=True)
 
@@ -122,7 +123,7 @@ class SeqRepo(object):
     def commit(self):
         self.sequences.commit()
         self.aliases.commit()
-        logger.info(
+        self._logger.info(
             "Committed {} sequences ({} residues) and {} aliases".format(
                 self._pending_sequences, self._pending_sequences_len,
                 self._pending_aliases))

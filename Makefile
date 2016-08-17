@@ -53,7 +53,7 @@ upload_%:
 #=> test: execute tests
 .PHONY: test
 test:
-	py.test tests
+	python setup.py pytest --addopts=tests
 
 #=> tox: execute tests via tox
 .PHONY: tox
