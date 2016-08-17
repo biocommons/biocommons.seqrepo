@@ -5,9 +5,20 @@ import sqlite3
 import pkg_resources
 import yoyo
 
+from ..exceptions import SeqRepoError
+
 logger = logging.getLogger(__name__)
 
 expected_schema_version = 1
+
+
+min_sqlite_version_info = (3, 8, 0)
+if sqlite3.sqlite_version_info < min_sqlite_version_info:
+    min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
+    msg = "{} requires sqlite3 >= {} but {} is installed".format(
+        __package__, min_sqlite_version, sqlite3.sqlite_version)
+    logger.critical(msg)
+    raise SeqRepoError(msg)
 
 
 class SeqAliasDB(object):
