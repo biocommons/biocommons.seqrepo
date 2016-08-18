@@ -7,6 +7,7 @@ A file may not currently be opened for reading and writing at the same time
 import io
 import logging
 import os
+import re
 import subprocess
 
 import six
@@ -17,6 +18,29 @@ from ..exceptions import SeqRepoError
 
 line_width = 100
 logger = logging.getLogger(__name__)
+
+bgzip_exe = "/usr/bin/bgzip"
+min_bgzip_version_info = (1,2,1)
+min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
+
+def _check_bgzip_version(exe):
+    def _get_version(exe):
+        p = subprocess.Popen([exe, "-h"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        output = p.communicate()
+        version_line = output[0].splitlines()[1]
+        version = re.match("Version:\s+(\d+\.\d+\.\d+)", version_line).group(1)
+        return version
+    try:
+        bgzip_version = _get_version(exe)
+    except Exception as e:
+        raise SeqRepoError("Could not find version string in {exe} ({e})".format(exe=exe, e="foo"))
+    bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
+    if bgzip_version_info < min_bgzip_version_info:
+        raise SeqRepoError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
+            exe=exe, ev=bgzip_version, rv=min_bgzip_version))
+    logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
+    
+_check_bgzip_version(bgzip_exe)
 
 
 class FabgzReader(object):
@@ -79,7 +103,7 @@ class FabgzWriter(object):
         if self._fh:
             self._fh.close()
             self._fh = None
-            subprocess.check_call(["bgzip", "--force", self._basepath])
+            subprocess.check_call([bgzip_exe, "--force", self._basepath])
             os.rename(self._basepath + ".gz", self.filename)
             logger.info("{} written; added {} sequences".format(
                 self.filename, len(self._added)))
