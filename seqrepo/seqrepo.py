@@ -32,7 +32,7 @@ class SeqRepo(object):
     def __init__(self, root_dir, upcase=True):
         self._root_dir = root_dir
         self._upcase = upcase
-        self._db_path = os.path.join(self._root_dir, "db.sqlite3")
+        self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
         self._seq_path = os.path.join(self._root_dir, "sequences")
         self._pending_sequences = 0
         self._pending_sequences_len = 0

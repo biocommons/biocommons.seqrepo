@@ -1,8 +1,32 @@
 from setuptools import setup, find_packages
 
 package_name = "seqrepo"
-short_description = "..."
-long_description = "..."
+
+short_description = """Python package for writing and reading a local collection of
+biological sequences.  The repository is non-redundant, compressed,
+and journalled, making it efficient to store and transfer incremental
+snapshots.  """
+
+long_description = """
+Example::
+
+  $ seqrepo -d /tmp/sr init
+  
+  $ seqrepo -v -d /tmp/sr load-fasta -f myfasta.gz -n me
+  
+  $ seqrepo -v -d /tmp/sr status
+  seqrepo 0.1.0
+  root directory: /tmp/sr, 0.2 GB
+  backends: fastadir (schema 1), seqaliasdb (schema 1) 
+  sequences: 3 files, 33080 sequences, 110419437 residues
+  aliases: 165481 aliases, 165481 current, 5 namespaces, 33080 sequences
+
+  $ seqrepo -v -d /tmp/sr export | head
+  >ncbi:NM_013305.4 seguid:EqjiLe... md5:04e8c3c75... sha512:000a70c470f6... sha1:12a8e22d...
+  GTACGCCCCCTCCCCCCGTCCCTATCGGCAGAACCGGAGGCCAACCTTCGCGATCCCTTGCTGCGGGCCCGGAGATCAAACGTGGCCCGCCCCCGGCAGG
+  GCACAGCGCGCTGGGCAACCGCGATCCGGCGCCGGACTGGAGGGGTCGATGCGCGGCGCGCTGGGGCGCACAGGGGACGGAGCCCGGGTCTTGCTCCCCA
+
+"""
 
 setup(
     author = package_name + " Committers",

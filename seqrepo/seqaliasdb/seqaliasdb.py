@@ -102,6 +102,13 @@ class SeqAliasDB(object):
         except sqlite3.OperationalError:
             return None
 
+    def stats(self):
+        sql = """select count(*) as n_aliases, sum(is_current) as n_current,
+        count(distinct seq_id) as n_sequences, count(distinct namespace) as
+        n_namespaces, min(added) as min_ts, max(added) as max_ts from
+        seqalias;"""
+        return dict(self._db.execute(sql).fetchone())
+
     def store_alias(self, seq_id, namespace, alias):
         """associate a namespaced alias with a sequence
 

@@ -116,12 +116,6 @@ class FastaDir(BaseReader, BaseWriter):
         fabgz = self._open_for_reading(path)
         return fabgz.fetch(seq_id, start, end)
 
-    def stats(self):
-        sql = """select count(distinct seq_id) n_seqs, sum(len) tot_length,
-              min(added) min_ts, max(added) as max_ts, count(distinct relpath) as
-              n_files from seqinfo"""
-        return dict(self._db.execute(sql).fetchone())
-
     def schema_version(self):
         """return schema version as integer"""
         try:
@@ -130,6 +124,12 @@ class FastaDir(BaseReader, BaseWriter):
             where key = 'schema version'""").fetchone()[0])
         except sqlite3.OperationalError:
             return None
+
+    def stats(self):
+        sql = """select count(distinct seq_id) n_sequences, sum(len) tot_length,
+              min(added) min_ts, max(added) as max_ts, count(distinct relpath) as
+              n_files from seqinfo"""
+        return dict(self._db.execute(sql).fetchone())
 
     def store(self, seq_id, seq):
         """store a sequence with key seq_id.  The sequence itself is stored in

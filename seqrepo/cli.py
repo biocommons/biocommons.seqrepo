@@ -135,11 +135,19 @@ def log(opts):
 
 
 def status(opts):
+    tot_size = sum(os.path.getsize(os.path.join(dirpath,filename))
+                       for dirpath, dirnames, filenames in os.walk(opts.dir)
+                       for filename in filenames)
+
     sr = seqrepo.SeqRepo(opts.dir)
-    print("seqrepo ", seqrepo.__version__)
-    print("root directory: " + sr._root_dir)
+    print("seqrepo {seqrepo.__version__}".format(seqrepo=seqrepo))
+    print("root directory: {sr._root_dir}, {ts:.1f} GB".format(sr=sr, ts=tot_size/1e9))
     print("backends: fastadir (schema {fd_v}), seqaliasdb (schema {sa_v}) ".format(
         fd_v=sr.sequences.schema_version(), sa_v=sr.aliases.schema_version()))
+    print("sequences: {ss[n_files]} files, {ss[n_sequences]} sequences, {ss[tot_length]} residues".format(
+        ss=sr.sequences.stats()))
+    print("aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, {sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(
+        sa=sr.aliases.stats()))
     return sr
 
 
