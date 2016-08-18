@@ -28,24 +28,11 @@ logger = logging.getLogger(__name__)
 
 def parse_arguments():
     top_p = argparse.ArgumentParser(
-        description=__doc__.split("\n\n")[0],
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=__doc__.split("\n\n")[0], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog="seqrepo " + seqrepo.__version__ + ". See https://github.com/biocommons/seqrepo for more information")
-    top_p.add_argument(
-        "--dir",
-        "-d",
-        help="seqrepo data directory; created by init",
-        required=True)
-    top_p.add_argument(
-        "--verbose",
-        "-v",
-        action="count",
-        default=0,
-        help="be verbose; multiple accepted")
-    top_p.add_argument(
-        "--version",
-        action="version",
-        version=seqrepo.__version__)
+    top_p.add_argument("--dir", "-d", help="seqrepo data directory; created by init", required=True)
+    top_p.add_argument("--verbose", "-v", action="count", default=0, help="be verbose; multiple accepted")
+    top_p.add_argument("--version", action="version", version=seqrepo.__version__)
 
     subparsers = top_p.add_subparsers(title='subcommands')
 
@@ -85,8 +72,7 @@ def parse_arguments():
     ap.set_defaults(func=status)
 
     # upgrade
-    ap = subparsers.add_parser(
-        "upgrade", help="upgrade bsa database and directory")
+    ap = subparsers.add_parser("upgrade", help="upgrade bsa database and directory")
     ap.set_defaults(func=upgrade)
 
     opts = top_p.parse_args()
@@ -99,8 +85,7 @@ def export(opts):
 
 def init(opts):
     if os.path.exists(opts.dir):
-        raise seqrepo.SeqRepoError("{opts.dir} exists and is not empty".format(
-            opts=opts))
+        raise seqrepo.SeqRepoError("{opts.dir} exists and is not empty".format(opts=opts))
     sr = seqrepo.SeqRepo(opts.dir)
 
 

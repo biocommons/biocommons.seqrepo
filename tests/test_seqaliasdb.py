@@ -34,11 +34,8 @@ def test_seqinfo():
     assert aid == 4, "should have created a new alias_id on reassignment of new sequence"
 
     alias_keys = "seqalias_id seq_id namespace alias is_current".split()
-    aliases = [{k: r[k]
-                for k in alias_keys}
-               for r in db.find_aliases(current_only=False)]
-    aliases.sort(
-        key=lambda r: (r["seqalias_id"], r["seq_id"], r["namespace"], r["alias"], r["is_current"]))
+    aliases = [{k: r[k] for k in alias_keys} for r in db.find_aliases(current_only=False)]
+    aliases.sort(key=lambda r: (r["seqalias_id"], r["seq_id"], r["namespace"], r["alias"], r["is_current"]))
 
     assert aliases == [
         {'seqalias_id': 1,
@@ -53,12 +50,11 @@ def test_seqinfo():
                                                'seq_id': 'q1',
                                                'namespace': 'B',
                                                'alias': '1',
-                                               'is_current': 1},
-        {'seqalias_id': 4,
-         'seq_id': 'q2',
-         'namespace': 'A',
-         'alias': '1',
-         'is_current': 1}
+                                               'is_current': 1}, {'seqalias_id': 4,
+                                                                  'seq_id': 'q2',
+                                                                  'namespace': 'A',
+                                                                  'alias': '1',
+                                                                  'is_current': 1}
     ]
 
     # __contains__

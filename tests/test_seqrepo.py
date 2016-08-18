@@ -16,9 +16,8 @@ def test_create(seqrepo):
 def test_store(seqrepo):
     seqrepo.store("SMELLASSWEET", [{"namespace": "en",
                                     "alias": "rose"}, {"namespace": "fr",
-                                                       "alias": "rose"},
-                                   {"namespace": "es",
-                                    "alias": "rosa"}])
+                                                       "alias": "rose"}, {"namespace": "es",
+                                                                          "alias": "rosa"}])
     seqrepo.store("ASINCHANGE", [{"namespace": "en", "alias": "coin"}])
     seqrepo.store("ASINACORNER", [{"namespace": "fr", "alias": "coin"}])
 
@@ -30,7 +29,7 @@ def test_fetch(seqrepo):
     assert seqrepo.fetch("rosa", start=5, end=7) == "AS"
 
     with pytest.raises(KeyError):
-        assert seqrepo.fetch("coin")  # ambiguous alias
+        assert seqrepo.fetch("coin")    # ambiguous alias
 
     assert seqrepo.fetch("coin", namespace="en") == "ASINCHANGE"
     assert seqrepo.fetch("coin", namespace="fr") == "ASINACORNER"

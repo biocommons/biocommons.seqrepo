@@ -15,11 +15,8 @@ except pkg_resources.DistributionNotFound as e:
 
 logger.info(__name__ + " " + __version__)
 
-
 from .exceptions import SeqRepoError, SequenceNotFoundError
 from .seqrepo import SeqRepo
-
-
 
 # <LICENSE>
 # Copyright 2016 biocommons.fastadir Contributors (https://github.com/biocommons/biocommons.fastadir/)

@@ -12,7 +12,6 @@ from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
 from .py2compat import makedirs
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -40,7 +39,7 @@ class SeqRepo(object):
         self._pending_sequences = 0
         self._pending_sequences_len = 0
         self._pending_aliases = 0
-        self._logger = logger   # avoids issue with logger going out of scope before __del__
+        self._logger = logger    # avoids issue with logger going out of scope before __del__
 
         makedirs(self._root_dir, exist_ok=True)
 
@@ -55,8 +54,7 @@ class SeqRepo(object):
             raise KeyError("Alias {} (namespace: {})".format(alias, namespace))
         if len(seq_ids) > 1:
             # This should only happen when namespace is None
-            raise KeyError("Alias {} (namespace: {}): not unique".format(
-                alias, namespace))
+            raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
 
         return self.sequences.fetch(seq_ids.pop(), start, end)
 
@@ -66,8 +64,7 @@ class SeqRepo(object):
 
     def __contains__(self, nsa):
         ns, a = nsa.split(":") if ":" in nsa else (None, nsa)
-        return self.aliases.find_aliases(
-            alias=a, namespace=ns).fetchone() is not None
+        return self.aliases.find_aliases(alias=a, namespace=ns).fetchone() is not None
 
     def store(self, seq, nsaliases):
         sha512 = bioutils.digests.seq_sha512(seq)
@@ -76,8 +73,7 @@ class SeqRepo(object):
         msg = "sha512:{seq_id:.10s}... ({l} residues) w/aliases {aliases}...".format(
             seq_id=seq_id,
             l=len(seq),
-            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa)
-                              for nsa in nsaliases))
+            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
 
         # add sequence if not present
         if seq_id not in self.sequences:
@@ -104,29 +100,24 @@ class SeqRepo(object):
         # update aliases
         # updating is optimized to load only new <seq_id,ns,alias> tuples
         existing_aliases = self.aliases.fetch_aliases(seq_id)
-        ea_tuples = [(r["seq_id"], r["namespace"], r["alias"])
-                     for r in existing_aliases]
+        ea_tuples = [(r["seq_id"], r["namespace"], r["alias"]) for r in existing_aliases]
         new_tuples = [(seq_id, r["namespace"], r["alias"]) for r in nsaliases]
         upd_tuples = set(new_tuples) - set(ea_tuples)
         logger.debug("{} new aliases for {}".format(len(upd_tuples), msg))
         for _, namespace, alias in upd_tuples:
-            self.aliases.store_alias(
-                seq_id=seq_id, namespace=namespace, alias=alias)
+            self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
 
         self._pending_aliases += len(upd_tuples)
 
-        if (self._pending_sequences > 20000 or self._pending_aliases > 60000 or
-                self._pending_sequences_len > 1e9):
+        if (self._pending_sequences > 20000 or self._pending_aliases > 60000 or self._pending_sequences_len > 1e9):
             logger.info("Hit flush thresholds")
             self.commit()
 
     def commit(self):
         self.sequences.commit()
         self.aliases.commit()
-        self._logger.info(
-            "Committed {} sequences ({} residues) and {} aliases".format(
-                self._pending_sequences, self._pending_sequences_len,
-                self._pending_aliases))
+        self._logger.info("Committed {} sequences ({} residues) and {} aliases".format(
+            self._pending_sequences, self._pending_sequences_len, self._pending_aliases))
         self._pending_sequences = 0
         self._pending_sequences_len = 0
         self._pending_aliases = 0

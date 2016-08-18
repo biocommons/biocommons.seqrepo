@@ -18,4 +18,3 @@ else:
 
     def gzip_open_encoded(file, encoding=None):
         return gzip.open(file, mode="rt", encoding=encoding)
-    

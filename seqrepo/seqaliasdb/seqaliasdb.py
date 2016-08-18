@@ -9,12 +9,11 @@ logger = logging.getLogger(__name__)
 
 expected_schema_version = 1
 
-
 min_sqlite_version_info = (3, 8, 0)
 if sqlite3.sqlite_version_info < min_sqlite_version_info:
     min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
-    msg = "{} requires sqlite3 >= {} but {} is installed".format(
-        __package__, min_sqlite_version, sqlite3.sqlite_version)
+    msg = "{} requires sqlite3 >= {} but {} is installed".format(__package__, min_sqlite_version,
+                                                                 sqlite3.sqlite_version)
     raise ImportError(msg)
 
 
@@ -36,23 +35,18 @@ class SeqAliasDB(object):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:
             raise RuntimeError("""Upgrade required: Database schema
-            version is {} and code expects {}""".format(
-                schema_version, expected_schema_version))
+            version is {} and code expects {}""".format(schema_version, expected_schema_version))
 
     def schema_version(self):
         """return schema version as integer"""
         try:
-            return int(
-                self._db.execute(
-                    "select value from meta where key = 'schema version'").fetchone(
-                    )[0])
+            return int(self._db.execute("select value from meta where key = 'schema version'").fetchone()[0])
         except sqlite3.OperationalError:
             return None
 
     def fetch_aliases(self, seq_id):
         """return list of alias annotation records (dicts) for a given seq_id"""
-        return self._db.execute("select * from seqalias where seq_id = ?",
-                                [seq_id]).fetchall()
+        return self._db.execute("select * from seqalias where seq_id = ?", [seq_id]).fetchall()
 
     def store_alias(self, seq_id, namespace, alias):
         """associate a namespaced alias with a sequence
@@ -63,9 +57,8 @@ class SeqAliasDB(object):
         """
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         try:
-            c = self._db.execute(
-                "insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)",
-                (seq_id, namespace, alias))
+            c = self._db.execute("insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)",
+                                 (seq_id, namespace, alias))
             return c.lastrowid
         except sqlite3.IntegrityError:
             pass
@@ -74,8 +67,7 @@ class SeqAliasDB(object):
         logger.debug(log_pfx + ": collision")
 
         # this record is guaranteed to exist uniquely
-        current_rec = self.find_aliases(
-            namespace=namespace, alias=alias).fetchone()
+        current_rec = self.find_aliases(namespace=namespace, alias=alias).fetchone()
 
         # if seq_id matches current record, it's a duplicate (seq_id, namespace, alias) tuple
         if current_rec["seq_id"] == seq_id:
@@ -83,11 +75,8 @@ class SeqAliasDB(object):
             return current_rec["seqalias_id"]
 
         # otherwise, we're reassigning; deprecate old record, then retry
-        logger.debug(log_pfx + ": deprecating {s1}".format(s1=current_rec[
-            "seq_id"]))
-        self._db.execute(
-            "update seqalias set is_current = 0 where seqalias_id = ?",
-            [current_rec["seqalias_id"]])
+        logger.debug(log_pfx + ": deprecating {s1}".format(s1=current_rec["seq_id"]))
+        self._db.execute("update seqalias set is_current = 0 where seqalias_id = ?", [current_rec["seqalias_id"]])
         return self.store_alias(seq_id, namespace, alias)
 
     def find_aliases(self, namespace=None, alias=None, current_only=True):
@@ -123,22 +112,19 @@ class SeqAliasDB(object):
 
     # TODO: This should search as ns:a not seq_id
     def __contains__(self, seq_id):
-        c = self._db.execute(
-            "select exists(select 1 from seqalias where seq_id = ? limit 1) as ex",
-            (seq_id, )).fetchone()
+        c = self._db.execute("select exists(select 1 from seqalias where seq_id = ? limit 1) as ex",
+                             (seq_id, )).fetchone()
         return True if c["ex"] else False
 
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""
         migration_path = "_data/migrations"
-        sqlite3.connect(self._db_path).close()  # ensure that it exists
+        sqlite3.connect(self._db_path).close()    # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
-        migration_dir = pkg_resources.resource_filename(__package__,
-                                                        migration_path)
+        migration_dir = pkg_resources.resource_filename(__package__, migration_path)
         migrations = yoyo.read_migrations(migration_dir)
-        assert len(
-            migrations) > 0, "no migration scripts found -- wrong migraion path for " + __package__
+        assert len(migrations) > 0, "no migration scripts found -- wrong migraion path for " + __package__
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
 

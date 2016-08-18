@@ -20,8 +20,9 @@ line_width = 100
 logger = logging.getLogger(__name__)
 
 bgzip_exe = "/usr/bin/bgzip"
-min_bgzip_version_info = (1,2,1)
+min_bgzip_version_info = (1, 2, 1)
 min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
+
 
 def _check_bgzip_version(exe):
     def _get_version(exe):
@@ -30,6 +31,7 @@ def _check_bgzip_version(exe):
         version_line = output[0].splitlines()[1]
         version = re.match("Version:\s+(\d+\.\d+\.\d+)", version_line).group(1)
         return version
+
     try:
         bgzip_version = _get_version(exe)
     except Exception as e:
@@ -39,7 +41,8 @@ def _check_bgzip_version(exe):
         raise SeqRepoError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
             exe=exe, ev=bgzip_version, rv=min_bgzip_version))
     logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
-    
+
+
 _check_bgzip_version(bgzip_exe)
 
 
@@ -73,12 +76,9 @@ class FabgzWriter(object):
         if suffix != ".bgz":
             raise SeqRepoError("Path must end with .bgz")
 
-        files = [self.filename, self.filename + ".fai", self.filename + ".gzi",
-                 self._basepath]
+        files = [self.filename, self.filename + ".fai", self.filename + ".gzi", self._basepath]
         if any(os.path.exists(fn) for fn in files):
-            raise SeqRepoError(
-                "One or more target files already exists ({})".format(
-                    ", ".join(files)))
+            raise SeqRepoError("One or more target files already exists ({})".format(", ".join(files)))
 
         self._fh = io.open(self._basepath, encoding="ascii", mode="w")
         logger.debug("opened " + self.filename + " for writing")
@@ -95,8 +95,7 @@ class FabgzWriter(object):
             for l in wrap_lines(seq, line_width):
                 self._fh.write(six.u(l) + "\n")
             self._added.add(seq_id)
-            logger.debug("added seq_id {i}; length {l}".format(
-                i=seq_id, l=len(seq)))
+            logger.debug("added seq_id {i}; length {l}".format(i=seq_id, l=len(seq)))
         return seq_id
 
     def close(self):
@@ -105,12 +104,9 @@ class FabgzWriter(object):
             self._fh = None
             subprocess.check_call([bgzip_exe, "--force", self._basepath])
             os.rename(self._basepath + ".gz", self.filename)
-            logger.info("{} written; added {} sequences".format(
-                self.filename, len(self._added)))
+            logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
 
     def __del__(self):
         if self._fh is not None:
-            logger.error(
-                "FabgzWriter({}) was not explicitly closed; may result in lost data".format(
-                    self.filename))
+            logger.error("FabgzWriter({}) was not explicitly closed; may result in lost data".format(self.filename))
             self.close()

@@ -5,6 +5,7 @@ import pytest
 
 from seqrepo.fastadir import FastaDir
 
+
 def test_write_reread():
     # PY2BAGGAGE: Switch to TemporaryDirectory
     tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_")

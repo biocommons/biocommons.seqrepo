@@ -15,7 +15,6 @@ from .fabgz import FabgzReader, FabgzWriter
 
 logger = logging.getLogger(__name__)
 
-
 # expected_schema_version must match (exactly) the schema version
 # stored in the associated database. If newer code introduces schema
 # changes, a database upgrade will be attempted automatically. If
@@ -71,18 +70,14 @@ class FastaDir(BaseReader, BaseWriter):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:
             raise RuntimeError("""Upgrade required: Database schema
-            version is {} and code expects {}""".format(
-                schema_version, expected_schema_version))
+            version is {} and code expects {}""".format(schema_version, expected_schema_version))
 
     def __contains__(self, seq_id):
-        c = self._db.execute(
-            "select exists(select 1 from seqinfo where seq_id = ? limit 1) as ex",
-            [seq_id]).fetchone()
+        c = self._db.execute("select exists(select 1 from seqinfo where seq_id = ? limit 1) as ex", [seq_id]).fetchone()
         return True if c["ex"] else False
 
     def __len__(self):
-        return self._db.execute("select count(*) as c from seqinfo").fetchone(
-        )["c"]
+        return self._db.execute("select count(*) as c from seqinfo").fetchone()["c"]
 
     def schema_version(self):
         """return schema version as integer"""
@@ -119,17 +114,14 @@ class FastaDir(BaseReader, BaseWriter):
         self._writing["fabgz"].store(seq_id, seq)
         alpha = "".join(sorted(set(seq)))
         self._db.execute("""insert into seqinfo (seq_id, len, alpha, relpath)
-                         values (?, ?, ?,?)""",
-                         (seq_id, len(seq), alpha, self._writing["relpath"]))
+                         values (?, ?, ?,?)""", (seq_id, len(seq), alpha, self._writing["relpath"]))
         return seq_id
 
     def fetch(self, seq_id, start=None, end=None):
         """fetch sequence by seq_id, optionally with start, end bounds
 
         """
-        rec = self._db.execute(
-            """select * from seqinfo where seq_id = ? order by added desc""",
-            [seq_id]).fetchone()
+        rec = self._db.execute("""select * from seqinfo where seq_id = ? order by added desc""", [seq_id]).fetchone()
 
         if rec is None:
             raise KeyError(seq_id)
@@ -152,11 +144,10 @@ class FastaDir(BaseReader, BaseWriter):
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""
         migration_path = "_data/migrations"
-        sqlite3.connect(self._db_path).close()  # ensure that it exists
+        sqlite3.connect(self._db_path).close()    # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
-        migration_dir = pkg_resources.resource_filename(__package__,
-                                                        migration_path)
+        migration_dir = pkg_resources.resource_filename(__package__, migration_path)
         migrations = yoyo.read_migrations(migration_dir)
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)

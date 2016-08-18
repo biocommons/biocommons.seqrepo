@@ -18,4 +18,3 @@ class BaseWriter():
     @abc.abstractmethod
     def store(self, seq_id, seq):
         pass
-
