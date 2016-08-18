@@ -30,7 +30,7 @@ def parse_arguments():
     top_p = argparse.ArgumentParser(
         description=__doc__.split("\n\n")[0],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        epilog='See https://github.com/biocommons/seqrepo for more information', )
+        epilog="seqrepo " + seqrepo.__version__ + ". See https://github.com/biocommons/seqrepo for more information")
     top_p.add_argument(
         "--dir",
         "-d",
@@ -45,10 +45,13 @@ def parse_arguments():
     top_p.add_argument(
         "--version",
         action="version",
-        default=seqrepo.__version__,
         version=seqrepo.__version__)
 
     subparsers = top_p.add_subparsers(title='subcommands')
+
+    # export
+    ap = subparsers.add_parser("export", help="export sequences")
+    ap.set_defaults(func=export)
 
     # init
     ap = subparsers.add_parser("init", help="initialize bsa directory")
@@ -74,6 +77,10 @@ def parse_arguments():
     ap.set_defaults(func=log)
 
     # status
+    ap = subparsers.add_parser("shell", help="start interactive shell with initialized seqrepo")
+    ap.set_defaults(func=shell)
+
+    # status
     ap = subparsers.add_parser("status", help="show seqrep status")
     ap.set_defaults(func=status)
 
@@ -84,6 +91,10 @@ def parse_arguments():
 
     opts = top_p.parse_args()
     return opts
+
+
+def export(opts):
+    sr = seqrepo.SeqRepo(opts.dir)
 
 
 def init(opts):
@@ -124,8 +135,17 @@ def log(opts):
 
 def status(opts):
     sr = seqrepo.SeqRepo(opts.dir)
-    print("path = " + sr._path)
-    print("schema version = " + sr.seqinfo.schema_version())
+    print("seqrepo ", seqrepo.__version__)
+    print("root directory: " + sr._root_dir)
+    print("backends: fastadir (schema {fd_v}), seqaliasdb (schema {sa_v}) ".format(
+        fd_v=sr.sequences.schema_version(), sa_v=sr.aliases.schema_version()))
+    return sr
+
+
+def shell(opts):
+    sr = status(opts)
+    import IPython
+    IPython.embed(display_banner=False)
 
 
 def upgrade(opts):
