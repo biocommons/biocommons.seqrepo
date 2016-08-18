@@ -15,6 +15,7 @@ import io
 import itertools
 import logging
 import os
+import pprint
 import re
 
 from Bio import SeqIO
