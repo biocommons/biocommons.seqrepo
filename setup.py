@@ -26,6 +26,29 @@ Example::
   GTACGCCCCCTCCCCCCGTCCCTATCGGCAGAACCGGAGGCCAACCTTCGCGATCCCTTGCTGCGGGCCCGGAGATCAAACGTGGCCCGCCCCCGGCAGG
   GCACAGCGCGCTGGGCAACCGCGATCCGGCGCCGGACTGGAGGGGTCGATGCGCGGCGCGCTGGGGCGCACAGGGGACGGAGCCCGGGTCTTGCTCCCCA
 
+
+Sequences are stored non-redundantly in compressed, timestamped files::
+
+  $ tree /tmp/sr
+  /tmp/sr
+  ├── aliases.sqlite3
+  └── sequences
+      ├── 2016
+      │   └── 08
+      │       └── 18
+      │           └── 1740
+      │               ├── 1471542021.2968519.fa.bgz
+      │               ├── 1471542021.2968519.fa.bgz.fai
+      │               ├── 1471542021.2968519.fa.bgz.gzi
+      │               ├── 1471542033.2398305.fa.bgz
+      │               ├── 1471542033.2398305.fa.bgz.fai
+      │               ├── 1471542033.2398305.fa.bgz.gzi
+      │               ├── 1471542046.008535.fa.bgz
+      │               ├── 1471542046.008535.fa.bgz.fai
+      │               └── 1471542046.008535.fa.bgz.gzi
+      └── db.sqlite3
+
+
 """
 
 setup(
