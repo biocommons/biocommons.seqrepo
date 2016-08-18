@@ -10,6 +10,7 @@ setup(
     license = "Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)",
     long_description = long_description,
     name = package_name,
+    # namespace_packages = [namespace_package],
     package_data = {
         "seqrepo.fastadir": ["_data/migrations/*"],
         "seqrepo.seqaliasdb": ["_data/migrations/*"],
@@ -17,7 +18,7 @@ setup(
     packages = find_packages(),
     use_scm_version = True,
     zip_safe = True,
-    
+
     author_email = "biocommons-dev@googlegroups.com",
     url = "https://github.com/biocommons/" + package_name,
 
@@ -50,14 +51,13 @@ setup(
         "sphinx_rtd_theme",
         "sphinxcontrib-fulltoc",
         "wheel",
-        ],
+    ],
 
     tests_require = [
         "pytest",
         "pytest-cov",
     ],
 )
-
 
 ## <LICENSE>
 ## Copyright 2016 Source Code Committers
