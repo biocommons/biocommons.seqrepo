@@ -30,7 +30,7 @@ Installation
 !!!!!!!!!!!!
 
 seqrepo has been tested only on Ubuntu 14.04 and 16.04.  It requires
-separate installation of the tabix package.  It requires sqlite3 >
+separate installation of the tabix package.  It requires sqlite3 >=
 3.8.0, which likely precludes early Ubuntu distributions.
 
 On Ubuntu 16.04::
@@ -59,4 +59,8 @@ exporting all sequences
 
 API Usage
 !!!!!!!!!
+
+
+Fetching existing sequence repositories
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

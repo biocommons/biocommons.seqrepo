@@ -10,7 +10,7 @@ setup(
     license = "Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)",
     long_description = long_description,
     name = package_name,
-    package_data={
+    package_data = {
         "seqrepo.fastadir": ["_data/migrations/*"],
         "seqrepo.seqaliasdb": ["_data/migrations/*"],
         },
@@ -27,8 +27,14 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         ],
 
-    keywords=[
+    keywords = [
     ],
+
+    entry_points = {
+        "console_scripts": [
+            "seqrepo = seqrepo.cli:main",
+        ],
+    },
 
     install_requires = [
         "biopython>=1.66",

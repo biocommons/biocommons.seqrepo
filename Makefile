@@ -19,18 +19,15 @@ help:
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
+setup: etc/develop.reqs etc/install.reqs
+	pip install --upgrade -r $(word 1,$^)
+	pip install --upgrade -r $(word 2,$^)
+
 #=> develop: install package in develop mode
 #=> install: install package
-.PHONY: develop install
-develop install: %: etc/%.reqs
-	pip install --upgrade -r $<
-	python setup.py $*
-etc/%.reqs:
-	@touch $@
-
-#=> bdist bdist_egg bdist_wheel build build_sphinx sdist
-.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist
-bdist bdist_egg bdist_wheel build build_sphinx sdist: %:
+#=> bdist bdist_egg bdist_wheel build sdist: distribution options
+.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist develop install
+bdist bdist_egg bdist_wheel build sdist develop install: %:
 	python setup.py $@
 
 #=> upload: upload to pypi
