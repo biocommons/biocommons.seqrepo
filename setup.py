@@ -96,9 +96,9 @@ setup(
     setup_requires = [
         "pytest-runner",
         "setuptools_scm",
-        "sphinx",
-        "sphinx_rtd_theme",
-        "sphinxcontrib-fulltoc",
+        #"sphinx",
+        #"sphinx_rtd_theme",
+        #"sphinxcontrib-fulltoc",
         "wheel",
     ],
 
