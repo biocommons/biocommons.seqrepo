@@ -1,5 +1,5 @@
+import itertools
 import logging
-import os
 import sqlite3
 
 import pkg_resources
@@ -15,6 +15,7 @@ if sqlite3.sqlite_version_info < min_sqlite_version_info:
     msg = "{} requires sqlite3 >= {} but {} is installed".format(__package__, min_sqlite_version,
                                                                  sqlite3.sqlite_version)
     raise ImportError(msg)
+
 
 
 class SeqAliasDB(object):
@@ -37,16 +38,69 @@ class SeqAliasDB(object):
             raise RuntimeError("""Upgrade required: Database schema
             version is {} and code expects {}""".format(schema_version, expected_schema_version))
 
+
+    # ############################################################################
+    # Special methods
+
+    def __contains__(self, seq_id):
+        c = self._db.execute("select exists(select 1 from seqalias where seq_id = ? limit 1) as ex",
+                             (seq_id, )).fetchone()
+        return True if c["ex"] else False
+
+
+    # ############################################################################
+    # Public methods
+
+    def commit(self):
+        self._db.commit()
+
+    def fetch_aliases(self, seq_id, current_only=True):
+        """return list of alias annotation records (dicts) for a given seq_id"""
+        return [dict(r) for r in self.find_aliases(seq_id=seq_id, current_only=current_only)]
+
+    def find_aliases(self, seq_id=None, namespace=None, alias=None, current_only=True):
+        """returns iterator over alias annotation records that match criteria
+        
+        The arguments, all optional, restrict the records that are
+        returned.  Without arguments, all aliases are returned.
+
+        If arguments contain %, the `like` comparison operator is
+        used.  Otherwise arguments must match exactly.
+
+        """
+        clauses = []
+        params = []
+
+        def eq_or_like(s):
+            return "like" if "%" in s else "="
+
+        if alias is not None:
+            clauses += ["alias {} ?".format(eq_or_like(alias))]
+            params += [alias]
+        if namespace is not None:
+            clauses += ["namespace {} ?".format(eq_or_like(namespace))]
+            params += [namespace]
+        if seq_id is not None:
+            clauses += ["seq_id {} ?".format(eq_or_like(seq_id))]
+            params += [seq_id]
+        if current_only:
+            clauses += ["is_current = 1"]
+
+        sql = "select * from seqalias"
+        if clauses:
+            sql += " where " + " and ".join("(" + c + ")" for c in clauses)
+        sql += " order by seq_id, namespace, alias"
+
+        logger.debug("Executing: " + sql)
+        return self._db.execute(sql, params)
+            
+
     def schema_version(self):
         """return schema version as integer"""
         try:
             return int(self._db.execute("select value from meta where key = 'schema version'").fetchone()[0])
         except sqlite3.OperationalError:
             return None
-
-    def fetch_aliases(self, seq_id):
-        """return list of alias annotation records (dicts) for a given seq_id"""
-        return self._db.execute("select * from seqalias where seq_id = ?", [seq_id]).fetchall()
 
     def store_alias(self, seq_id, namespace, alias):
         """associate a namespaced alias with a sequence
@@ -79,42 +133,17 @@ class SeqAliasDB(object):
         self._db.execute("update seqalias set is_current = 0 where seqalias_id = ?", [current_rec["seqalias_id"]])
         return self.store_alias(seq_id, namespace, alias)
 
-    def find_aliases(self, namespace=None, alias=None, current_only=True):
-        """returns iterator over alias annotation records that match criteria
-        
-        The optional namespace and alias selectors restrict the
-        records that are returned.  If these are not provided, all
-        aliases are returned. 
 
-        """
-        clauses = []
-        params = []
+    # ############################################################################
+    # Internal methods
 
-        def eq_or_like(s):
-            return "like" if "%" in s else "="
-
-        if namespace is not None:
-            clauses += ["namespace {} ?".format(eq_or_like(namespace))]
-            params += [namespace]
-        if alias is not None:
-            clauses += ["alias {} ?".format(eq_or_like(alias))]
-            params += [alias]
-        if current_only:
-            clauses += ["is_current = 1"]
-        sql = "select * from seqalias"
-        if clauses:
-            sql += " where " + " and ".join("(" + c + ")" for c in clauses)
-        logger.debug("Executing: " + sql)
-        return self._db.execute(sql, params)
-
-    def commit(self):
-        self._db.commit()
-
-    # TODO: This should search as ns:a not seq_id
-    def __contains__(self, seq_id):
-        c = self._db.execute("select exists(select 1 from seqalias where seq_id = ? limit 1) as ex",
-                             (seq_id, )).fetchone()
-        return True if c["ex"] else False
+    def _dump_aliases(self):
+        import prettytable
+        fields = "seqalias_id seq_id namespace alias added is_current".split()
+        pt = prettytable.PrettyTable(field_names=fields)
+        for r in self._db.execute("select * from seqalias"):
+            pt.add_row([r[f] for f in fields])
+        print(pt)
 
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""
@@ -127,20 +156,3 @@ class SeqAliasDB(object):
         assert len(migrations) > 0, "no migration scripts found -- wrong migraion path for " + __package__
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
-
-    def _dump_aliases(self):
-        import prettytable
-        fields = "seqalias_id seq_id namespace alias added is_current".split()
-        pt = prettytable.PrettyTable(field_names=fields)
-        for r in self._db.execute("select * from seqalias"):
-            pt.add_row([r[f] for f in fields])
-        print(pt)
-
-
-if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-
-    from seqrepo.seqrepo import SeqRepo
-    sr = SeqRepo("/tmp")
-    sr.store("AAA", [{"namespace": "A", "alias": "B"}])

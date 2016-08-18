@@ -72,12 +72,55 @@ class FastaDir(BaseReader, BaseWriter):
             raise RuntimeError("""Upgrade required: Database schema
             version is {} and code expects {}""".format(schema_version, expected_schema_version))
 
+    # ############################################################################
+    # Special methods
+
     def __contains__(self, seq_id):
         c = self._db.execute("select exists(select 1 from seqinfo where seq_id = ? limit 1) as ex", [seq_id]).fetchone()
         return True if c["ex"] else False
 
+    def __iter__(self):
+        sql = "select * from seqinfo order by seq_id"
+        for rec in self._db.execute(sql):
+            recd = dict(rec)
+            recd["seq"] = self.fetch(rec["seq_id"])
+            yield recd
+
     def __len__(self):
-        return self._db.execute("select count(*) as c from seqinfo").fetchone()["c"]
+        return self.stats()["n_seqs"]
+
+    # ############################################################################
+    # Public methods
+
+    def commit(self):
+        if self._writing is not None:
+            self._writing["fabgz"].close()
+            self._db.commit()
+            self._writing = None
+
+    def fetch(self, seq_id, start=None, end=None):
+        """fetch sequence by seq_id, optionally with start, end bounds
+
+        """
+        rec = self._db.execute("""select * from seqinfo where seq_id = ? order by added desc""", [seq_id]).fetchone()
+
+        if rec is None:
+            raise KeyError(seq_id)
+
+        if self._writing and self._writing["relpath"] == rec["relpath"]:
+            logger.warn("""Fetching from file opened for writing;
+            closing first ({})""".format(rec["relpath"]))
+            self.commit()
+
+        path = os.path.join(self._root_dir, rec["relpath"])
+        fabgz = self._open_for_reading(path)
+        return fabgz.fetch(seq_id, start, end)
+
+    def stats(self):
+        sql = """select count(distinct seq_id) n_seqs, sum(len) tot_length,
+              min(added) min_ts, max(added) as max_ts, count(distinct relpath) as
+              n_files from seqinfo"""
+        return dict(self._db.execute(sql).fetchone())
 
     def schema_version(self):
         """return schema version as integer"""
@@ -117,29 +160,8 @@ class FastaDir(BaseReader, BaseWriter):
                          values (?, ?, ?,?)""", (seq_id, len(seq), alpha, self._writing["relpath"]))
         return seq_id
 
-    def fetch(self, seq_id, start=None, end=None):
-        """fetch sequence by seq_id, optionally with start, end bounds
-
-        """
-        rec = self._db.execute("""select * from seqinfo where seq_id = ? order by added desc""", [seq_id]).fetchone()
-
-        if rec is None:
-            raise KeyError(seq_id)
-
-        if self._writing and self._writing["relpath"] == rec["relpath"]:
-            logger.warn("""Fetching from file opened for writing;
-            closing first ({})""".format(rec["relpath"]))
-            self.commit()
-
-        path = os.path.join(self._root_dir, rec["relpath"])
-        fabgz = self._open_for_reading(path)
-        return fabgz.fetch(seq_id, start, end)
-
-    def commit(self):
-        if self._writing is not None:
-            self._writing["fabgz"].close()
-            self._db.commit()
-            self._writing = None
+    # ############################################################################
+    # Internal methods
 
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""

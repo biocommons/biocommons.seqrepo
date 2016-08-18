@@ -11,9 +11,8 @@ Typical usage is via the `seqrepo` script::
 from __future__ import division, print_function, unicode_literals
 
 import argparse
-import datetime
-import gzip
 import io
+import itertools
 import logging
 import os
 import re
@@ -80,8 +79,25 @@ def parse_arguments():
 
 
 def export(opts):
-    sr = seqrepo.SeqRepo(opts.dir)
+    def convert_alias_records_to_ns_dict(records):
+        """converts a set of alias db records to a dict like {ns: [aliases], ...}
+        aliases are lexicographicaly sorted
+        """
+        records = sorted(records, key = lambda r: (r["namespace"], r["alias"]))
+        return {g: [r["alias"] for r in gi]
+                for g, gi in itertools.groupby(records, key = lambda r: r["namespace"])}
 
+    def wrap_lines(seq, line_width):
+        for i in range(0, len(seq), line_width):
+            yield seq[i:i + line_width]
+
+    sr = seqrepo.SeqRepo(opts.dir)
+    for srec,arecs in sr:
+        nsad = convert_alias_records_to_ns_dict(arecs)
+        aliases = ["{ns}:{a}".format(ns=ns, a=a) for ns,aliases in nsad.items() for a in aliases]
+        print(">" + " ".join(aliases))
+        for l in wrap_lines(srec["seq"], 100):
+            print(l)
 
 def init(opts):
     if os.path.exists(opts.dir):

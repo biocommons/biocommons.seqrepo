@@ -2,12 +2,9 @@ import hashlib
 import logging
 import os
 
-import six
-from six.moves.urllib.parse import urldefrag
-
 import bioutils.digests
+import six
 
-from .exceptions import SeqRepoError
 from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
 from .py2compat import makedirs
@@ -32,8 +29,9 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, upcase=True):
         self._root_dir = root_dir
+        self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "db.sqlite3")
         self._seq_path = os.path.join(self._root_dir, "sequences")
         self._pending_sequences = 0
@@ -66,7 +64,19 @@ class SeqRepo(object):
         ns, a = nsa.split(":") if ":" in nsa else (None, nsa)
         return self.aliases.find_aliases(alias=a, namespace=ns).fetchone() is not None
 
+    def __iter__(self):
+        """iterate over all sequences, yielding tuples of (sequence_record, [alias_records])
+
+        Both records are dicts.
+        """
+        for srec in self.sequences:
+            arecs = self.aliases.fetch_aliases(srec["seq_id"])
+            yield (srec, arecs)
+
     def store(self, seq, nsaliases):
+        if self._upcase:
+            seq = seq.upper()
+
         sha512 = bioutils.digests.seq_sha512(seq)
         seq_id = sha512
 
@@ -116,8 +126,9 @@ class SeqRepo(object):
     def commit(self):
         self.sequences.commit()
         self.aliases.commit()
-        self._logger.info("Committed {} sequences ({} residues) and {} aliases".format(
-            self._pending_sequences, self._pending_sequences_len, self._pending_aliases))
+        if self._pending_sequences + self._pending_aliases > 0:
+            self._logger.info("Committed {} sequences ({} residues) and {} aliases".format(
+                self._pending_sequences, self._pending_sequences_len, self._pending_aliases))
         self._pending_sequences = 0
         self._pending_sequences_len = 0
         self._pending_aliases = 0
