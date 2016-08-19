@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 package_name = "seqrepo"
 short_description = open("doc/short_description.txt").read()
-long_description = open("doc/long_description.rst").read()
+long_description = open("README.rst").read()
 
 setup(
     author = package_name + " Committers",
