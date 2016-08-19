@@ -18,7 +18,7 @@ Features
 * Provenance data regarding sequence sources and accessions
 * Precomputed digests that may be used as sequence aliases
 
-For more information, see `<design.rst>`__.
+For more information, see `<doc/design.rst>`__.
 
 
 Expected deployment cases

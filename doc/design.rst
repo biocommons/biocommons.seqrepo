@@ -1,29 +1,49 @@
 This document describes the design of the seqrepo package.
 
 
-Goals
-!!!!!
+Goals and design implications
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-* Space-efficient within a release
-* Simple use with multiple releases
+* Space-efficient within a release/snapshot
+  => compress sequences
+  => dedupe => hashed
 * Space-efficient across releases
+  => hard links (or: build releases into system)
 * Bandwidth-efficient distribution of incremental updates
-* Fast sequence lookup and slicing
+  => immutable sequences as journalled storage
 * Zero or more namespaced aliases associated with a sequence
+  => store alises => hashed sequence
+* Fast sequence lookup and slicing (random access)
+  => w/compression => blocked gzip
 
 
 (A) Solution
 !!!!!!!!!!!!
 
-The solution implemented here uses block-gzipped fasta files with
-access provided by the pysam.FastaFile module.  This module provides
-indexed access to fasta files, with extremely fast slicing into very
-large sequences.  A new module, fabgz, was written to provide 
+Space-efficient storage usually means compression.  Conventional
+compression precludes random access to files, which, for example,
+would require reading an entire chromosome in order to access an
+arbitrary regions.
 
+The blocked gzip format (`bgzf
+<https://samtools.github.io/hts-specs/SAMv1.pdf>`__) uses a virtual
+index into compressed data to enable random access.  The solution
+implemented here uses block-gzipped fasta files with access provided
+by the pysam.FastaFile module.  This module provides indexed access to
+fasta files, with extremely fast slicing into very large sequences.
 
+Taken together, bgzf and pysam enable compression and fast random
+access.
+
+Space efficiency across snapshots 
 
 Although FastaFile works very well with large (multigigabyte) files,
 the desire for 
+
+
+A new module, fabgz, was written to provide
+
+
 
 
 
