@@ -48,11 +48,9 @@ def parse_arguments():
     ap = subparsers.add_parser("load-fasta", help="load a single fasta file")
     ap.set_defaults(func=load_fasta)
     ap.add_argument(
-        "--fasta-file",
-        "-f",
-        action="append",
-        default=[],
-        help="fasta file to load (compressed okay)", )
+        "fasta_files",
+        nargs="+",
+        help="fasta files to load (compressed okay)", )
     ap.add_argument(
         "--namespace",
         "-n",
@@ -101,15 +99,15 @@ def export(opts):
             print(l)
 
 def init(opts):
-    if os.path.exists(opts.dir):
+    if os.path.exists(opts.dir) and len(os.listdir(opts.dir)) > 0:
         raise seqrepo.SeqRepoError("{opts.dir} exists and is not empty".format(opts=opts))
-    sr = seqrepo.SeqRepo(opts.dir)
+    sr = seqrepo.SeqRepo(opts.dir)  # flake8: noqa
 
 
 def load_fasta(opts):
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
     sr = seqrepo.SeqRepo(opts.dir)
-    for fn in opts.fasta_file:
+    for fn in opts.fasta_files:
         if fn.endswith(".gz") or fn.endswith(".bgz"):
             fh = gzip_open_encoded(fn, encoding="ascii")
         else:
@@ -145,7 +143,7 @@ def status(opts):
     print("root directory: {sr._root_dir}, {ts:.1f} GB".format(sr=sr, ts=tot_size/1e9))
     print("backends: fastadir (schema {fd_v}), seqaliasdb (schema {sa_v}) ".format(
         fd_v=sr.sequences.schema_version(), sa_v=sr.aliases.schema_version()))
-    print("sequences: {ss[n_files]} files, {ss[n_sequences]} sequences, {ss[tot_length]} residues".format(
+    print("sequences: {ss[n_sequences]} sequences, {ss[tot_length]} residues, {ss[n_files]} files".format(
         ss=sr.sequences.stats()))
     print("aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, {sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(
         sa=sr.aliases.stats()))

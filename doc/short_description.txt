@@ -1,0 +1,4 @@
+Python package for writing and reading a local collection of
+biological sequences.  The repository is non-redundant, compressed,
+and journalled, making it efficient to store and transfer incremental
+snapshots.
