@@ -6,6 +6,8 @@ biological sequences.  The repository is non-redundant, compressed,
 and journalled, making it efficient to store and transfer incremental
 snapshots.
 
+|ci_rel| |pypi_rel|
+
 
 Features
 !!!!!!!!
@@ -144,3 +146,12 @@ TO BE WRITTEN
 (General idea: Distribute repository with snapshots via rsync server
 from public site for manual installation, and use the same source to
 seed a docker container.)
+
+
+.. |pypi_rel| image:: https://badge.fury.io/py/seqrepo.png
+  :target: https://pypi.python.org/pypi?name=seqrepo
+  :align: middle
+
+.. |ci_rel| image:: https://travis-ci.org/biocommons/seqrepo.svg?branch=master
+  :target: https://travis-ci.org/biocommons/seqrepo
+  :align: middle 
