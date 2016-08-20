@@ -80,12 +80,10 @@ class SeqRepo(object):
         sha512 = bioutils.digests.seq_sha512(seq)
         seq_id = sha512
 
-        msg = "sha512:{seq_id:.10s}... ({l} residues) w/aliases {aliases}...".format(
-            seq_id=seq_id,
-            l=len(seq),
-            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
-
         # add sequence if not present
+        msg = "sha512:{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
+            seq_id=seq_id, l=len(seq), na=len(nsaliases),
+            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
         if seq_id not in self.sequences:
             logger.info("Storing " + msg)
             self.sequences.store(seq_id, seq)
@@ -107,20 +105,21 @@ class SeqRepo(object):
         else:
             logger.debug("Sequence exists: " + msg)
 
-        # update aliases
+        # add/update aliases
         # updating is optimized to load only new <seq_id,ns,alias> tuples
         existing_aliases = self.aliases.fetch_aliases(seq_id)
         ea_tuples = [(r["seq_id"], r["namespace"], r["alias"]) for r in existing_aliases]
         new_tuples = [(seq_id, r["namespace"], r["alias"]) for r in nsaliases]
         upd_tuples = set(new_tuples) - set(ea_tuples)
-        logger.debug("{} new aliases for {}".format(len(upd_tuples), msg))
-        for _, namespace, alias in upd_tuples:
-            self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
-
-        self._pending_aliases += len(upd_tuples)
+        if upd_tuples:
+            logger.info("{} new aliases for {}".format(len(upd_tuples), msg))
+            for _, namespace, alias in upd_tuples:
+                self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
+            self._pending_aliases += len(upd_tuples)
 
         if (self._pending_sequences > 20000 or self._pending_aliases > 60000 or self._pending_sequences_len > 1e9):
-            logger.info("Hit flush thresholds")
+            logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
+                        "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self))
             self.commit()
 
     def commit(self):
