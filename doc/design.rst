@@ -4,38 +4,36 @@ This document describes the design of the seqrepo package.
 Goals and design implications
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+This section summarizes goals and their architectural implications.
+
 * Space-efficient within a release/snapshot
   => compress sequences
-  => dedupe => hashed
+  => dedupe sequences => use hashes
 * Space-efficient across releases
-  => hard links (or: build releases into system)
+  => use hard links
 * Bandwidth-efficient distribution of incremental updates
-  => immutable sequences as journalled storage
+  => immutable, journaled add-only sequence storage
 * Zero or more namespaced aliases associated with a sequence
-  => store alises => hashed sequence
+  => store aliases for hashed sequences
 * Fast sequence lookup and slicing (random access)
-  => w/compression => blocked gzip
+  => when coupled with compression => blocked gzip
 
-
-(A) Solution
-!!!!!!!!!!!!
 
 Space-efficient storage usually means compression.  Conventional
 compression precludes random access to files, which, for example,
-would require reading an entire chromosome in order to access an
-arbitrary regions.
+would necessitate reading an entire chromosome in order to access an
+arbitrary region.
 
-The blocked gzip format (`bgzf
-<https://samtools.github.io/hts-specs/SAMv1.pdf>`__) uses a virtual
-index into compressed data to enable random access.  The solution
-implemented here uses block-gzipped fasta files with access provided
-by the pysam.FastaFile module.  This module provides indexed access to
-fasta files, with extremely fast slicing into very large sequences.
+Fortunately, the blocked gzip format (`bgzf
+<https://samtools.github.io/hts-specs/SAMv1.pdf>`__) enables random
+access on compressed files.  The solution implemented here uses
+block-gzipped fasta files with access provided by the pysam.FastaFile
+module.  Taken together, bgzf and pysam enable compression and fast
+random access.
 
-Taken together, bgzf and pysam enable compression and fast random
-access.
+Space efficiency across snapshots is well-served by using hardlinks on 
 
-Space efficiency across snapshots 
+
 
 Although FastaFile works very well with large (multigigabyte) files,
 the desire for 
@@ -44,6 +42,39 @@ the desire for
 A new module, fabgz, was written to provide
 
 
+
+
+* distinguish internal ids from namespaced aliases (even for sha512)
+
+
+
+Filesystem Layout
+!!!!!!!!!!!!!!!!!
+
+/opt/seqrepo/data/
+└── master
+    ├── aliases.sqlite3
+    ├── aliases.sqlite3-journal
+    └── sequences
+        ├── 2016
+        │   └── 0701
+     ///////
+        │   └── 0713
+     ///////
+        │   └── 0819
+        │       ├── 230638
+        │       │   └── 1471647998.6470723.fa.bgz
+        │       ├── 230647
+        │       │   └── 1471648007.2638052.fa.bgz
+     ///////
+        ├── db.sqlite3
+        └── db.sqlite3-journal
+
+
+
+
+Managing SeqRepo snapshots
+!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 
@@ -110,39 +141,6 @@ sdb = seqrepo.connect(uri)
          
 seq = sdb.fetch(
 
-
-
-
-* Layout 1
-
-seqrepo/
-  interface.py
-  filesystem.py
-seqstore/
-  interface.py
-  filesystem.py
-seqalias/
-  interface.py
-  sqlite.py
- 
-* Layout 2
-
-  ::
-     seqstore/
-       interface.py
-       seqfetcher.py
-       fabgz.py
-       fadir/
-       seqrepo/
-         cli.py
-	 seqrepo.py
-	 seqaliasdb.py
-       composite.py
-
-   interface::
-     fetcher: fetch, __getitem__
-     collection (isa fetcher): keys/__dir__, __contains__, __iter__/__next__, __len__
-     writer: store, __setitem__
 
 
 * Q: What is the structure of keys?

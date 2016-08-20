@@ -44,9 +44,9 @@ def parse_arguments():
     ap = subparsers.add_parser("init", help="initialize bsa directory")
     ap.set_defaults(func=init)
 
-    # load-fasta
-    ap = subparsers.add_parser("load-fasta", help="load a single fasta file")
-    ap.set_defaults(func=load_fasta)
+    # load
+    ap = subparsers.add_parser("load", help="load a single fasta file")
+    ap.set_defaults(func=load)
     ap.add_argument(
         "fasta_files",
         nargs="+",
@@ -104,12 +104,12 @@ def init(opts):
     sr = seqrepo.SeqRepo(opts.dir)  # flake8: noqa
 
 
-def load_fasta(opts):
+def load(opts):
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
     sr = seqrepo.SeqRepo(opts.dir)
     for fn in opts.fasta_files:
         if fn.endswith(".gz") or fn.endswith(".bgz"):
-            fh = gzip_open_encoded(fn, encoding="ascii")
+            fh = gzip_open_encoded(fn, encoding="ascii")  # PY2BAGGAGE
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
         logger.info("Opened " + fn)
