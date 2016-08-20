@@ -19,6 +19,7 @@ import pprint
 import re
 
 from Bio import SeqIO
+import tqdm
 
 import seqrepo
 from .py2compat import gzip_open_encoded
@@ -106,14 +107,24 @@ def init(opts):
 
 def load(opts):
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
+    disable_bar = opts.verbose > 0  # if > 0, we'll get log messages
+
     sr = seqrepo.SeqRepo(opts.dir)
-    for fn in opts.fasta_files:
+
+    tot_seqs_added = tot_aliases_added = 0
+    fn_bar = tqdm.tqdm(opts.fasta_files, unit="file", disable=disable_bar)
+    for fn in fn_bar:
+        fn_bar.set_description(os.path.basename(fn))
         if fn.endswith(".gz") or fn.endswith(".bgz"):
             fh = gzip_open_encoded(fn, encoding="ascii")  # PY2BAGGAGE
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
         logger.info("Opened " + fn)
-        for rec in SeqIO.parse(fh, "fasta"):
+        seq_bar = tqdm.tqdm(SeqIO.parse(fh, "fasta"),
+                            unit=" seqs", disable=disable_bar, leave=False)
+        for rec in seq_bar:
+            seq_bar.set_description("added {ns} seqs, {na} aliases".format(
+                ns = tot_seqs_added, na = tot_aliases_added))
             seq = str(rec.seq)
             if "|" in rec.id:
                 aliases = [m.groupdict() for m in defline_re.finditer(rec.id)]
@@ -122,7 +133,9 @@ def load(opts):
                         a["namespace"] = "ncbi"
             else:
                 aliases = [{"namespace": opts.namespace, "alias": rec.id}]
-            sr.store(seq, aliases)
+            n_seqs_added, n_aliases_added = sr.store(seq, aliases)
+            tot_seqs_added += n_seqs_added
+            tot_aliases_added += n_aliases_added
 
 
 def log(opts):

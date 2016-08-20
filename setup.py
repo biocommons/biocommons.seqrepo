@@ -42,7 +42,9 @@ setup(
     install_requires = [
         "biopython>=1.66",
         "bioutils>=0.1.5",
+        "ipython",
         "pysam",
+        "tqdm",
         "yoyo-migrations",
     ],
 

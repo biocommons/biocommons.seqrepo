@@ -77,6 +77,8 @@ class SeqRepo(object):
         if self._upcase:
             seq = seq.upper()
 
+        n_seqs_added = n_aliases_added = 0
+
         sha512 = bioutils.digests.seq_sha512(seq)
         seq_id = sha512
 
@@ -102,6 +104,7 @@ class SeqRepo(object):
             self._pending_sequences += 1
             self._pending_sequences_len += len(seq)
             self._pending_aliases += len(seq_aliases)
+            n_seqs_added += 1
         else:
             logger.debug("Sequence exists: " + msg)
 
@@ -116,11 +119,12 @@ class SeqRepo(object):
             for _, namespace, alias in upd_tuples:
                 self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
-
+            n_aliases_added += len(upd_tuples)
         if (self._pending_sequences > 20000 or self._pending_aliases > 60000 or self._pending_sequences_len > 1e9):
             logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
                         "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self))
             self.commit()
+        return n_seqs_added, n_aliases_added
 
     def commit(self):
         self.sequences.commit()
