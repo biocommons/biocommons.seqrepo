@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from seqrepo.cli import (init, load_fasta)
+from seqrepo.cli import (init, load)
 
 
 @pytest.fixture
@@ -18,6 +18,7 @@ def opts():
     opts.dir = os.path.join(tempfile.mkdtemp(prefix="seqrepo_pytest_"), "seqrepo")
     opts.fasta_files = [os.path.join(test_data_dir, "sequences.fa.gz")]
     opts.namespace = "test"
+    opts.verbose = 0
     return opts
 
 
@@ -26,5 +27,5 @@ def test_00_init(opts):
     assert os.path.exists(opts.dir)
 
 
-def test_20_load_fasta(opts):
-    load_fasta(opts)
+def test_20_load(opts):
+    load(opts)

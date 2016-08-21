@@ -11,6 +11,11 @@ from .py2compat import makedirs
 
 logger = logging.getLogger(__name__)
 
+# commit thresholds: commit when any one is exceeded
+ct_n_seqs = 20000
+ct_n_aliases = 60000
+ct_n_residues = 1e9
+
 
 class SeqRepo(object):
     """Implements a filesystem-backed non-redundant repository of
@@ -88,6 +93,9 @@ class SeqRepo(object):
             aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
         if seq_id not in self.sequences:
             logger.info("Storing " + msg)
+            if len(seq) > ct_n_residues:
+                logger.debug("Precommit for large sequence")
+                self.commit()
             self.sequences.store(seq_id, seq)
             seq_aliases = [
                 {"namespace": "sha512",
@@ -120,7 +128,7 @@ class SeqRepo(object):
                 self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
             n_aliases_added += len(upd_tuples)
-        if (self._pending_sequences > 20000 or self._pending_aliases > 60000 or self._pending_sequences_len > 1e9):
+        if (self._pending_sequences > ct_n_seqs or self._pending_aliases > ct_n_aliases or self._pending_sequences_len > ct_n_residues):
             logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
                         "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self))
             self.commit()

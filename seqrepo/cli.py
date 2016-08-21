@@ -111,7 +111,7 @@ def load(opts):
 
     sr = seqrepo.SeqRepo(opts.dir)
 
-    tot_seqs_added = tot_aliases_added = 0
+    n_seqs_seen = n_seqs_added = n_aliases_added = 0
     fn_bar = tqdm.tqdm(opts.fasta_files, unit="file", disable=disable_bar)
     for fn in fn_bar:
         fn_bar.set_description(os.path.basename(fn))
@@ -123,8 +123,9 @@ def load(opts):
         seq_bar = tqdm.tqdm(SeqIO.parse(fh, "fasta"),
                             unit=" seqs", disable=disable_bar, leave=False)
         for rec in seq_bar:
-            seq_bar.set_description("added {ns} seqs, {na} aliases".format(
-                ns = tot_seqs_added, na = tot_aliases_added))
+            n_seqs_seen += 1
+            seq_bar.set_description("seen: {nss} seqs; added: {nsa} seqs, {naa} aliases".format(
+                nss = n_seqs_seen, nsa = n_seqs_added, naa = n_aliases_added))
             seq = str(rec.seq)
             if "|" in rec.id:
                 aliases = [m.groupdict() for m in defline_re.finditer(rec.id)]
@@ -133,9 +134,9 @@ def load(opts):
                         a["namespace"] = "ncbi"
             else:
                 aliases = [{"namespace": opts.namespace, "alias": rec.id}]
-            n_seqs_added, n_aliases_added = sr.store(seq, aliases)
-            tot_seqs_added += n_seqs_added
-            tot_aliases_added += n_aliases_added
+            n_sa, n_aa = sr.store(seq, aliases)
+            n_seqs_added += n_sa
+            n_aliases_added += n_aa
 
 
 def log(opts):

@@ -27,7 +27,7 @@ venv:
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
 
-#=> setup: 
+#=> setup: setup/upgrade virtual environment (in venv)
 .PHONY: setup
 setup: venv etc/develop.reqs etc/install.reqs
 	source venv/bin/activate; \
