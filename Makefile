@@ -95,7 +95,7 @@ clean:
 .PHONY: cleaner
 cleaner: clean
 	rm -fr .cache *.egg-info build dist doc/_build
-	find . \( -name \*.pyc -o -name \*.orig \) -print0 | xargs -0r rm
+	find . \( -name \*.pyc -o -name \*.orig -o -name \*.rej \) -print0 | xargs -0r rm
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 
 #=> cleaner: remove files and directories that require more time/network fetches to rebuild

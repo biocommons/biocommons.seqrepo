@@ -17,12 +17,14 @@ import logging
 import os
 import pprint
 import re
+import shutil
+import stat
 
 from Bio import SeqIO
 import tqdm
 
 import seqrepo
-from .py2compat import gzip_open_encoded
+from .py2compat import gzip_open_encoded, makedirs
 
 logger = logging.getLogger(__name__)
 
@@ -58,13 +60,21 @@ def parse_arguments():
         required=True,
         help="namespace name (e.g., ncbi, ensembl, lrg)", )
 
-    # start-shell
-    ap = subparsers.add_parser("start-shell", help="start interactive shell with initialized seqrepo")
-    ap.set_defaults(func=start_shell)
-
     # show-status
     ap = subparsers.add_parser("show-status", help="show seqrepo status")
     ap.set_defaults(func=show_status)
+
+    # snapshot
+    ap = subparsers.add_parser("snapshot", help="create a new read-only seqrepo snapshot")
+    ap.set_defaults(func=snapshot)
+    ap.add_argument(
+        "destination_directory",
+        help="destination directory name (must not already exist)"
+        )
+
+    # start-shell
+    ap = subparsers.add_parser("start-shell", help="start interactive shell with initialized seqrepo")
+    ap.set_defaults(func=start_shell)
 
     # upgrade
     ap = subparsers.add_parser("upgrade", help="upgrade bsa database and directory")
@@ -94,6 +104,7 @@ def export(opts):
         print(">" + " ".join(aliases))
         for l in wrap_lines(srec["seq"], 100):
             print(l)
+
 
 def init(opts):
     if os.path.exists(opts.dir) and len(os.listdir(opts.dir)) > 0:
@@ -150,6 +161,72 @@ def show_status(opts):
     print("aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, {sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(
         sa=sr.aliases.stats()))
     return sr
+
+
+def snapshot(opts):
+    """snapshot a seqrepo data directory by hardlinking sequence files,
+    copying sqlite databases, and remove write permissions from directories
+
+    """
+    src_dir = os.path.realpath(opts.dir)
+    dst_dir = opts.destination_directory
+
+    if dst_dir.startswith("/"):
+        # use as-is
+        pass
+    else:
+        # interpret dst_dir as relative to parent dir of opts.dir
+        dst_dir = os.path.join(src_dir, '..', dst_dir)
+
+    dst_dir = os.path.realpath(dst_dir)
+
+    if os.path.commonpath([src_dir, dst_dir]).startswith(src_dir):
+        raise seqrepo.SeqRepoError("Cannot nest seqrepo directories "
+        "({} is within {})".format(dst_dir, src_dir))
+
+    logger.info("src_dir = " + src_dir)
+    logger.info("dst_dir = " + dst_dir)
+        
+    if os.path.exists(dst_dir):
+        raise IOError(dst_dir + ": File exists")
+    makedirs(dst_dir, exist_ok=True)
+    
+    wd = os.getcwd()
+    os.chdir(src_dir)
+
+    # make destination directories (walk is top-down)
+    for rp in (os.path.join(dirpath, dirname)
+               for dirpath, dirnames, _ in os.walk(".")
+               for dirname in dirnames):
+        dp = os.path.join(dst_dir, rp)
+        os.mkdir(dp)
+
+    # hard link sequence files
+    for rp in (os.path.join(dirpath, filename)
+               for dirpath, _, filenames in os.walk(".")
+               for filename in filenames
+               if ".bgz" in filename):
+        dp = os.path.join(dst_dir, rp)
+        os.link(rp, dp)
+
+    # copy sqlite databases
+    for rp in ["aliases.sqlite3", "sequences/db.sqlite3"]:
+        dp = os.path.join(dst_dir, rp)
+        shutil.copyfile(rp, dp)
+
+    # drop write perms within destination_directory
+    mode_aw = stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH
+    def _drop_write(p):
+        mode = os.lstat(p).st_mode
+        new_mode = mode & ~mode_aw
+        os.chmod(p, new_mode)
+    for dp in (os.path.join(dirpath, dirent)
+               for dirpath, dirnames, filenames in os.walk(dst_dir)
+               for dirent in dirnames + filenames):
+        _drop_write(dp)
+    _drop_write(dst_dir)
+
+    os.chdir(wd)
 
 
 def start_shell(opts):
