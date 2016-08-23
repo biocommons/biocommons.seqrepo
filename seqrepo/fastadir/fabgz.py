@@ -2,12 +2,15 @@
 
 A file may not currently be opened for reading and writing at the same time
 
+Files must be named as .fa.bgz to be recognized as blocked gzip compressed
+
 """
 
 import io
 import logging
 import os
 import re
+import stat
 import subprocess
 
 import six
@@ -68,6 +71,7 @@ class FabgzReader(object):
 
 
 class FabgzWriter(object):
+    # TODO: Use temp filename until indexes are built and perms are set, then rename
     def __init__(self, filename):
         super(FabgzWriter, self).__init__()
         self.filename = filename
@@ -104,7 +108,16 @@ class FabgzWriter(object):
             self._fh = None
             subprocess.check_call([bgzip_exe, "--force", self._basepath])
             os.rename(self._basepath + ".gz", self.filename)
+
+            # open file with FastaFile to create indexes, then make all read-only
+            _fh = FastaFile(self.filename)
+            _fh.close()
+            os.chmod(self.filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+            os.chmod(self.filename + ".fai", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+            os.chmod(self.filename + ".gzi", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+
             logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
+
 
     def __del__(self):
         if self._fh is not None:

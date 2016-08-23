@@ -2,15 +2,13 @@
 
 * add release command
 
+* add cleanup command
+
 * Add SequenceProxy back into fetch so that sr["NC_000001.10"][6000000:6000020] doesn't suck
 
 * reconsider fetch interface esp w.r.t. namespace or not
 
 * add documentation
-
-* when closing fabgz file, 1) build index, 2) chmod a-w file and index
-
-* at some point, chmod a-w fastadir
 
 
 * When database is locked, you get this mess:
