@@ -19,31 +19,34 @@ help:
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
-#=> venv: make a virtual environment
+#=> venv: make a Python 3 virtual environment
 .PHONY: venv
 venv:
 	pyvenv venv; \
 	source venv/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
+
+#=> setup: setup/upgrade *in current environment*
+.PHONY: setup
+setup: etc/develop.reqs etc/install.reqs
+	pip install --upgrade -r $(word 1,$^)
+	pip install --upgrade -r $(word 2,$^)
+
+#=> develop: install package in develop mode in venv
+.PHONY: develop
+develop: venv
+	source venv/bin/activate; \
+	make setup; \
+	python setup.py $@
 	@echo "################################################################################"
 	@echo "###     Don't forget to source venv/bin/activate to use this environment     ###"
 	@echo "################################################################################"
 
-#=> setup: setup/upgrade in current environment
-.PHONY: setup
-setup: etc/develop.reqs etc/install.reqs
-	source venv/bin/activate; \
-	pip install --upgrade -r $(word 2,$^); \
-	pip install --upgrade -r $(word 3,$^); \
-	make develop
-
-
-#=> develop: install package in develop mode
 #=> install: install package
 #=> bdist bdist_egg bdist_wheel build sdist: distribution options
-.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist develop install
-bdist bdist_egg bdist_wheel build sdist develop install: %:
+.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist install
+bdist bdist_egg bdist_wheel build sdist install: %:
 	python setup.py $@
 
 #=> upload: upload to pypi
@@ -101,7 +104,7 @@ cleaner: clean
 #=> cleaner: remove files and directories that require more time/network fetches to rebuild
 .PHONY: cleanest distclean
 cleanest distclean: cleaner
-	rm -fr .eggs .tox
+	rm -fr .eggs .tox venv
 
 
 ## <LICENSE>
