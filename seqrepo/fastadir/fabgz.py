@@ -17,8 +17,6 @@ import six
 
 from pysam import FastaFile
 
-from ..exceptions import SeqRepoError
-
 line_width = 100
 logger = logging.getLogger(__name__)
 
@@ -38,10 +36,10 @@ def _check_bgzip_version(exe):
     try:
         bgzip_version = _get_version(exe)
     except Exception as e:
-        raise SeqRepoError("Could not find version string in {exe} ({e})".format(exe=exe, e="foo"))
+        raise RuntimeError("Could not find version string in {exe} ({e})".format(exe=exe, e="foo"))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
-        raise SeqRepoError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
+        raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
             exe=exe, ev=bgzip_version, rv=min_bgzip_version))
     logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
 
@@ -78,11 +76,11 @@ class FabgzWriter(object):
         self._fh = None
         self._basepath, suffix = os.path.splitext(self.filename)
         if suffix != ".bgz":
-            raise SeqRepoError("Path must end with .bgz")
+            raise RuntimeError("Path must end with .bgz")
 
         files = [self.filename, self.filename + ".fai", self.filename + ".gzi", self._basepath]
         if any(os.path.exists(fn) for fn in files):
-            raise SeqRepoError("One or more target files already exists ({})".format(", ".join(files)))
+            raise RuntimeError("One or more target files already exists ({})".format(", ".join(files)))
 
         self._fh = io.open(self._basepath, encoding="ascii", mode="w")
         logger.debug("opened " + self.filename + " for writing")

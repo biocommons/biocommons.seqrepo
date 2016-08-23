@@ -15,7 +15,6 @@ except pkg_resources.DistributionNotFound as e:
 
 logger.info(__name__ + " " + __version__)
 
-from .exceptions import SeqRepoError, SequenceNotFoundError
 from .seqrepo import SeqRepo
 
 # <LICENSE>

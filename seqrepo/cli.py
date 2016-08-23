@@ -101,7 +101,7 @@ def export(opts):
 
 def init(opts):
     if os.path.exists(opts.dir) and len(os.listdir(opts.dir)) > 0:
-        raise seqrepo.SeqRepoError("{opts.dir} exists and is not empty".format(opts=opts))
+        raise IOError("{opts.dir} exists and is not empty".format(opts=opts))
     sr = seqrepo.SeqRepo(opts.dir)  # flake8: noqa
 
 
