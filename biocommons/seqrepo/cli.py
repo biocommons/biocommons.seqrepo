@@ -1,6 +1,6 @@
 """command line interface to a local SeqRepo repository
 
-https://github.com/biocommons/seqrepo
+https://github.com/biocommons/biocommons.seqrepo
 
 Typical usage is via the `seqrepo` script::
 
@@ -23,7 +23,7 @@ import stat
 from Bio import SeqIO
 import tqdm
 
-import seqrepo
+from . import __version__, SeqRepo
 from .py2compat import gzip_open_encoded, makedirs
 
 logger = logging.getLogger(__name__)
@@ -32,10 +32,11 @@ logger = logging.getLogger(__name__)
 def parse_arguments():
     top_p = argparse.ArgumentParser(
         description=__doc__.split("\n\n")[0], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        epilog="seqrepo " + seqrepo.__version__ + ". See https://github.com/biocommons/seqrepo for more information")
+        epilog="seqrepo " + __version__ +
+        ". See https://github.com/biocommons/biocommons.seqrepo for more information")
     top_p.add_argument("--dir", "-d", help="seqrepo data directory; created by init", required=True)
     top_p.add_argument("--verbose", "-v", action="count", default=0, help="be verbose; multiple accepted")
-    top_p.add_argument("--version", action="version", version=seqrepo.__version__)
+    top_p.add_argument("--version", action="version", version=__version__)
 
     subparsers = top_p.add_subparsers(title='subcommands')
 
@@ -97,7 +98,7 @@ def export(opts):
         for i in range(0, len(seq), line_width):
             yield seq[i:i + line_width]
 
-    sr = seqrepo.SeqRepo(opts.dir)
+    sr = SeqRepo(opts.dir)
     for srec,arecs in sr:
         nsad = convert_alias_records_to_ns_dict(arecs)
         aliases = ["{ns}:{a}".format(ns=ns, a=a) for ns,aliases in nsad.items() for a in aliases]
@@ -109,14 +110,14 @@ def export(opts):
 def init(opts):
     if os.path.exists(opts.dir) and len(os.listdir(opts.dir)) > 0:
         raise IOError("{opts.dir} exists and is not empty".format(opts=opts))
-    sr = seqrepo.SeqRepo(opts.dir, writeable=True)  # flake8: noqa
+    sr = SeqRepo(opts.dir, writeable=True)  # flake8: noqa
 
 
 def load(opts):
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
     disable_bar = opts.verbose > 0  # if > 0, we'll get log messages
 
-    sr = seqrepo.SeqRepo(opts.dir, writeable=True)
+    sr = SeqRepo(opts.dir, writeable=True)
 
     n_seqs_seen = n_seqs_added = n_aliases_added = 0
     fn_bar = tqdm.tqdm(opts.fasta_files, unit="file", disable=disable_bar)
@@ -151,8 +152,8 @@ def show_status(opts):
                        for dirpath, dirnames, filenames in os.walk(opts.dir)
                        for filename in filenames)
 
-    sr = seqrepo.SeqRepo(opts.dir)
-    print("seqrepo {seqrepo.__version__}".format(seqrepo=seqrepo))
+    sr = SeqRepo(opts.dir)
+    print("seqrepo {version}".format(version=__version__))
     print("root directory: {sr._root_dir}, {ts:.1f} GB".format(sr=sr, ts=tot_size/1e9))
     print("backends: fastadir (schema {fd_v}), seqaliasdb (schema {sa_v}) ".format(
         fd_v=sr.sequences.schema_version(), sa_v=sr.aliases.schema_version()))
@@ -181,7 +182,7 @@ def snapshot(opts):
     dst_dir = os.path.realpath(dst_dir)
 
     if os.path.commonpath([src_dir, dst_dir]).startswith(src_dir):
-        raise seqrepo.SeqRepoError("Cannot nest seqrepo directories "
+        raise RuntimeError("Cannot nest seqrepo directories "
         "({} is within {})".format(dst_dir, src_dir))
 
     logger.info("src_dir = " + src_dir)
@@ -236,7 +237,7 @@ def start_shell(opts):
 
 
 def upgrade(opts):
-    sr = seqrepo.SeqRepo(opts.dir, writeable=True)
+    sr = SeqRepo(opts.dir, writeable=True)
     print("upgraded to schema version {}".format(sr.seqinfo.schema_version()))
 
 

@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 
-from seqrepo.seqaliasdb import SeqAliasDB
+from biocommons.seqrepo.seqaliasdb import SeqAliasDB
 
 
 def test_seqinfo():

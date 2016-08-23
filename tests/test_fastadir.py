@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from seqrepo.fastadir import FastaDir
+from biocommons.seqrepo.fastadir import FastaDir
 
 
 def test_write_reread():

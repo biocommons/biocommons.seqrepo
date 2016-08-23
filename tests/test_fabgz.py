@@ -4,7 +4,7 @@ import tempfile
 
 import six
 
-from seqrepo.fastadir.fabgz import FabgzReader, FabgzWriter
+from biocommons.seqrepo.fastadir.fabgz import FabgzReader, FabgzWriter
 
 seed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 sequences = {"l{l}".format(l=l): seed * l for l in (1, 10, 100, 1000, 10000)}

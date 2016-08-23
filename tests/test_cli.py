@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from seqrepo.cli import (init, load)
+from biocommons.seqrepo.cli import (init, load)
 
 
 @pytest.fixture

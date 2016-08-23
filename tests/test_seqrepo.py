@@ -1,6 +1,6 @@
 import pytest
 
-from seqrepo.seqrepo import SeqRepo
+from biocommons.seqrepo import SeqRepo
 
 
 @pytest.fixture(scope="session")
