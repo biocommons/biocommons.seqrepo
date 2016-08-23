@@ -6,7 +6,7 @@ from seqrepo.seqrepo import SeqRepo
 @pytest.fixture(scope="session")
 def seqrepo(tmpdir_factory):
     dir = str(tmpdir_factory.mktemp('seqrepo'))
-    return SeqRepo(dir)
+    return SeqRepo(dir, writeable=True)
 
 
 def test_create(seqrepo):

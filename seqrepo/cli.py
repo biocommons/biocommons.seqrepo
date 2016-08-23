@@ -102,14 +102,14 @@ def export(opts):
 def init(opts):
     if os.path.exists(opts.dir) and len(os.listdir(opts.dir)) > 0:
         raise IOError("{opts.dir} exists and is not empty".format(opts=opts))
-    sr = seqrepo.SeqRepo(opts.dir)  # flake8: noqa
+    sr = seqrepo.SeqRepo(opts.dir, writeable=True)  # flake8: noqa
 
 
 def load(opts):
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
     disable_bar = opts.verbose > 0  # if > 0, we'll get log messages
 
-    sr = seqrepo.SeqRepo(opts.dir)
+    sr = seqrepo.SeqRepo(opts.dir, writeable=True)
 
     n_seqs_seen = n_seqs_added = n_aliases_added = 0
     fn_bar = tqdm.tqdm(opts.fasta_files, unit="file", disable=disable_bar)
@@ -171,7 +171,7 @@ def shell(opts):
 
 
 def upgrade(opts):
-    sr = seqrepo.SeqRepo(opts.dir)
+    sr = seqrepo.SeqRepo(opts.dir, writeable=True)
     print("upgraded to schema version {}".format(sr.seqinfo.schema_version()))
 
 

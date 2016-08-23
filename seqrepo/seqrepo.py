@@ -34,7 +34,7 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir, upcase=True):
+    def __init__(self, root_dir, writeable=False, upcase=True):
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -43,11 +43,13 @@ class SeqRepo(object):
         self._pending_sequences_len = 0
         self._pending_aliases = 0
         self._logger = logger    # avoids issue with logger going out of scope before __del__
+        self._writeable = writeable
 
-        makedirs(self._root_dir, exist_ok=True)
+        if self._writeable:
+            makedirs(self._root_dir, exist_ok=True)
 
-        self.sequences = FastaDir(self._seq_path)
-        self.aliases = SeqAliasDB(self._db_path)
+        self.sequences = FastaDir(self._seq_path, writeable=self._writeable)
+        self.aliases = SeqAliasDB(self._db_path, writeable=self._writeable)
 
     def fetch(self, alias, namespace=None, start=None, end=None):
         recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
@@ -79,6 +81,9 @@ class SeqRepo(object):
             yield (srec, arecs)
 
     def store(self, seq, nsaliases):
+        if not self._writeable:
+            raise RuntimeError("Cannot write -- opened read-only")
+
         if self._upcase:
             seq = seq.upper()
 

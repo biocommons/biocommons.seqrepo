@@ -11,7 +11,7 @@ def test_seqinfo():
 
     db_path = os.path.join(tmpdir, "aliases.sqlite3")
 
-    db = SeqAliasDB(db_path)
+    db = SeqAliasDB(db_path, writeable=True)
 
     # A:1 -> q1
     aid = db.store_alias("q1", "A", "1")

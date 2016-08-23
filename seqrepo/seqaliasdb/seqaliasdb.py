@@ -18,16 +18,19 @@ if sqlite3.sqlite_version_info < min_sqlite_version_info:
 
 
 
+
 class SeqAliasDB(object):
     """Implements a sqlite database of sequence aliases
 
     """
 
-    def __init__(self, db_path):
+    def __init__(self, db_path, writeable=False):
         self._db_path = db_path
         self._db = None
+        self._writeable = writeable
 
-        self._upgrade_db()
+        if self._writeable:
+            self._upgrade_db()
 
         self._db = sqlite3.connect(self._db_path)
         schema_version = self.schema_version()
@@ -93,7 +96,6 @@ class SeqAliasDB(object):
 
         logger.debug("Executing: " + sql)
         return self._db.execute(sql, params)
-            
 
     def schema_version(self):
         """return schema version as integer"""
@@ -116,6 +118,10 @@ class SeqAliasDB(object):
         associations are discarded silently.
 
         """
+
+        if not self._writeable:
+            raise RuntimeError("Cannot write -- opened read-only")
+
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         try:
             c = self._db.execute("insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)",

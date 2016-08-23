@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 expected_schema_version = 1
 
 
+
+
 class FastaDir(BaseReader, BaseWriter):
     """This class provides simple a simple key-value interface to a
     directory of compressed fasta files.
@@ -51,17 +53,18 @@ class FastaDir(BaseReader, BaseWriter):
 
     """
 
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, writeable=False):
         """Creates a new sequence repository if necessary, and then opens it"""
 
         self._root_dir = root_dir
         self._db_path = os.path.join(self._root_dir, "db.sqlite3")
         self._writing = None
         self._db = None
+        self._writeable = writeable
 
-        makedirs(self._root_dir, exist_ok=True)
-
-        self._upgrade_db()
+        if self._writeable:
+            makedirs(self._root_dir, exist_ok=True)
+            self._upgrade_db()
 
         self._db = sqlite3.connect(self._db_path)
         schema_version = self.schema_version()
@@ -136,6 +139,9 @@ class FastaDir(BaseReader, BaseWriter):
         a fasta file and a reference to it in the sqlite3 database.
 
         """
+
+        if not self._writeable:
+            raise RuntimeError("Cannot write -- opened read-only")
 
         # open a file for writing if necessary
         # path: <root_dir>/<reldir>/<basename>

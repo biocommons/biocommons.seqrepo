@@ -10,7 +10,7 @@ def test_write_reread():
     # PY2BAGGAGE: Switch to TemporaryDirectory
     tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_")
 
-    fd = FastaDir(tmpdir)
+    fd = FastaDir(tmpdir, writeable=True)
 
     assert fd.store("1", "seq1") == "1"
     assert fd.store("2", "seq2") == "2"
