@@ -58,17 +58,13 @@ def parse_arguments():
         required=True,
         help="namespace name (e.g., ncbi, ensembl, lrg)", )
 
-    # log
-    ap = subparsers.add_parser("log", help="show seqrepo database log")
-    ap.set_defaults(func=log)
+    # start-shell
+    ap = subparsers.add_parser("start-shell", help="start interactive shell with initialized seqrepo")
+    ap.set_defaults(func=start_shell)
 
-    # status
-    ap = subparsers.add_parser("shell", help="start interactive shell with initialized seqrepo")
-    ap.set_defaults(func=shell)
-
-    # status
-    ap = subparsers.add_parser("status", help="show seqrep status")
-    ap.set_defaults(func=status)
+    # show-status
+    ap = subparsers.add_parser("show-status", help="show seqrepo status")
+    ap.set_defaults(func=show_status)
 
     # upgrade
     ap = subparsers.add_parser("upgrade", help="upgrade bsa database and directory")
@@ -139,15 +135,7 @@ def load(opts):
             n_aliases_added += n_aa
 
 
-def log(opts):
-    sr = seqrepo.SeqRepo(opts.dir)
-    c = sr.seqinfo._db.cursor()
-    c.execute("select * from log order by ts")
-    for r in c:
-        print(r)
-
-
-def status(opts):
+def show_status(opts):
     tot_size = sum(os.path.getsize(os.path.join(dirpath,filename))
                        for dirpath, dirnames, filenames in os.walk(opts.dir)
                        for filename in filenames)
@@ -164,8 +152,8 @@ def status(opts):
     return sr
 
 
-def shell(opts):
-    sr = status(opts)
+def start_shell(opts):
+    sr = show_status(opts)
     import IPython
     IPython.embed(display_banner=False)
 
