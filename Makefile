@@ -26,17 +26,17 @@ venv:
 	source venv/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
+	@echo "################################################################################"
+	@echo "###     Don't forget to source venv/bin/activate to use this environment     ###"
+	@echo "################################################################################"
 
-#=> setup: setup/upgrade virtual environment (in venv)
+#=> setup: setup/upgrade in current environment
 .PHONY: setup
-setup: venv etc/develop.reqs etc/install.reqs
+setup: etc/develop.reqs etc/install.reqs
 	source venv/bin/activate; \
 	pip install --upgrade -r $(word 2,$^); \
 	pip install --upgrade -r $(word 3,$^); \
 	make develop
-	@echo "################################################################################"
-	@echo "###     Don't forget to source venv/bin/activate to use this environment     ###"
-	@echo "################################################################################"
 
 
 #=> develop: install package in develop mode

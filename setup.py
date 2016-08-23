@@ -6,6 +6,7 @@ package_name = "seqrepo"
 short_description = open("doc/short_description.txt").read()
 long_description = open("README.rst").read()
 
+# namespace_package = "".join(package_name.split(".")[:-1])
 setup(
     author = package_name + " Committers",
     description = short_description,
