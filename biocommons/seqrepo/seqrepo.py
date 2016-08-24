@@ -89,8 +89,8 @@ class SeqRepo(object):
 
         n_seqs_added = n_aliases_added = 0
 
-        sha512 = bioutils.digests.seq_sha512(seq)
-        seq_id = sha512
+        seqhash = bioutils.digests.seq_seqhash(seq)
+        seq_id = seqhash
 
         # add sequence if not present
         msg = "sha512:{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
@@ -103,8 +103,10 @@ class SeqRepo(object):
                 self.commit()
             self.sequences.store(seq_id, seq)
             seq_aliases = [
+                {"namespace": "sh",
+                 "alias": seqhash},
                 {"namespace": "sha512",
-                 "alias": sha512},
+                 "alias": bioutils.digests.seq_sha512(seq)},
                 {"namespace": "sha1",
                  "alias": bioutils.digests.seq_sha1(seq)},
                 {"namespace": "md5",
