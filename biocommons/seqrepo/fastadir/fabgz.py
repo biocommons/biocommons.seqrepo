@@ -92,7 +92,7 @@ class FabgzWriter(object):
                 yield seq[i:i + line_width]
 
         if seq_id not in self._added:
-            self._fh.write(six.u(">" + seq_id + "\n"))
+            self._fh.write(six.u(">") + seq_id + six.u("\n"))
             # self._fh.writelines(six.u(l+"\n") for l in textwrap.wrap(seq, line_width))
             for l in wrap_lines(seq, line_width):
                 self._fh.write(six.u(l) + "\n")

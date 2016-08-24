@@ -51,8 +51,8 @@ setup(
     },
 
     install_requires = [
-        "biopython>=1.66",
-        "bioutils>=0.1.5",
+        "biopython>=1.67",
+        "bioutils==0.2.0a1",
         "ipython",
         "pysam",
         "tqdm",
