@@ -15,8 +15,8 @@ setup(
     name = package_name,
     namespace_packages = [namespace_package],
     package_data = {
-        "seqrepo.fastadir": ["_data/migrations/*"],
-        "seqrepo.seqaliasdb": ["_data/migrations/*"],
+        "biocommons.seqrepo.fastadir": ["_data/migrations/*"],
+        "biocommons.seqrepo.seqaliasdb": ["_data/migrations/*"],
         },
     packages = find_packages(),
     use_scm_version = True,
