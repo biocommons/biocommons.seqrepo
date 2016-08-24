@@ -148,10 +148,10 @@ from public site for manual installation, and use the same source to
 seed a docker container.)
 
 
-.. |pypi_rel| image:: https://badge.fury.io/py/seqrepo.png
-  :target: https://pypi.python.org/pypi?name=seqrepo
+.. |pypi_rel| image:: https://badge.fury.io/py/biocommons.seqrepo.png
+  :target: https://pypi.python.org/pypi?name=biocommons.seqrepo
   :align: middle
 
-.. |ci_rel| image:: https://travis-ci.org/biocommons/seqrepo.svg?branch=master
-  :target: https://travis-ci.org/biocommons/seqrepo
+.. |ci_rel| image:: https://travis-ci.org/biocommons/biocommons.seqrepo.svg?branch=master
+  :target: https://travis-ci.org/biocommons/biocommons.seqrepo
   :align: middle 
