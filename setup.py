@@ -26,12 +26,22 @@ setup(
     url = "https://github.com/biocommons/" + package_name,
 
     classifiers = [
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
+        "Intended Audience :: Healthcare Industry",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
-        ],
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "Topic :: Database :: Front-Ends",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    ],
 
     keywords = [
+        'bioinformatics',
     ],
 
     entry_points = {
