@@ -19,6 +19,7 @@ import pprint
 import re
 import shutil
 import stat
+import tempfile
 
 from Bio import SeqIO
 import tqdm
@@ -185,13 +186,17 @@ def snapshot(opts):
         raise RuntimeError("Cannot nest seqrepo directories "
         "({} is within {})".format(dst_dir, src_dir))
 
-    logger.info("src_dir = " + src_dir)
-    logger.info("dst_dir = " + dst_dir)
-        
     if os.path.exists(dst_dir):
         raise IOError(dst_dir + ": File exists")
-    makedirs(dst_dir, exist_ok=True)
+
+    tmp_dir = tempfile.mkdtemp(prefix=dst_dir + ".")
     
+    logger.debug("src_dir = " + src_dir)
+    logger.debug("dst_dir = " + dst_dir)
+    logger.debug("tmp_dir = " + tmp_dir)
+        
+    # TODO: cleanup of tmpdir on failure
+    makedirs(tmp_dir, exist_ok=True)
     wd = os.getcwd()
     os.chdir(src_dir)
 
@@ -199,7 +204,7 @@ def snapshot(opts):
     for rp in (os.path.join(dirpath, dirname)
                for dirpath, dirnames, _ in os.walk(".")
                for dirname in dirnames):
-        dp = os.path.join(dst_dir, rp)
+        dp = os.path.join(tmp_dir, rp)
         os.mkdir(dp)
 
     # hard link sequence files
@@ -207,26 +212,28 @@ def snapshot(opts):
                for dirpath, _, filenames in os.walk(".")
                for filename in filenames
                if ".bgz" in filename):
-        dp = os.path.join(dst_dir, rp)
+        dp = os.path.join(tmp_dir, rp)
         os.link(rp, dp)
 
     # copy sqlite databases
     for rp in ["aliases.sqlite3", "sequences/db.sqlite3"]:
-        dp = os.path.join(dst_dir, rp)
+        dp = os.path.join(tmp_dir, rp)
         shutil.copyfile(rp, dp)
 
-    # drop write perms within destination_directory
+    # recursively drop write perms on snapshot
     mode_aw = stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH
     def _drop_write(p):
         mode = os.lstat(p).st_mode
         new_mode = mode & ~mode_aw
         os.chmod(p, new_mode)
     for dp in (os.path.join(dirpath, dirent)
-               for dirpath, dirnames, filenames in os.walk(dst_dir)
+               for dirpath, dirnames, filenames in os.walk(tmp_dir)
                for dirent in dirnames + filenames):
         _drop_write(dp)
-    _drop_write(dst_dir)
+    _drop_write(tmp_dir)
+    os.rename(tmp_dir, dst_dir)
 
+    logger.info("snapshot created in " + dst_dir)
     os.chdir(wd)
 
 

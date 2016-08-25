@@ -149,7 +149,7 @@ seed a docker container.)
 
 
 .. |pypi_rel| image:: https://badge.fury.io/py/biocommons.seqrepo.png
-  :target: https://pypi.python.org/pypi?name=biocommons.seqrepo
+  :target: https://pypi.org/pypi?name=biocommons.seqrepo
   :align: middle
 
 .. |ci_rel| image:: https://travis-ci.org/biocommons/biocommons.seqrepo.svg?branch=master
