@@ -27,26 +27,25 @@ venv:
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
 
-#=> setup: setup/upgrade *in current environment*
+#=> setup: setup/upgrade packages *in current environment*
 .PHONY: setup
 setup: etc/develop.reqs etc/install.reqs
 	pip install --upgrade -r $(word 1,$^)
 	pip install --upgrade -r $(word 2,$^)
 
-#=> develop: install package in develop mode in venv
-.PHONY: develop
-develop: venv
-	source venv/bin/activate; \
-	make setup; \
-	python setup.py $@
-	@echo "################################################################################"
-	@echo "###     Don't forget to source venv/bin/activate to use this environment     ###"
-	@echo "################################################################################"
+#=> devready: create venv, install prerequisites, install pkg in develop mode
+.PHONY: devready
+devready:
+	(make venv; source venv/bin/activate; make setup develop) >$@.log 2>&1
+	@echo "############################################################################"
+	@echo "###   Don't forget to source venv/bin/activate to use this environment   ###"
+	@echo "############################################################################"
 
+#=> develop: install package in develop mode
 #=> install: install package
 #=> bdist bdist_egg bdist_wheel build sdist: distribution options
-.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist install
-bdist bdist_egg bdist_wheel build sdist install: %:
+.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist install develop
+bdist bdist_egg bdist_wheel build sdist install develop: %:
 	python setup.py $@
 
 #=> upload: upload to pypi

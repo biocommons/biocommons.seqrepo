@@ -147,6 +147,11 @@ TO BE WRITTEN
 from public site for manual installation, and use the same source to
 seed a docker container.)
 
+::
+   push: rsync -HavP /opt/seqrepo/data/* rm6:/mnt/seqrepo/seqrepo/
+
+   pull: rsync -HRavP 52.43.228.164::seqrepo/2016-08-27 /tmp/
+
 
 .. |pypi_rel| image:: https://badge.fury.io/py/biocommons.seqrepo.png
   :target: https://pypi.org/pypi?name=biocommons.seqrepo
