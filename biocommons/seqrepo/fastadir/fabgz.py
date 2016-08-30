@@ -36,7 +36,7 @@ def _check_bgzip_version(exe):
     try:
         bgzip_version = _get_version(exe)
     except Exception as e:
-        raise RuntimeError("Could not find version string in {exe} ({e})".format(exe=exe, e="foo"))
+        raise RuntimeError("Could not find version string in {exe} ({e})".format(exe=exe, e=e))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
         raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
