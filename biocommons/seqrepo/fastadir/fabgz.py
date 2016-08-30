@@ -36,15 +36,13 @@ def _check_bgzip_version(exe):
     try:
         bgzip_version = _get_version(exe)
     except Exception as e:
-        raise RuntimeError("Could not find version string in {exe} ({e})".format(exe=exe, e=e))
+        raise RuntimeError("Could not find version string in {exe}".format(exe=exe))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
         raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
             exe=exe, ev=bgzip_version, rv=min_bgzip_version))
     logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
 
-
-_check_bgzip_version(bgzip_exe)
 
 
 class FabgzReader(object):
@@ -72,6 +70,9 @@ class FabgzWriter(object):
     # TODO: Use temp filename until indexes are built and perms are set, then rename
     def __init__(self, filename):
         super(FabgzWriter, self).__init__()
+
+        _check_bgzip_version(bgzip_exe)
+
         self.filename = filename
         self._fh = None
         self._basepath, suffix = os.path.splitext(self.filename)
