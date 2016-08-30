@@ -51,7 +51,7 @@ class SeqRepo(object):
         self.sequences = FastaDir(self._seq_path, writeable=self._writeable)
         self.aliases = SeqAliasDB(self._db_path, writeable=self._writeable)
 
-    def fetch(self, alias, namespace=None, start=None, end=None):
+    def fetch(self, alias, start=None, end=None, namespace=None):
         recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
 
         seq_ids = set(r["seq_id"] for r in recs)
@@ -64,6 +64,7 @@ class SeqRepo(object):
         return self.sequences.fetch(seq_ids.pop(), start, end)
 
     def __getitem__(self, nsa):
+        # lookup aliases, optionally namespaced, like NM_01234.5 or ncbi:NM_01234.5
         ns, a = nsa.split(":") if ":" in nsa else (None, nsa)
         return self.fetch(alias=a, namespace=ns)
 
@@ -81,6 +82,13 @@ class SeqRepo(object):
             yield (srec, arecs)
 
     def store(self, seq, nsaliases):
+        """nsaliases is a list of dicts, like:
+
+          [{"namespace": "en", "alias": "rose"},
+           {"namespace": "fr", "alias": "rose"},
+           {"namespace": "es", "alias": "rosa"}]
+
+        """
         if not self._writeable:
             raise RuntimeError("Cannot write -- opened read-only")
 
@@ -93,7 +101,7 @@ class SeqRepo(object):
         seq_id = seqhash
 
         # add sequence if not present
-        msg = "sha512:{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
+        msg = "seqhash:{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
             seq_id=seq_id, l=len(seq), na=len(nsaliases),
             aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
         if seq_id not in self.sequences:
