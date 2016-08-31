@@ -6,6 +6,8 @@ biological sequences.  The repository is non-redundant, compressed,
 and journalled, making it efficient to store and transfer multiple
 snapshots.
 
+Released under the Apache License, 2.0.
+
 |ci_rel| |pypi_rel|
 
 
@@ -35,8 +37,8 @@ provide fast random access to compressed sequences.
 For more information, see `<doc/design.rst>`__.
 
 
-Expected deployments and use modes
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Anticipated deployments
+!!!!!!!!!!!!!!!!!!!!!!!
 
 * Local read-only archive, mirrored from public site, accessed via Python API
 * Local read-only archive, mirrored from public site, accessed via REST interface (not yet available)
@@ -59,51 +61,27 @@ are not tested.  Patches to get other systems working would be
 welcomed.
 
 
-
 Quick Start
 !!!!!!!!!!!
 
-Fetching existing sequence repositories
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+On Ubuntu 16.04::
 
-A public instance of seqrepo with dated snapshots is available at on
-seqrepo.biocommons.org.
+  $ sudo apt install -y python3-dev gcc zlib1g-dev tabix
+  $ pip install seqrepo
+  $ rsync -HRavP rsync.biocommons.org::seqrepo/20160828 /usr/local/share/seqrepo/
+  $ seqrepo -d /usr/local/share/seqrepo/20160828 start-shell
+  seqrepo 0.2.3.dev2+neeca95d3ae6e.d20160830
+  root directory: /opt/seqrepo/20160828, 7.9 GB
+  backends: fastadir (schema 1), seqaliasdb (schema 1) 
+  sequences: 773511 sequences, 93005806376 residues, 189 files
+  aliases: 5572724 aliases, 5473237 current, 9 namespaces, 773511 sequences
 
-You can list available snapshots like so::
-
-
-
-ip-10-30-1-22$ rsync rsync.biocommons.org::
-This is the rsync service for tools and data from biocommons.org
-This service is hosted by Invitae (https://invitae.com/).
-
-seqrepo         Sequence Repository snapshots; see instructions at https://github.com/biocommons/biocommons.seqrepo
-uta             Universal Transcript Archive; see instructions at https://bitbucket.org/biocommons/uta
-ip-10-30-1-22$ rsync rsync.biocommons.org::seqrepo                                                                                                                                                                                            
-This is the rsync service for tools and data from biocommons.org
-This service is hosted by Invitae (https://invitae.com/).
-
-drwxr-xr-x          4,096 2016/08/31 01:25:54 .
-dr-xr-xr-x          4,096 2016/08/28 03:25:40 20160827
-dr-xr-xr-x          4,096 2016/08/28 15:52:54 20160828
-ip-10-30-1-22$ rsync -HRavP rsync.biocommons.org::seqrepo/20160828 /usr/local/share/seqrepo/                                                                                                                                                  
-This is the rsync service for tools and data from biocommons.org
-This service is hosted by Invitae (https://invitae.com/).
-
-receiving incremental file list
-20160828/
-20160828/aliases.sqlite3
-    277,676,032  15%   88.33MB/s    0:00:16  ^C
-rsync error: received SIGINT, SIGTERM, or SIGHUP (code 20) at rsync.c(632) [generator=3.1.1]
-rsync error: received SIGUSR1 (code 19) at main.c(1434) [receiver=3.1.1]
-ip-10-30-1-22$ ll /usr/local/share/seqrepo/
-total 4.0K
-drwxr-xr-x 3 reece reece 4.0K Aug 31 01:46 20160828/
+  In [1]: sr["NC_000001.11"][780000:780020]
+  Out[1]: 'TGGTGGCACGCGCTTGTAGT'
 
 
-
-
-
+See `Installation <doc/install.rst>`__ and `Mirroring
+<doc/mirrors.rst>`__ for more information.
 
 
 
@@ -115,10 +93,3 @@ drwxr-xr-x 3 reece reece 4.0K Aug 31 01:46 20160828/
   :target: https://travis-ci.org/biocommons/biocommons.seqrepo
   :align: middle 
 
-
-
-
-
-
-
-	  
