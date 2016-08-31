@@ -47,29 +47,43 @@ A new module, fabgz, was written to provide
 * distinguish internal ids from namespaced aliases (even for sha512)
 
 
+seqhash
+sha512 truncated, 21-byte truncated, urlsafe base 64 encode
+-16o-XuCMVXM-y75LtlLPpmznaDqTn1b
+
+
 
 Filesystem Layout
 !!!!!!!!!!!!!!!!!
 
-/opt/seqrepo/data/
-└── master
-    ├── aliases.sqlite3
-    ├── aliases.sqlite3-journal
-    └── sequences
-        ├── 2016
-        │   └── 0701
-     ///////
-        │   └── 0713
-     ///////
-        │   └── 0819
-        │       ├── 230638
-        │       │   └── 1471647998.6470723.fa.bgz
-        │       ├── 230647
-        │       │   └── 1471648007.2638052.fa.bgz
-     ///////
-        ├── db.sqlite3
-        └── db.sqlite3-journal
-
+/opt/seqrepo/
+├── master
+│   ├── aliases.sqlite3
+│   └── sequences
+│       ├── 2016
+│       │   ├── 0824
+│       │   │   ├── 045923
+│       │   │   │   ├── 1472014763.7728612.fa.bgz
+│       │   │   │   ├── 1472014763.7728612.fa.bgz.fai
+│       │   │   │   └── 1472014763.7728612.fa.bgz.gzi
+│       │   │   ├── 045927
+│       │   │   │   ├── 1472014767.3542793.fa.bgz
+├── 2016-08-27
+│   ├── aliases.sqlite3
+│   └── sequences
+│       ├── 2016 ...
+├
+└── 2016-08-28
+    ├── aliases.sqlite3
+    └── sequences
+        │   ├── 0824...
+        │   └── 0828
+        │       ├── 000003
+        │       │   ├── 1472342403.26.fa.bgz
+        │       │   ├── 1472342403.26.fa.bgz.fai
+        │       │   └── 1472342403.26.fa.bgz.gzi
+        │           └── 1472357923.36.fa
+        └── db.sqlite3
 
 
 

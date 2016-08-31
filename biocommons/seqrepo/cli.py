@@ -27,7 +27,6 @@ import tqdm
 from . import __version__, SeqRepo
 from .py2compat import gzip_open_encoded, makedirs
 
-logger = logging.getLogger(__name__)
 
 
 def parse_arguments():
@@ -115,8 +114,9 @@ def init(opts):
 
 
 def load(opts):
+    logger = logging.getLogger(__name__)
+    disable_bar = logger.getEffectiveLevel() < logging.WARNING
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
-    disable_bar = opts.verbose > 0  # if > 0, we'll get log messages
 
     sr = SeqRepo(opts.dir, writeable=True)
 
@@ -170,6 +170,8 @@ def snapshot(opts):
     copying sqlite databases, and remove write permissions from directories
 
     """
+    logger = logging.getLogger(__name__)
+
     src_dir = os.path.realpath(opts.dir)
     dst_dir = opts.destination_directory
 
