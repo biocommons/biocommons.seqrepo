@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Biocommons.seqrepo by biocommons</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Biocommons.seqrepo</h1>
+        <p>non-redundant, compressed, journalled, file-based storage for reference sequences</p>
+        <p class="view"><a href="https://github.com/biocommons/biocommons.seqrepo">View the Project on GitHub <small>biocommons/biocommons.seqrepo</small></a></p>
+        <ul>
+          <li><a href="https://github.com/biocommons/biocommons.seqrepo/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/biocommons/biocommons.seqrepo/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/biocommons/biocommons.seqrepo">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="biocommonsseqrepo" class="anchor" href="#biocommonsseqrepo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>biocommons.seqrepo</h1>
+
+<p>Python package for writing and reading a local collection of
+biological sequences.  The repository is non-redundant, compressed,
+and journalled, making it efficient to store and transfer multiple
+snapshots.</p>
+
+<p>|ci_rel| |pypi_rel|</p>
+
+<p>Features
+!!!!!!!!</p>
+
+<ul>
+<li>Timestamped snapshots of read-only sequence repository</li>
+<li>Space-efficient storage of sequences within a single snapshot and
+across snapshots</li>
+<li>Bandwidth-efficient transfer incremental updates</li>
+<li>Fast fetching of sequence slices on chromosome-scale sequences</li>
+<li>Precomputed digests that may be used as sequence aliases</li>
+<li>Mappings of external aliases (i.e., accessions or identifiers like
+NM_013305.4) to sequences</li>
+</ul>
+
+<p>The above features are achieved by storing sequences non-redundantly
+and compressed, using an add-only journalled filesystem structure
+within a single snapshot, and by using hard links across snapshots.
+Each sequence is associated with a namespaced alias such as
+, ,
+, ,
+ (all of which refer to the same
+sequence).  Block gzipped format (<code>BGZF
+&lt;https://samtools.github.io/hts-specs/SAMv1.pdf&gt;</code>__)) enables pysam to
+provide fast random access to compressed sequences.</p>
+
+<p>For more information, see <code>&lt;doc/design.rst&gt;</code>__.</p>
+
+<p>Expected deployments and use modes
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+
+<ul>
+<li>Local read-only archive, mirrored from public site, accessed via Python API</li>
+<li>Local read-only archive, mirrored from public site, accessed via REST interface (not yet available)</li>
+<li>Local read-write archive, maintained with command line utility and/or API</li>
+</ul>
+
+<p>Requirements
+!!!!!!!!!!!!</p>
+
+<p>Reading a sequence repository requires several packages, all of which
+are available from pypi. Installation should be as simple as <code>pip
+install biocommons.seqrepo</code>.</p>
+
+<p>Writing sequence files also requires <code>bgzip</code>, which provided in the
+<code>htslib &lt;https://github.com/samtools/htslib&gt;</code>__ repo. Ubuntu users
+should install the <code>tabix</code> package with <code>sudo apt install tabix</code>.</p>
+
+<p>Development and deployments are on Ubuntu. Other systems may work but
+are not tested.  Patches to get other systems working would be
+welcomed.</p>
+
+<p>Quick Start
+!!!!!!!!!!!</p>
+
+<p>Fetching existing sequence repositories
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+
+<p>A public instance of seqrepo with dated snapshots is available at on
+seqrepo.biocommons.org.</p>
+
+<p>You can list available snapshots like so::</p>
+
+<p>ip-10-30-1-22$ rsync rsync.biocommons.org::
+This is the rsync service for tools and data from biocommons.org
+This service is hosted by Invitae (<a href="https://invitae.com/">https://invitae.com/</a>).</p>
+
+<p>seqrepo         Sequence Repository snapshots; see instructions at <a href="https://github.com/biocommons/biocommons.seqrepo">https://github.com/biocommons/biocommons.seqrepo</a>
+uta             Universal Transcript Archive; see instructions at <a href="https://bitbucket.org/biocommons/uta">https://bitbucket.org/biocommons/uta</a>
+ip-10-30-1-22$ rsync rsync.biocommons.org::seqrepo<br>
+This is the rsync service for tools and data from biocommons.org
+This service is hosted by Invitae (<a href="https://invitae.com/">https://invitae.com/</a>).</p>
+
+<p>drwxr-xr-x          4,096 2016/08/31 01:25:54 .
+dr-xr-xr-x          4,096 2016/08/28 03:25:40 20160827
+dr-xr-xr-x          4,096 2016/08/28 15:52:54 20160828
+ip-10-30-1-22$ rsync -HRavP rsync.biocommons.org::seqrepo/20160828 /usr/local/share/seqrepo/<br>
+This is the rsync service for tools and data from biocommons.org
+This service is hosted by Invitae (<a href="https://invitae.com/">https://invitae.com/</a>).</p>
+
+<p>receiving incremental file list
+20160828/
+20160828/aliases.sqlite3
+    277,676,032  15%   88.33MB/s    0:00:16  ^C
+rsync error: received SIGINT, SIGTERM, or SIGHUP (code 20) at rsync.c(632) [generator=3.1.1]
+rsync error: received SIGUSR1 (code 19) at main.c(1434) [receiver=3.1.1]
+ip-10-30-1-22$ ll /usr/local/share/seqrepo/
+total 4.0K
+drwxr-xr-x 3 reece reece 4.0K Aug 31 01:46 20160828/</p>
+
+<p>.. |pypi_rel| image:: <a href="https://badge.fury.io/py/biocommons.seqrepo.png">https://badge.fury.io/py/biocommons.seqrepo.png</a>
+  :target: <a href="https://pypi.org/pypi?name=biocommons.seqrepo">https://pypi.org/pypi?name=biocommons.seqrepo</a>
+  :align: middle</p>
+
+<p>.. |ci_rel| image:: <a href="https://travis-ci.org/biocommons/biocommons.seqrepo.svg?branch=master">https://travis-ci.org/biocommons/biocommons.seqrepo.svg?branch=master</a>
+  :target: <a href="https://travis-ci.org/biocommons/biocommons.seqrepo">https://travis-ci.org/biocommons/biocommons.seqrepo</a>
+  :align: middle </p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/biocommons">biocommons</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
