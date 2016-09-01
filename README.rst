@@ -80,8 +80,8 @@ On Ubuntu 16.04::
   Out[1]: 'TGGTGGCACGCGCTTGTAGT'
 
 
-See `Installation <doc/install.rst>`__ and `Mirroring
-<doc/mirrors.rst>`__ for more information.
+See `Installation <doc/installation.rst>`__ and `Mirroring
+<doc/mirroring.rst>`__ for more information.
 
 
 

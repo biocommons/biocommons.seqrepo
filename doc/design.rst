@@ -1,4 +1,6 @@
 This document describes the design of the seqrepo package.
+It is currently a collection of thoughts during development.
+If you find dangling sentences, you should
 
 
 Goals and design implications
@@ -18,7 +20,6 @@ This section summarizes goals and their architectural implications.
 * Fast sequence lookup and slicing (random access)
   => when coupled with compression => blocked gzip
 
-
 Space-efficient storage usually means compression.  Conventional
 compression precludes random access to files, which, for example,
 would necessitate reading an entire chromosome in order to access an
@@ -31,21 +32,19 @@ block-gzipped fasta files with access provided by the pysam.FastaFile
 module.  Taken together, bgzf and pysam enable compression and fast
 random access.
 
-Space efficiency across snapshots is well-served by using hardlinks on 
+Space efficiency across snapshots is well-served by using hardlinks
+across snapshots for sequence files. (Sqlite databases are not
+hardlinked.)
 
 
-
-Although FastaFile works very well with large (multigigabyte) files,
-the desire for 
-
-
-A new module, fabgz, was written to provide
+Components
+!!!!!!!!!!
 
 
+Hashing
+!!!!!!!
 
-
-* distinguish internal ids from namespaced aliases (even for sha512)
-
+internal PK/FK 
 
 seqhash
 sha512 truncated, 21-byte truncated, urlsafe base 64 encode
@@ -56,55 +55,43 @@ sha512 truncated, 21-byte truncated, urlsafe base 64 encode
 Filesystem Layout
 !!!!!!!!!!!!!!!!!
 
-/opt/seqrepo/
-├── master
-│   ├── aliases.sqlite3
-│   └── sequences
-│       ├── 2016
-│       │   ├── 0824
-│       │   │   ├── 045923
-│       │   │   │   ├── 1472014763.7728612.fa.bgz
-│       │   │   │   ├── 1472014763.7728612.fa.bgz.fai
-│       │   │   │   └── 1472014763.7728612.fa.bgz.gzi
-│       │   │   ├── 045927
-│       │   │   │   ├── 1472014767.3542793.fa.bgz
-├── 2016-08-27
-│   ├── aliases.sqlite3
-│   └── sequences
-│       ├── 2016 ...
-├
-└── 2016-08-28
-    ├── aliases.sqlite3
-    └── sequences
-        │   ├── 0824...
-        │   └── 0828
-        │       ├── 000003
-        │       │   ├── 1472342403.26.fa.bgz
-        │       │   ├── 1472342403.26.fa.bgz.fai
-        │       │   └── 1472342403.26.fa.bgz.gzi
-        │           └── 1472357923.36.fa
-        └── db.sqlite3
+FS Layout::
+
+  /opt/seqrepo/
+  ├── master
+  │   ├── aliases.sqlite3
+  │   └── sequences
+  │       ├── 2016
+  │       │   ├── 0824
+  │       │   │   ├── 045923
+  │       │   │   │   ├── 1472014763.7728612.fa.bgz
+  │       │   │   │   ├── 1472014763.7728612.fa.bgz.fai
+  │       │   │   │   └── 1472014763.7728612.fa.bgz.gzi
+  │       │   │   ├── 045927
+  │       │   │   │   ├── 1472014767.3542793.fa.bgz
+  ├── 2016-08-27
+  │   ├── aliases.sqlite3
+  │   └── sequences
+  │       ├── 2016 ...
+  ├
+  └── 2016-08-28
+      ├── aliases.sqlite3
+      └── sequences
+          │   ├── 0824...
+          │   └── 0828
+          │       ├── 000003
+          │       │   ├── 1472342403.26.fa.bgz
+          │       │   ├── 1472342403.26.fa.bgz.fai
+          │       │   └── 1472342403.26.fa.bgz.gzi
+          │           └── 1472357923.36.fa
+          └── db.sqlite3
 
 
-
-Managing SeqRepo snapshots
-!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-
-
-
-Details
-!!!!!!!
 
 
 Known reference types: gi, refseq, ensembl, lrg, grc, bic
 hashes: sha1, sha1/8, sha256, sha512, md5, seguid
 
-Questions
-!!!!!!!!!
-* Okay to case-squash sequences?
 * As github repo? => 100MB file size limit
 * Tradeoff: want few files to work around file descriptor limits, but
   will also likely have many files to limit turn on updates.

@@ -149,7 +149,7 @@ class FastaDir(BaseReader, BaseWriter):
         #       <------ dir_ ----->
         #       <----------- path ----------->
         if self._writing is None:
-            reldir = datetime.datetime.utcnow().strftime("%Y/%m%d/%H%M%S")
+            reldir = datetime.datetime.utcnow().strftime("%Y/%m%d/%H%M")
             basename = str(time.time()) + ".fa.bgz"
             relpath = os.path.join(reldir, basename)
 
