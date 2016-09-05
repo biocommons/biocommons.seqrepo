@@ -94,3 +94,4 @@ ENV/
 *.orig
 doc/_build
 .eggs
+archive

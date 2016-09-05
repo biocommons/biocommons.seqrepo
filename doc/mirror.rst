@@ -16,8 +16,9 @@ You can list available snapshots like so::
 
 You may mirror the entire seqrepo archive or a specific snapshot, as
 shown below::
-
-  $ rsync -HRavP rsync.biocommons.org::seqrepo/20160828 /usr/local/share/seqrepo/                                                                                                                                                  
+  
+  $ rsync -HavP rsync.biocommons.org::seqrepo/20160828/ /tmp/seqrepo/20160828/
+  
   This is the rsync service for tools and data from biocommons.org
   This service is hosted by Invitae (https://invitae.com/).
 
@@ -26,9 +27,16 @@ shown below::
   20160828/aliases.sqlite3
   ...
 
+
+If you have a previous snapshot, you should invoke rsync like this in
+order to hard link unchanged files::
+
+  $ rsync -HavP --link-dest=/tmp/seqrepo/20160827/ rsync.biocommons.org::seqrepo/20160828/ /tmp/seqrepo/20160828/
+
+
 If seqrepo is already installed, you may check the repo status with::
 
-  seqrepo -d /usr/local/share/seqrepo/20160827 show-status
+  $ seqrepo -d /usr/local/share/seqrepo/20160827 show-status
   seqrepo 0.2.2
   root directory: /home/reece/dl.biocommons.org/seqrepo/20160827/, 7.9 GB
   backends: fastadir (schema 1), seqaliasdb (schema 1) 
