@@ -19,6 +19,7 @@ import pprint
 import re
 import shutil
 import stat
+import sys
 import tempfile
 
 from Bio import SeqIO
@@ -26,7 +27,6 @@ import tqdm
 
 from . import __version__, SeqRepo
 from .py2compat import gzip_open_encoded, makedirs
-
 
 
 def parse_arguments():
@@ -124,7 +124,9 @@ def load(opts):
     fn_bar = tqdm.tqdm(opts.fasta_files, unit="file", disable=disable_bar)
     for fn in fn_bar:
         fn_bar.set_description(os.path.basename(fn))
-        if fn.endswith(".gz") or fn.endswith(".bgz"):
+        if fn == "-":
+            fh = sys.stdin
+        elif fn.endswith(".gz") or fn.endswith(".bgz"):
             fh = gzip_open_encoded(fn, encoding="ascii")  # PY2BAGGAGE
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
@@ -136,7 +138,13 @@ def load(opts):
             seq_bar.set_description("seen: {nss} seqs; added: {nsa} seqs, {naa} aliases".format(
                 nss = n_seqs_seen, nsa = n_seqs_added, naa = n_aliases_added))
             seq = str(rec.seq)
-            if "|" in rec.id:
+            if opts.namespace == "-":
+                aliases = [{"namespace": k, "alias": e[1]}
+                           for k, gi in itertools.groupby((r.split(":") for r in rec.description.split()),
+                                                          key=lambda e: e[0])
+                           for e in gi
+                           if (k.startswith("ncbi") or k.startswith("ensembl"))]
+            elif opts.namespace == "ncbi" and "|" in rec.id:
                 aliases = [m.groupdict() for m in defline_re.finditer(rec.id)]
                 for a in aliases:
                     if a["namespace"] == "ref":

@@ -55,6 +55,7 @@ setup(
         "bioutils==0.2.0a1",
         "ipython",
         "pysam",
+        "six",
         "tqdm",
         "yoyo-migrations",
     ],

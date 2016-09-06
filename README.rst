@@ -1,5 +1,5 @@
 biocommons.seqrepo
-==================
+!!!!!!!!!!!!!!!!!!
 
 Python package for writing and reading a local collection of
 biological sequences.  The repository is non-redundant, compressed,
