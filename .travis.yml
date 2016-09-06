@@ -17,5 +17,4 @@ deploy:
   on:
     tags: true
     distributions: sdist bdist_wheel
-    repo: biocommons/seqrepo
     branch: master
