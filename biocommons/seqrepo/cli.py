@@ -22,7 +22,9 @@ import stat
 import sys
 import tempfile
 
+import bioutils.assemblies
 from Bio import SeqIO
+import six
 import tqdm
 
 from . import __version__, SeqRepo
@@ -39,6 +41,10 @@ def parse_arguments():
     top_p.add_argument("--version", action="version", version=__version__)
 
     subparsers = top_p.add_subparsers(title='subcommands')
+
+    # add-assembly-names
+    ap = subparsers.add_parser("add-assembly-names", help="add assembly aliases (from bioutils.assemblies) to existing sequences")
+    ap.set_defaults(func=add_assembly_names)
 
     # export
     ap = subparsers.add_parser("export", help="export sequences")
@@ -84,6 +90,37 @@ def parse_arguments():
     opts = top_p.parse_args()
     return opts
 
+
+def add_assembly_names(opts):
+    """add assembly names as aliases to existing sequences
+
+    Specifically, associate aliases like GRCh37:HSCHRUN_RANDOM_CTG42 with (existing) ncbi:NT_167243.1
+    """
+    logger = logging.getLogger(__name__)
+    sr = SeqRepo(opts.dir, writeable=True)
+    ncbi_alias_map = {r["alias"]: r["seq_id"] for r in sr.aliases.find_aliases(namespace="ncbi", current_only=False)}
+    namespaces = [r["namespace"] for r in sr.aliases._db.execute("select distinct namespace from seqalias")]
+    assemblies = bioutils.assemblies.get_assemblies()
+    import IPython; IPython.embed()	  ### TODO: Remove IPython.embed()
+    assemblies_to_load = sorted([k for k in assemblies if k not in namespaces])
+    logger.info("{} assemblies to load".format(len(assemblies_to_load)))
+    for assy_name in tqdm.tqdm(assemblies_to_load, unit="assembly"):
+        logger.debug("loading " + assy_name)
+        sequences = assemblies[assy_name]["sequences"]
+        eq_sequences = [s for s in sequences if s["relationship"] == "="]
+
+        # all assembled-molecules (1..22, X, Y, MT) have ncbi aliases in seqrepo (no partial loads)
+        not_in_seqrepo = [s["refseq_ac"] for s in eq_sequences if s["refseq_ac"] not in ncbi_alias_map]
+        if not_in_seqrepo:
+            raise RuntimeError("{an}: {n} NCBI accession(s) not in {opts.dir} repo ({acs})".format(
+                an = assy_name, n = len(not_in_seqrepo), opts = opts, acs = ", ".join(not_in_seqrepo)))
+
+        for s in eq_sequences:
+            sr.aliases.store_alias(seq_id=ncbi_alias_map[s["refseq_ac"]],
+                                   namespace=assy_name,
+                                   alias=s["name"])
+        sr.commit()
+         
 
 def export(opts):
     def convert_alias_records_to_ns_dict(records):

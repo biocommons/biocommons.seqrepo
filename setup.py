@@ -52,7 +52,7 @@ setup(
 
     install_requires = [
         "biopython>=1.67",
-        "bioutils==0.2.0a1",
+        "bioutils>=0.2.0a1",
         "ipython",
         "pysam",
         "six",
