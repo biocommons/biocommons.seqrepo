@@ -28,7 +28,7 @@ import six
 import tqdm
 
 from . import __version__, SeqRepo
-from .py2compat import gzip_open_encoded, makedirs
+from .py2compat import commonpath, gzip_open_encoded, makedirs
 
 
 def parse_arguments():
@@ -229,7 +229,7 @@ def snapshot(opts):
 
     dst_dir = os.path.realpath(dst_dir)
 
-    if os.path.commonpath([src_dir, dst_dir]).startswith(src_dir):
+    if commonpath([src_dir, dst_dir]).startswith(src_dir):
         raise RuntimeError("Cannot nest seqrepo directories "
         "({} is within {})".format(dst_dir, src_dir))
 
