@@ -27,9 +27,9 @@ The above features are achieved by storing sequences non-redundantly
 and compressed, using an add-only journalled filesystem structure
 within a single snapshot, and by using hard links across snapshots.
 Each sequence is associated with a namespaced alias such as
-`<seguid,rvvuhY0FxFLNwf10FXFIrSQ7AvQ>`, `<ncbi,NP_004009.1>`,
-`<gi,5032303>`, `<ensembl-75ENSP00000354464>`,
-`<ensembl-85,ENSP00000354464.4>` (all of which refer to the same
+``<seguid,rvvuhY0FxFLNwf10FXFIrSQ7AvQ>``, ``<ncbi,NP_004009.1>``,
+``<gi,5032303>``, ``<ensembl-75ENSP00000354464>``,
+``<ensembl-85,ENSP00000354464.4>`` (all of which refer to the same
 sequence).  Block gzipped format (`BGZF
 <https://samtools.github.io/hts-specs/SAMv1.pdf>`__)) enables pysam to
 provide fast random access to compressed sequences.
@@ -55,9 +55,9 @@ Reading a sequence repository requires several packages, all of which
 are available from pypi. Installation should be as simple as `pip
 install biocommons.seqrepo`.
 
-Writing sequence files also requires `bgzip`, which provided in the
+Writing sequence files also requires ``bgzip``, which provided in the
 `htslib <https://github.com/samtools/htslib>`__ repo. Ubuntu users
-should install the `tabix` package with `sudo apt install tabix`.
+should install the ``tabix`` package with ``sudo apt install tabix``.
 
 Development and deployments are on Ubuntu. Other systems may work but
 are not tested.  Patches to get other systems working would be
