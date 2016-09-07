@@ -27,9 +27,9 @@ The above features are achieved by storing sequences non-redundantly
 and compressed, using an add-only journalled filesystem structure
 within a single snapshot, and by using hard links across snapshots.
 Each sequence is associated with a namespaced alias such as
-<seguid,rvvuhY0FxFLNwf10FXFIrSQ7AvQ>, <ncbi,NP_004009.1>,
-<gi,5032303>, <ensembl-75ENSP00000354464>,
-<ensembl-85,ENSP00000354464.4> (all of which refer to the same
+`<seguid,rvvuhY0FxFLNwf10FXFIrSQ7AvQ>`, `<ncbi,NP_004009.1>`,
+`<gi,5032303>`, `<ensembl-75ENSP00000354464>`,
+`<ensembl-85,ENSP00000354464.4>` (all of which refer to the same
 sequence).  Block gzipped format (`BGZF
 <https://samtools.github.io/hts-specs/SAMv1.pdf>`__)) enables pysam to
 provide fast random access to compressed sequences.
@@ -37,12 +37,15 @@ provide fast random access to compressed sequences.
 For more information, see `<doc/design.rst>`__.
 
 
-Anticipated deployments
-!!!!!!!!!!!!!!!!!!!!!!!
-
-* Local read-only archive, mirrored from public site, accessed via Python API
-* Local read-only archive, mirrored from public site, accessed via REST interface (not yet available)
-* Local read-write archive, maintained with command line utility and/or API
+Deployments Scenarios
+!!!!!!!!!!!!!!!!!!!!!
+* Available now: Local read-only archive, mirrored from public site,
+  accessed via Python API (see `Mirroring documentation <doc/mirror.rst>`__)
+* Available now: Local read-write archive, maintained with command
+  line utility and/or API (see `Command Line Interface documentation
+  <doc/cli.rst>`__).
+* Planned: Docker-based data-only container that may be linked to application container
+* Planned: Docker image that provides REST interface for local or remote access
 
 
 Requirements
@@ -81,7 +84,7 @@ On Ubuntu 16.04::
 
 
 See `Installation <doc/installation.rst>`__ and `Mirroring
-<doc/mirroring.rst>`__ for more information.
+<doc/mirror.rst>`__ for more information.
 
 
 
