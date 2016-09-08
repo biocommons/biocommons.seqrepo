@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 expected_schema_version = 1
 
 min_sqlite_version_info = (3, 8, 0)
-if sqlite3.sqlite_version_info < min_sqlite_version_info:
+if sqlite3.sqlite_version_info < min_sqlite_version_info:  # pragma: no cover
     min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
     msg = "{} requires sqlite3 >= {} but {} is installed".format(__package__, min_sqlite_version,
                                                                  sqlite3.sqlite_version)
@@ -38,8 +38,8 @@ class SeqAliasDB(object):
 
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:
-            raise RuntimeError("""Upgrade required: Database schema
-            version is {} and code expects {}""".format(schema_version, expected_schema_version))
+            raise RuntimeError("Upgrade required: Database schema"
+                               "version is {} and code expects {}".format(schema_version, expected_schema_version))
 
 
     # ############################################################################
@@ -150,7 +150,7 @@ class SeqAliasDB(object):
     # ############################################################################
     # Internal methods
 
-    def _dump_aliases(self):
+    def _dump_aliases(self):    # pragma: no cover
         import prettytable
         fields = "seqalias_id seq_id namespace alias added is_current".split()
         pt = prettytable.PrettyTable(field_names=fields)

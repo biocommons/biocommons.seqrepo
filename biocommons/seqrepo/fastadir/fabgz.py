@@ -25,7 +25,7 @@ min_bgzip_version_info = (1, 2, 1)
 min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
 
 
-def _check_bgzip_version(exe):
+def _check_bgzip_version(exe):  # pragma: no cover
     def _get_version(exe):
         p = subprocess.Popen([exe, "-h"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         output = p.communicate()

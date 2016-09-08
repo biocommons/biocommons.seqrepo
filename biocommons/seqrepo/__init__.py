@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 try:
     __version__ = pkg_resources.get_distribution(__name__).version
-except pkg_resources.DistributionNotFound as e:
+except pkg_resources.DistributionNotFound as e:  # pragma: no cover
     warnings.warn("can't get __version__ because %s package isn't installed" % __package__, Warning)
     __version__ = None
 

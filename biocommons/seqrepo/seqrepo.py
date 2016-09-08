@@ -95,18 +95,17 @@ class SeqRepo(object):
         if self._upcase:
             seq = seq.upper()
 
-        n_seqs_added = n_aliases_added = 0
-
         seqhash = bioutils.digests.seq_seqhash(seq)
         seq_id = seqhash
 
         # add sequence if not present
+        n_seqs_added = n_aliases_added = 0
         msg = "seqhash:{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
             seq_id=seq_id, l=len(seq), na=len(nsaliases),
             aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
         if seq_id not in self.sequences:
             logger.info("Storing " + msg)
-            if len(seq) > ct_n_residues:
+            if len(seq) > ct_n_residues:  # pragma: no cover
                 logger.debug("Precommit for large sequence")
                 self.commit()
             self.sequences.store(seq_id, seq)
@@ -143,7 +142,9 @@ class SeqRepo(object):
                 self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
             n_aliases_added += len(upd_tuples)
-        if (self._pending_sequences > ct_n_seqs or self._pending_aliases > ct_n_aliases or self._pending_sequences_len > ct_n_residues):
+        if (self._pending_sequences > ct_n_seqs
+            or self._pending_aliases > ct_n_aliases
+            or self._pending_sequences_len > ct_n_residues):  # pragma: no cover
             logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
                         "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self))
             self.commit()

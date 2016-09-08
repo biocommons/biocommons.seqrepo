@@ -2,6 +2,8 @@ import os
 import shutil
 import tempfile
 
+import pytest
+
 from biocommons.seqrepo.seqaliasdb import SeqAliasDB
 
 
@@ -38,28 +40,30 @@ def test_seqinfo():
     aliases.sort(key=lambda r: (r["seqalias_id"], r["seq_id"], r["namespace"], r["alias"], r["is_current"]))
 
     assert aliases == [
-        {'seqalias_id': 1,
-         'seq_id': 'q1',
-         'namespace': 'A',
-         'alias': '1',
-         'is_current': 0}, {'seqalias_id': 2,
-                            'seq_id': 'q1',
-                            'namespace': 'A',
-                            'alias': '2',
-                            'is_current': 1}, {'seqalias_id': 3,
-                                               'seq_id': 'q1',
-                                               'namespace': 'B',
-                                               'alias': '1',
-                                               'is_current': 1}, {'seqalias_id': 4,
-                                                                  'seq_id': 'q2',
-                                                                  'namespace': 'A',
-                                                                  'alias': '1',
-                                                                  'is_current': 1}
-    ]
+        {'seqalias_id': 1, 'seq_id': 'q1', 'namespace': 'A', 'alias':
+         '1', 'is_current': 0},
+        
+        {'seqalias_id': 2, 'seq_id': 'q1', 'namespace': 'A', 'alias':
+         '2', 'is_current': 1},
+        
+        {'seqalias_id': 3, 'seq_id': 'q1', 'namespace': 'B', 'alias':
+         '1', 'is_current': 1},
+        
+        {'seqalias_id': 4, 'seq_id': 'q2', 'namespace': 'A', 'alias':
+         '1', 'is_current': 1} ]
 
     # __contains__
     assert "q1" in db
     assert "q9" not in db
+
+    assert db.stats()["n_sequences"] == 2
+
+
+    del db                      # close
+    db = SeqAliasDB(db_path)
+
+    with pytest.raises(RuntimeError):
+        db.store_alias("q1", "A", "1")
 
     shutil.rmtree(tmpdir)
 

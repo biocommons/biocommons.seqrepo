@@ -36,9 +36,9 @@ setup: etc/develop.reqs etc/install.reqs
 #=> devready: create venv, install prerequisites, install pkg in develop mode
 .PHONY: devready
 devready:
-	(make venv; source venv/bin/activate; make setup develop) >$@.log 2>&1
+	make venv && source venv/bin/activate && make setup develop
 	@echo "############################################################################"
-	@echo "###   Don't forget to source venv/bin/activate to use this environment   ###"
+	@echo "###  Don't forget to `source venv/bin/activate` to use this environment  ###"
 	@echo "############################################################################"
 
 #=> develop: install package in develop mode
@@ -96,7 +96,8 @@ clean:
 #=> cleaner: remove files and directories that are easily rebuilt
 .PHONY: cleaner
 cleaner: clean
-	rm -fr .cache *.egg-info build dist doc/_build
+	rm -f devready.log
+	rm -fr .cache *.egg-info build dist doc/_build htmlcov
 	find . \( -name \*.pyc -o -name \*.orig -o -name \*.rej \) -print0 | xargs -0r rm
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 

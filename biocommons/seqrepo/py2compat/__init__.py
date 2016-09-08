@@ -5,9 +5,9 @@ import six
 
 if six.PY2:
 
-    from .lru_cache import lru_cache
-    from .makedirs import makedirs
-    from .commonpath import commonpath
+    from ._lru_cache import lru_cache
+    from ._makedirs import makedirs
+    from ._commonpath import commonpath
 
     def gzip_open_encoded(file, encoding=None):
         return io.TextIOWrapper(io.BufferedReader(gzip.open(file)), encoding="utf8")
