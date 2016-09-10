@@ -1,0 +1,28 @@
+#!/bin/bash
+# push a seqrepo instance to an rsync server
+# https://github.com/biocommons/biocommons.seqrepo/
+# Used by Reece to push new instances -- likely not relevant for anyone else
+
+# minion is an ssh alias
+host=minion
+
+# seqrepo root directory
+seqrepo_root=/usr/local/share/seqrepo
+
+if [ "$#" != "2" ]; then
+    echo "Usage: $0 <previous_instance> <push_instance>" 1>&2
+    exit 1
+fi
+
+prev_instance="$1"; shift
+push_instance="$1"; shift
+
+echo "prev_instance=${prev_instance}"
+echo "push_instance=${push_instance}"
+
+(
+    set -ex
+    cd $seqrepo_root
+    rsync -avHP "$push_instance/" --link-dest="../$prev_instance/" minion:"dl.biocommons.org/seqrepo/$push_instance.tmp/"
+    ssh minion /bin/mv "dl.biocommons.org/seqrepo/$push_instance.tmp/" "dl.biocommons.org/seqrepo/$push_instance/"
+)

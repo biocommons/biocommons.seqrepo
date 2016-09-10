@@ -15,9 +15,10 @@ def opts():
     test_data_dir = os.path.join(test_dir, 'data')
 
     opts = MockOpts()
-    opts.dir = os.path.join(tempfile.mkdtemp(prefix="seqrepo_pytest_"), "seqrepo")
+    opts.root_directory = os.path.join(tempfile.mkdtemp(prefix="seqrepo_pytest_"), "seqrepo")
     opts.fasta_files = [os.path.join(test_data_dir, "sequences.fa.gz")]
     opts.namespace = "test"
+    opts.instance_name = "test"
     opts.verbose = 0
     return opts
 
