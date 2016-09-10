@@ -5,10 +5,10 @@ seqrepo includes a command line interface for loading, fetching, and exporting s
   
 This documentation assumes that the seqrepo base directory is::
 
-  SEQREPO=/usr/local/share/seqrepo
+  SEQREPO_ROOT=/usr/local/share/seqrepo
 
-Current convention is to add sequences to `$SEQREPO/master`, then
-snapshot this to a dated directory like `$SEQREPO/20160828`.  (This
+Current convention is to add sequences to `$SEQREPO_ROOT/master`, then
+snapshot this to a dated directory like `$SEQREPO_ROOT/20160828`.  (This
 convention is conceptually similar to source code development on a
 master branch with tags.)
 

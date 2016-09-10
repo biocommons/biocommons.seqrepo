@@ -2,11 +2,11 @@ Fetching existing sequence repositories
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 A public instance of seqrepo with dated snapshots is available at on
-seqrepo.biocommons.org.
+dl.biocommons.org.
 
 You can list available snapshots like so::
 
-  $ rsync rsync.biocommons.org::seqrepo                                                                                                                                                                                            
+  $ rsync dl.biocommons.org::seqrepo                                                                                                                                                                                            
   This is the rsync service for tools and data from biocommons.org
   This service is hosted by Invitae (https://invitae.com/).
   
@@ -17,7 +17,7 @@ You can list available snapshots like so::
 You may mirror the entire seqrepo archive or a specific snapshot, as
 shown below::
   
-  $ rsync -HavP rsync.biocommons.org::seqrepo/20160828/ /tmp/seqrepo/20160828/
+  $ rsync -HavP dl.biocommons.org::seqrepo/20160828/ /tmp/seqrepo/20160828/
   
   This is the rsync service for tools and data from biocommons.org
   This service is hosted by Invitae (https://invitae.com/).
@@ -31,7 +31,7 @@ shown below::
 If you have a previous snapshot, you should invoke rsync like this in
 order to hard link unchanged files::
 
-  $ rsync -HavP --link-dest=/tmp/seqrepo/20160827/ rsync.biocommons.org::seqrepo/20160828/ /tmp/seqrepo/20160828/
+  $ rsync -HavP --link-dest=/tmp/seqrepo/20160827/ dl.biocommons.org::seqrepo/20160828/ /tmp/seqrepo/20160828/
 
 
 If seqrepo is already installed, you may check the repo status with::

@@ -71,14 +71,15 @@ On Ubuntu 16.04::
 
   $ sudo apt install -y python3-dev gcc zlib1g-dev tabix
   $ pip install seqrepo
-  $ rsync -HRavP rsync.biocommons.org::seqrepo/20160828 /usr/local/share/seqrepo/
-  $ seqrepo -d /usr/local/share/seqrepo/20160828 start-shell
-  seqrepo 0.2.3.dev2+neeca95d3ae6e.d20160830
-  root directory: /opt/seqrepo/20160828, 7.9 GB
+  $ seqrepo pull -i 20160906
+  $ seqrepo -i 20160906 show-status 
+  seqrepo 0.2.3.post3.dev8+nb8298bd62283
+  root directory: /usr/local/share/seqrepo/20160906, 7.9 GB
   backends: fastadir (schema 1), seqaliasdb (schema 1) 
-  sequences: 773511 sequences, 93005806376 residues, 189 files
-  aliases: 5572724 aliases, 5473237 current, 9 namespaces, 773511 sequences
+  sequences: 773587 sequences, 93051609959 residues, 192 files
+  aliases: 5579572 aliases, 5480085 current, 26 namespaces, 773587 sequences
 
+  $ seqrepo -i 20160906 start-shell
   In [1]: sr["NC_000001.11"][780000:780020]
   Out[1]: 'TGGTGGCACGCGCTTGTAGT'
 
