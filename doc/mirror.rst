@@ -2,7 +2,23 @@ Fetching existing sequence repositories
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 A public instance of seqrepo with dated snapshots is available at on
-dl.biocommons.org.
+`dl.biocommons.org`.
+
+
+Fetching using the seqrepo command line tool
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+The easiest way to get a new seqrepo repository is with the command line tool::
+
+  $ seqrepo pull
+
+The first invocation will download a complete repository.  Subsequent
+invocations will pull the most recent instance, pulling only
+incremental sequences.
+
+
+Fetching using rsync manually
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 You can list available snapshots like so::
 

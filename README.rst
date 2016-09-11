@@ -71,7 +71,7 @@ On Ubuntu 16.04::
 
   $ sudo apt install -y python3-dev gcc zlib1g-dev tabix
   $ pip install seqrepo
-  $ seqrepo pull -i 20160906
+  $ seqrepo pull
   $ seqrepo -i 20160906 show-status 
   seqrepo 0.2.3.post3.dev8+nb8298bd62283
   root directory: /usr/local/share/seqrepo/20160906, 7.9 GB
