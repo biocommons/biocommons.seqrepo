@@ -25,7 +25,7 @@ def opts():
 
 def test_00_init(opts):
     init(opts)
-    assert os.path.exists(opts.dir)
+    assert os.path.exists(opts.root_directory)
 
 
 def test_20_load(opts):
