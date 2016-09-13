@@ -9,7 +9,7 @@ long_description = open("README.rst").read()
 namespace_package = "".join(package_name.split(".")[:-1])
 setup(
     author = package_name + " Committers",
-    description = short_description,
+    description = short_description.replace("\n", " "),
     license = "Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)",
     long_description = long_description,
     name = package_name,
