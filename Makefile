@@ -37,9 +37,9 @@ setup: etc/develop.reqs etc/install.reqs
 .PHONY: devready
 devready:
 	make venv && source venv/bin/activate && make setup develop
-	@echo "############################################################################"
-	@echo "###  Don't forget to `source venv/bin/activate` to use this environment  ###"
-	@echo "############################################################################"
+	@echo '#############################################################################'
+	@echo '###  Do not forget to `source venv/bin/activate` to use this environment  ###'
+	@echo '#############################################################################'
 
 #=> develop: install package in develop mode
 #=> install: install package
