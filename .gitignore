@@ -95,3 +95,4 @@ ENV/
 doc/_build
 .eggs
 archive
+misc/docker

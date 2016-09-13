@@ -1,12 +1,5 @@
 -*-outline-*-
 
-* open read only
-https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
-
-
-
-* add release command
-
 * add cleanup command
 
 * Add SequenceProxy back into fetch so that sr["NC_000001.10"][6000000:6000020] doesn't suck
@@ -15,35 +8,5 @@ https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
 
 * add documentation
 
+* s/migrations/yoyo/g
 
-* When database is locked, you get this mess:
-seqrepo -d /opt/seqrepo/data/master/ status
-Traceback (most recent call last):
-  File "/home/reece/.virtualenvs/default-3.5/bin/seqrepo", line 9, in <module>
-    load_entry_point('seqrepo', 'console_scripts', 'seqrepo')()
-  File "/home/reece/projects/biocommons/seqrepo/seqrepo/cli.py", line 168, in main
-    opts.func(opts)
-  File "/home/reece/projects/biocommons/seqrepo/seqrepo/cli.py", line 141, in status
-    sr = seqrepo.SeqRepo(opts.dir)
-  File "/home/reece/projects/biocommons/seqrepo/seqrepo/seqrepo.py", line 44, in __init__
-    self.sequences = FastaDir(self._seq_path)
-  File "/home/reece/projects/biocommons/seqrepo/seqrepo/fastadir/fastadir.py", line 64, in __init__
-    self._upgrade_db()
-  File "/home/reece/projects/biocommons/seqrepo/seqrepo/fastadir/fastadir.py", line 171, in _upgrade_db
-    backend = yoyo.get_backend(db_url)
-  File "/home/reece/.virtualenvs/default-3.5/lib/python3.5/site-packages/yoyo_migrations-5.0.3-py3.5.egg/yoyo/connections.py", line 87, in get_backend
-    return backend_class(parsed, migration_table)
-  File "/home/reece/.virtualenvs/default-3.5/lib/python3.5/site-packages/yoyo_migrations-5.0.3-py3.5.egg/yoyo/backends.py", line 128, in __init__
-    self.has_transactional_ddl = self._check_transactional_ddl()
-  File "/home/reece/.virtualenvs/default-3.5/lib/python3.5/site-packages/yoyo_migrations-5.0.3-py3.5.egg/yoyo/backends.py", line 157, in _check_transactional_ddl
-    self.execute(sql)
-  File "/home/reece/.virtualenvs/default-3.5/lib/python3.5/site-packages/yoyo_migrations-5.0.3-py3.5.egg/yoyo/backends.py", line 224, in execute
-    cursor.execute(self._with_placeholders(stmt), args)
-sqlite3.OperationalError: database is locked
-Exception ignored in: <bound method SeqRepo.__del__ of <seqrepo.seqrepo.SeqRepo object at 0x7f58b7f27400>>
-Traceback (most recent call last):
-  File "/home/reece/projects/biocommons/seqrepo/seqrepo/seqrepo.py", line 136, in __del__
-    self.commit()
-  File "/home/reece/projects/biocommons/seqrepo/seqrepo/seqrepo.py", line 126, in commit
-    self.sequences.commit()
-AttributeError: 'SeqRepo' object has no attribute 'sequences'
