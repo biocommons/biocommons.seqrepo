@@ -136,7 +136,7 @@ def parse_arguments():
     # start-shell
     ap = subparsers.add_parser("start-shell", help="start interactive shell with initialized seqrepo")
     ap.set_defaults(func=start_shell)
-    ap.add_argument("--instance-name", "-i", default=None,
+    ap.add_argument("--instance-name", "-i", default="master",
                     help="instance name; default is lastest")
 
     # upgrade
@@ -379,7 +379,8 @@ def snapshot(opts):
 
 
 def start_shell(opts):
-    #sr = show_status(opts)
+    seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
+    sr = SeqRepo(seqrepo_dir)
     import IPython
     IPython.embed(header="seqrepo " + __version__ + 
                   "\nhttps://github.com/biocommons/biocommons.seqrepo/")
