@@ -2,29 +2,29 @@ seqrepo docker instructions
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 *Experimental* support for seqrepo as a docker data volume container
-is available.  This means that you can use `docker run` to pull and
+is available.  This means that you can use ``docker run`` to pull and
 maintain an instance of seqrepo sequences, and share that data across
-multiple containers on the same host.
+multiple containers on the same host and with the host itself.
 
 
 Quick Start
 @@@@@@@@@@@
 
-Here's how to get started::
+First, create the data container and populate it::
   
   $ docker pull biocommons/seqrepo
   $ docker run --name seqrepo biocommons/seqrepo
 
-Running the container will immediately invoke `seqrepo pull`, which
-will rsync data from `dl.biocommons.org`.
+Running the container will immediately invoke ``seqrepo pull``, which
+will rsync data from ``dl.biocommons.org``.
 
-As run above, data will be stored within `/var/lib/docker/volumes/` on
-the host. (See `Tips`__ below for sharing seqrepo with the host
+As run above, data will be stored within ``/var/lib/docker/volumes/`` on
+the host. (See Tips__ below for sharing seqrepo with the host
 system.)
 
-The `biocommons/seqrepo` image also declares the volume
-`/usr/local/share/seqrepo` as sharable; containers may use
-`volumes-from` to have share seqrepo data like so::
+The ``biocommons/seqrepo`` image declares the volume
+``/usr/local/share/seqrepo`` as sharable; containers may use
+``volumes-from`` to have share seqrepo data like so::
 
   $ docker run -it --volumes-from seqrepo:ro ubuntu 
   root@1762eab78c3f:/# ls /usr/local/share/seqrepo/
@@ -44,6 +44,7 @@ The `biocommons/seqrepo` image also declares the volume
 
 
 
+
 Tips
 @@@@
 
@@ -52,6 +53,6 @@ Tips
 
     docker run -v /usr/local/share/seqrepo:/usr/local/share/seqrepo biocommons/seqrepo
 
-  In this case, the host's `/usr/local/share/seqrepo` (before the
+  In this case, the host's ``/usr/local/share/seqrepo`` (before the
   colon) will be used as the source for the container's
-  `/usr/local/share/seqrepo` (after the colon).
+  ``/usr/local/share/seqrepo`` (after the colon).
