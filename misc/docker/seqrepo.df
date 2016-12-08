@@ -47,10 +47,13 @@ ARG SEQREPO_VERSION=0.3.0a1
 ARG SEQREPO_DATA_RELEASE=20161004
 ENV SEQREPO_DATA_RELEASE ${SEQREPO_DATA_RELEASE}
 
-LABEL description="seqrepo data volume container ${SEQREPO_VERSION}/${SEQREPO_DATA_RELEASE}"
+ARG SEQREPO_DATA_DIR=/usr/local/share/seqrepo
+ENV SEQREPO_DATA_DIR ${SEQREPO_DATA_DIR}
 
-VOLUME /usr/local/share/seqrepo
+LABEL description="seqrepo data volume container ${SEQREPO_VERSION}/${SEQREPO_DATA_RELEASE} at ${SEQREPO_DATA_DIR}"
+
+VOLUME ${SEQREPO_DATA_DIR}
 
 RUN pip3 install --upgrade biocommons.seqrepo==${SEQREPO_VERSION}
 
-CMD seqrepo pull -i ${SEQREPO_DATA_RELEASE}
+CMD seqrepo -r ${SEQREPO_DATA_DIR} pull -i ${SEQREPO_DATA_RELEASE}
