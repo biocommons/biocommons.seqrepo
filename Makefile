@@ -1,4 +1,5 @@
 # Makefile for Python project
+
 .DELETE_ON_ERROR:
 .PHONY: FORCE
 .SUFFIXES:
@@ -58,6 +59,7 @@ upload_%:
 
 ############################################################################
 #= TESTING
+# see test configuration in setup.cfg
 
 #=> test: execute tests
 .PHONY: test
