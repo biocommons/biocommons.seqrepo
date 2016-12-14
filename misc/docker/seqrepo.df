@@ -1,13 +1,16 @@
-# Build like this:
-# docker build -f seqrepo.df --rm=true -t biocommons/seqrepo:20161004 .
-
-# Then:
+# (Reece) builds like this:
+# docker build -f seqrepo.df --rm=true -t biocommons/seqrepo:20161213 .
+# docker tag biocommons/seqrepo:20161213 biocommons/seqrepo
+# docker push biocommons/seqrepo:20161213
+# docker push biocommons/seqrepo:latest 
+#
+# Then users do something like:
 # docker run -it --name seqrepo biocommons/seqrepo
 # The first time will take a while as it downloads seqrepo
+# into /usr/local/share/seqrepo
 #
-# Then, use it like this:
+# Then, use the container volume like this:
 # docker run -it --name myapp --volumes-from seqrepo ubuntu  do-something
-# This container will have /usr/local/share/seqrepo populated
 
 
 FROM ubuntu:16.04
@@ -43,8 +46,8 @@ RUN pip3 install --upgrade \
 
 
 MAINTAINER reecehart@gmail.com
-ARG SEQREPO_VERSION=0.3.0a1
-ARG SEQREPO_DATA_RELEASE=20161004
+ARG SEQREPO_VERSION=0.3.1
+ARG SEQREPO_DATA_RELEASE=20161213
 ENV SEQREPO_DATA_RELEASE ${SEQREPO_DATA_RELEASE}
 
 ARG SEQREPO_DATA_DIR=/usr/local/share/seqrepo
