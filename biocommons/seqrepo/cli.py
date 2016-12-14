@@ -27,6 +27,7 @@ import subprocess
 import tempfile
 
 import bioutils.assemblies
+import bioutils.seqfetcher
 from Bio import SeqIO
 import six
 import tqdm
@@ -77,6 +78,21 @@ def parse_arguments():
     ap.set_defaults(func=export)
     ap.add_argument("--instance-name", "-i", default=None,
                     help="instance name; default is lastest")
+
+    # fetch-load
+    ap = subparsers.add_parser("fetch-load", help="fetch and load remote sequences")
+    ap.set_defaults(func=fetch_load)
+    ap.add_argument("--instance-name", "-i", default="master",
+                    help="instance name; must be writeable (i.e., not a snapshot)")
+    ap.add_argument(
+        "accessions",
+        nargs="+",
+        help="accessions (NCBI or Ensembl)", )
+    ap.add_argument(
+        "--namespace",
+        "-n",
+        required=True,
+        help="namespace name (e.g., ncbi, ensembl, lrg)", )
 
     # init
     ap = subparsers.add_parser("init", help="initialize seqrepo directory")
@@ -201,6 +217,27 @@ def export(opts):
         print(">" + " ".join(aliases))
         for l in wrap_lines(srec["seq"], 100):
             print(l)
+
+
+def fetch_load(opts):
+    logger = logging.getLogger(__name__)
+    disable_bar = logger.getEffectiveLevel() < logging.WARNING
+
+    seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
+    sr = SeqRepo(seqrepo_dir, writeable=True)
+
+    ac_bar = tqdm.tqdm(opts.accessions, unit="acs", disable=disable_bar)
+    for ac in ac_bar:
+        ac_bar.set_description(ac)
+        aliases_cur = sr.aliases.find_aliases(namespace=opts.namespace, alias=ac)
+        if aliases_cur.fetchone() is not None:
+            logger.info("{ac} already in {sr}".format(ac=ac, sr=sr))
+            continue
+        seq = bioutils.seqfetcher.fetch_seq(ac)
+        aliases = [{"namespace": opts.namespace, "alias": ac}]
+        n_sa, n_aa = sr.store(seq, aliases)
+
+    sr.commit()
 
 
 def init(opts):

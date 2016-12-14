@@ -54,6 +54,28 @@ class SeqRepo(object):
         self.sequences = FastaDir(self._seq_path, writeable=self._writeable)
         self.aliases = SeqAliasDB(self._db_path, writeable=self._writeable)
 
+    def __contains__(self, nsa):
+        ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
+        return self.aliases.find_aliases(alias=a, namespace=ns).fetchone() is not None
+
+    def __getitem__(self, nsa):
+        # lookup aliases, optionally namespaced, like NM_01234.5 or ncbi:NM_01234.5
+        ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
+        return self.fetch(alias=a, namespace=ns)
+
+    def __iter__(self):
+        """iterate over all sequences, yielding tuples of (sequence_record, [alias_records])
+
+        Both records are dicts.
+        """
+        for srec in self.sequences:
+            arecs = self.aliases.fetch_aliases(srec["seq_id"])
+            yield (srec, arecs)
+
+    def __str__(self):
+        return "SeqRepo(root_dir={self._root_dir})".format(self=self)
+
+
     def fetch(self, alias, start=None, end=None, namespace=None):
         recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
 
@@ -65,24 +87,6 @@ class SeqRepo(object):
             raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
 
         return self.sequences.fetch(seq_ids.pop(), start, end)
-
-    def __getitem__(self, nsa):
-        # lookup aliases, optionally namespaced, like NM_01234.5 or ncbi:NM_01234.5
-        ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
-        return self.fetch(alias=a, namespace=ns)
-
-    def __contains__(self, nsa):
-        ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
-        return self.aliases.find_aliases(alias=a, namespace=ns).fetchone() is not None
-
-    def __iter__(self):
-        """iterate over all sequences, yielding tuples of (sequence_record, [alias_records])
-
-        Both records are dicts.
-        """
-        for srec in self.sequences:
-            arecs = self.aliases.fetch_aliases(srec["seq_id"])
-            yield (srec, arecs)
 
     def store(self, seq, nsaliases):
         """nsaliases is a list of dicts, like:
