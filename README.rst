@@ -14,27 +14,14 @@ Released under the Apache License, 2.0.
 Features
 !!!!!!!!
 
-* Timestamped snapshots of read-only sequence repository
+* Timestamped, read-only snapshots.
 * Space-efficient storage of sequences within a single snapshot and
-  across snapshots
-* Bandwidth-efficient transfer incremental updates
-* Fast fetching of sequence slices on chromosome-scale sequences
-* Precomputed digests that may be used as sequence aliases
+  across snapshots.
+* Bandwidth-efficient transfer incremental updates.
+* Fast fetching of sequence slices on chromosome-scale sequences.
+* Precomputed digests that may be used as sequence aliases.
 * Mappings of external aliases (i.e., accessions or identifiers like
-  NM_013305.4) to sequences
-
-The above features are achieved by storing sequences non-redundantly
-and compressed, using an add-only journalled filesystem structure
-within a single snapshot, and by using hard links across snapshots.
-Each sequence is associated with a namespaced alias such as
-``<seguid,rvvuhY0FxFLNwf10FXFIrSQ7AvQ>``, ``<ncbi,NP_004009.1>``,
-``<gi,5032303>``, ``<ensembl-75ENSP00000354464>``,
-``<ensembl-85,ENSP00000354464.4>`` (all of which refer to the same
-sequence).  Block gzipped format (`BGZF
-<https://samtools.github.io/hts-specs/SAMv1.pdf>`__)) enables pysam to
-provide fast random access to compressed sequences.
-
-For more information, see `<doc/design.rst>`__.
+  NM_013305.4) to sequences.
 
 
 Deployments Scenarios
@@ -46,6 +33,39 @@ Deployments Scenarios
   <doc/cli.rst>`__).
 * Planned: Docker-based data-only container that may be linked to application container
 * Planned: Docker image that provides REST interface for local or remote access
+
+
+Technical Quick Peek
+!!!!!!!!!!!!!!!!!!!!
+
+Within a single snapshot, sequences are stored *non-redundantly* and
+*compressed* in an add-only journalled filesystem structure.  A
+truncated SHA-512 hash is used to assess uniquness and as an
+internal id.  (The digest is truncated for space efficiency.)
+
+Sequences are compressed using the Block GZipped Format (`BGZF
+<https://samtools.github.io/hts-specs/SAMv1.pdf>`__)), which enables
+pysam to provide fast random access to compressed sequences. (Variable
+compression typically makes random access impossible.)
+
+Sequence files are immutable, thereby enabling the use of hardlinks
+across snapshots and eliminating redundant transfers (e.g., with
+rsync).
+
+Each sequence id is associated with a namespaced alias in a sqlite
+database.  Such as ``<seguid,rvvuhY0FxFLNwf10FXFIrSQ7AvQ>``,
+``<ncbi,NP_004009.1>``, ``<gi,5032303>``,
+``<ensembl-75ENSP00000354464>``, ``<ensembl-85,ENSP00000354464.4>``.
+The sqlite database is mutable across releases.
+
+For calibration, recent releases that include 3 human genome
+assemblies (including patches), and full RefSeq sets (NM, NR, NP, NT,
+XM, and XP) consumes approximately 8GB.  The minimum marginal size for
+additional snapshots is approximately 2GB (for the sqlite database,
+which is not hardlinked).
+
+For more information, see `<doc/design.rst>`__.
+
 
 
 Requirements
@@ -83,7 +103,7 @@ On Ubuntu 16.04::
   In [1]: sr["NC_000001.11"][780000:780020]
   Out[1]: 'TGGTGGCACGCGCTTGTAGT'
   
-  # N.B. The following output is edited
+  # N.B. The following output is edited for simplicity
   $ seqrepo export -i 20160906 | head -n100
   >sha1:9a2acba3dd7603f... seguid:mirLo912A/MppLuS1cUyFMduLUQ ensembl-85:GENSCAN00000003538 sh:---7nAwbv5Fs2Ml2-k3X6Zvj-6ZcjeD3 ...
   MDSPLREDDSQTCARLWEAEVKRHSLEGLTVFGTAVQIHNVQRRAIRAKGTQEAQAELLCRGPRLLDRFLEDACILKEGRGTDTGQHCRGDARISSHLEA
