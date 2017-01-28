@@ -26,12 +26,12 @@ Features
 
 Deployments Scenarios
 !!!!!!!!!!!!!!!!!!!!!
-* Available now: Local read-only archive, mirrored from public site,
+* Local read-only archive, mirrored from public site,
   accessed via Python API (see `Mirroring documentation <doc/mirror.rst>`__)
-* Available now: Local read-write archive, maintained with command
+* Local read-write archive, maintained with command
   line utility and/or API (see `Command Line Interface documentation
   <doc/cli.rst>`__).
-* Planned: Docker-based data-only container that may be linked to application container
+* Docker-based data-only container that may be linked to application container.
 * Planned: Docker image that provides REST interface for local or remote access
 
 
