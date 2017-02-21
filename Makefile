@@ -7,6 +7,8 @@
 SHELL:=/bin/bash -o pipefail
 SELF:=$(firstword $(MAKEFILE_LIST))
 
+PKG=biocommons.seqrepo
+
 
 ############################################################################
 #= BASIC USAGE
@@ -64,7 +66,7 @@ upload_%:
 #=> test: execute tests
 .PHONY: test
 test:
-	python setup.py pytest --addopts="--cov=biocommons biocommons tests"
+	python setup.py pytest --addopts="--cov=${PKG} ${PKG} tests"
 
 #=> tox: execute tests via tox
 .PHONY: tox
