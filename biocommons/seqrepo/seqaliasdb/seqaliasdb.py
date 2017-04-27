@@ -55,7 +55,9 @@ class SeqAliasDB(object):
     # Public methods
 
     def commit(self):
-        self._db.commit()
+        if self._writeable:
+            self._db.commit()
+        pass
 
     def fetch_aliases(self, seq_id, current_only=True):
         """return list of alias annotation records (dicts) for a given seq_id"""
