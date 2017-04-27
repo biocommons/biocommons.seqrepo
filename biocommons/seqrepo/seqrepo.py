@@ -168,4 +168,6 @@ class SeqRepo(object):
         self._pending_aliases = 0
 
     def __del__(self):
-        self.commit()
+        if self._writeable:
+            self.commit()
+        pass
