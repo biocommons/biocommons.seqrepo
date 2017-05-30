@@ -91,6 +91,8 @@ On Ubuntu 16.04::
 
   $ sudo apt install -y python3-dev gcc zlib1g-dev tabix
   $ pip install seqrepo
+  $ sudo mkdir /usr/local/share/seqrepo
+  $ sudo chown $USER /usr/local/share/seqrepo
   $ seqrepo pull -i 20160906 
   $ seqrepo show-status -i 20160906 
   seqrepo 0.2.3.post3.dev8+nb8298bd62283

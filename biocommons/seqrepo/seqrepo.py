@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+import re
 
 import bioutils.digests
 import six
@@ -18,6 +19,8 @@ ct_n_residues = 1e9
 
 # namespace-alias separator
 nsa_sep = ":"
+
+uri_re = re.compile("([^:]+):(.+)")   
 
 
 class SeqRepo(object):
@@ -87,6 +90,17 @@ class SeqRepo(object):
             raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
 
         return self.sequences.fetch(seq_ids.pop(), start, end)
+
+
+    def fetch_uri(self, uri, start=None, end=None):
+        """fetch sequence for URI/CURIE of the form namespace:alias, such as
+        NCBI:NM_000059.3.
+
+        """
+
+        namespace, alias = uri_re.match(uri).groups()
+        return self.fetch(alias=alias, namespace=namespace, start=start, end=end)
+
 
     def store(self, seq, nsaliases):
         """nsaliases is a list of dicts, like:

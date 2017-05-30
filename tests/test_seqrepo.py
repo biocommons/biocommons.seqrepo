@@ -34,6 +34,7 @@ def test_store(seqrepo):
     seqrepo.store("ASINACORNER",  [{"namespace": "fr", "alias": "coin"}])
     seqrepo.commit()
 
+
 def test_fetch(seqrepo):
     assert seqrepo.fetch("rose") == "SMELLASSWEET"
     assert seqrepo["rose"] == "SMELLASSWEET"
@@ -53,10 +54,14 @@ def test_fetch(seqrepo):
     assert seqrepo.fetch("coin", namespace="en") == "ASINCHANGE"
     assert seqrepo.fetch("coin", namespace="fr") == "ASINACORNER"
 
+    assert seqrepo.fetch_uri("en:coin") == "ASINCHANGE"
+    assert seqrepo.fetch_uri("fr:coin") == "ASINACORNER"
+
 
 def test_errors(seqrepo_ro):
     with pytest.raises(RuntimeError):
         seqrepo_ro.store("SHOULDFAIL", [{"namespace": "fr", "alias": "coin"}])
+
 
 def test_keepcase(seqrepo_keepcase):
     seqrepo_keepcase.store("ifIonlyHADaBRAIN", [{"namespace": "me", "alias": "iiohab"}])
