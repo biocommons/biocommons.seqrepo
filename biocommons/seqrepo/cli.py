@@ -38,19 +38,24 @@ from .py2compat import commonpath, gzip_open_encoded, makedirs
 
 instance_name_re = re.compile('^201\d{5}$')  # smells like a datestamp
 #instance_name_re = re.compile('^[89]\d+$')  # debugging
+
 def _get_remote_instances(opts):
     line_re = re.compile(r'd[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)')
     lines = subprocess.check_output([opts.rsync_exe, "--no-motd", opts.remote_host + "::seqrepo"]).decode().splitlines()[1:]
     dirs = (m.group(1) for m in (line_re.match(l) for l in lines) if m)
     return sorted(list(filter(instance_name_re.match, dirs)))
+
 def _get_local_instances(opts):
     return sorted(list(filter(instance_name_re.match, os.listdir(opts.root_directory))))
+
 def _latest_instance(opts):
     instances = _get_local_instances(opts)
     return instances[-1] if instances else None
+
 def _latest_instance_path(opts):
     li = _latest_instance(opts)
     return os.path.join(opts.root_directory, li) if li else None
+
 
 def parse_arguments():
     top_p = argparse.ArgumentParser(
@@ -419,8 +424,11 @@ def start_shell(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
     import IPython
-    IPython.embed(header="seqrepo " + __version__ + 
-                  "\nhttps://github.com/biocommons/biocommons.seqrepo/")
+    IPython.embed(header="\n".join([
+        "seqrepo (https://github.com/biocommons/biocommons.seqrepo/)",
+        "version: " + __version__,
+        "instance path: " + seqrepo_dir]))
+
 
 def upgrade(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
