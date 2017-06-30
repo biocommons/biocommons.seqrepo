@@ -66,7 +66,7 @@ upload_%:
 #=> test: execute tests
 .PHONY: test
 test:
-	python setup.py pytest --addopts="--cov=${PKG} ${PKG} tests"
+	python setup.py pytest --addopts="--cov=${PKG} ${PKGD} tests"
 
 #=> tox: execute tests via tox
 .PHONY: tox
