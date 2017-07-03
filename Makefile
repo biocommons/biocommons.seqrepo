@@ -4,10 +4,13 @@
 .PHONY: FORCE
 .SUFFIXES:
 
-SHELL:=/bin/bash -o pipefail
+SHELL:=/bin/bash -e -o pipefail
 SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=biocommons.seqrepo
+PKGD=$(subst .,/,${PKG})
+
+VEDIR=venv/3.5
 
 
 ############################################################################
@@ -23,26 +26,33 @@ help:
 #= SETUP, INSTALLATION, PACKAGING
 
 #=> venv: make a Python 3 virtual environment
-.PHONY: venv
-venv:
-	pyvenv venv; \
-	source venv/bin/activate; \
+.PHONY: venv/2.7
+venv/2.7:
+	virtualenv -p $$(type -p python2.7) $@; \
+	source $@/bin/activate; \
+	pip install --upgrade pip setuptools
+
+#=> venv: make a Python 3 virtual environment
+.PHONY: ${VEDIR}
+${VEDIR}:
+	pyvenv $@; \
+	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
 
 #=> setup: setup/upgrade packages *in current environment*
 .PHONY: setup
 setup: etc/develop.reqs etc/install.reqs
-	pip install --upgrade -r $(word 1,$^)
-	pip install --upgrade -r $(word 2,$^)
+	if [ -s $(word 1,$^) ]; then pip install --upgrade -r $(word 1,$^); fi
+	if [ -s $(word 2,$^) ]; then pip install --upgrade -r $(word 2,$^); fi
 
 #=> devready: create venv, install prerequisites, install pkg in develop mode
 .PHONY: devready
 devready:
-	make venv && source venv/bin/activate && make setup develop
-	@echo '#############################################################################'
-	@echo '###  Do not forget to `source venv/bin/activate` to use this environment  ###'
-	@echo '#############################################################################'
+	make ${VEDIR} && source ${VEDIR}/bin/activate && make setup develop
+	@echo '#################################################################################'
+	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
+	@echo '#################################################################################'
 
 #=> develop: install package in develop mode
 #=> install: install package
@@ -83,7 +93,7 @@ tox:
 reformat:
 	@if hg sum | grep -qL '^commit:.*modified'; then echo "Repository not clean" 1>&2; exit 1; fi
 	@if hg sum | grep -qL ' applied'; then echo "Repository has applied patches" 1>&2; exit 1; fi
-	yapf -i -r seqrepo tests
+	yapf -i -r ${PKGD} tests
 	hg commit -m "reformatted with yapf"
 
 #=> docs -- make sphinx docs

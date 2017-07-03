@@ -191,4 +191,4 @@ class FastaDir(BaseReader, BaseWriter):
         pt = prettytable.PrettyTable(field_names=fields)
         for r in self._db.execute("select * from seqinfo"):
             pt.add_row([r[f] for f in fields])
-        print(pt)
+            print(pt)

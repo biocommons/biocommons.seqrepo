@@ -52,8 +52,8 @@ setup(
 
     install_requires = [
         "biopython>=1.67",
-        "bioutils>=0.2.0",
-        "ipython",
+        "bioutils>=0.2",
+        "ipython<6",            # limit for Python 2 compatibility
         "pysam",
         "six",
         "tqdm",

@@ -37,7 +37,7 @@ class SeqAliasDB(object):
         self._db.row_factory = sqlite3.Row
 
         # if we're not at the expected schema version for this code, bail
-        if schema_version != expected_schema_version:
+        if schema_version != expected_schema_version:  # pragma: no cover
             raise RuntimeError("Upgrade required: Database schema"
                                "version is {} and code expects {}".format(schema_version, expected_schema_version))
 
@@ -99,10 +99,7 @@ class SeqAliasDB(object):
 
     def schema_version(self):
         """return schema version as integer"""
-        try:
-            return int(self._db.execute("select value from meta where key = 'schema version'").fetchone()[0])
-        except sqlite3.OperationalError:
-            return None
+        return int(self._db.execute("select value from meta where key = 'schema version'").fetchone()[0])
 
     def stats(self):
         sql = """select count(*) as n_aliases, sum(is_current) as n_current,

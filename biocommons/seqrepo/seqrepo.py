@@ -62,7 +62,7 @@ class SeqRepo(object):
         return self.aliases.find_aliases(alias=a, namespace=ns).fetchone() is not None
 
     def __getitem__(self, nsa):
-        # lookup aliases, optionally namespaced, like NM_01234.5 or ncbi:NM_01234.5
+        # lookup aliases, optionally namespaced, like NM_01234.5 or NCBI:NM_01234.5
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
         return self.fetch(alias=a, namespace=ns)
 
@@ -131,16 +131,11 @@ class SeqRepo(object):
                 self.commit()
             self.sequences.store(seq_id, seq)
             seq_aliases = [
-                {"namespace": "sh",
-                 "alias": seqhash},
-                {"namespace": "sha512",
-                 "alias": bioutils.digests.seq_sha512(seq)},
-                {"namespace": "sha1",
-                 "alias": bioutils.digests.seq_sha1(seq)},
-                {"namespace": "md5",
-                 "alias": bioutils.digests.seq_md5(seq)},
-                {"namespace": "seguid",
-                 "alias": bioutils.digests.seq_seguid(seq)},
+                {"namespace": "sh",      "alias": seqhash},
+                {"namespace": "sha512",  "alias": bioutils.digests.seq_sha512(seq)},
+                {"namespace": "sha1",    "alias": bioutils.digests.seq_sha1(seq)},
+                {"namespace": "md5",     "alias": bioutils.digests.seq_md5(seq)},
+                {"namespace": "seguid",  "alias": bioutils.digests.seq_seguid(seq)},
             ]
             for sa in seq_aliases:
                 self.aliases.store_alias(seq_id=seq_id, **sa)

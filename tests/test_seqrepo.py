@@ -22,7 +22,7 @@ def seqrepo_keepcase(tmpdir_factory):
 
 
 def test_create(seqrepo):
-    pass
+    assert str(seqrepo).startswith('SeqRepo(root_dir=/')
 
 
 def test_store(seqrepo):
