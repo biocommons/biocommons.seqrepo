@@ -1,2 +1,2 @@
 pysam>=0.9.1.4
-bioutils>=0.2
+bioutils>=0.2.5
