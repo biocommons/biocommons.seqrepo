@@ -20,29 +20,36 @@ from pysam import FastaFile
 line_width = 100
 logger = logging.getLogger(__name__)
 
-bgzip_exe = "/usr/bin/bgzip"
+bgzip_exe = os.environ.get("SEQREPO_BGZIP_PATH", "/usr/bin/bgzip")
 min_bgzip_version_info = (1, 2, 1)
 min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
 
 
-def _check_bgzip_version(exe):  # pragma: no cover
-    def _get_version(exe):
-        p = subprocess.Popen([exe, "-h"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-        output = p.communicate()
-        version_line = output[0].splitlines()[1]
-        version = re.match("Version:\s+(\d+\.\d+\.\d+)", version_line).group(1)
-        return version
+def _get_bgzip_version(exe):
+    """return bgzip version as string"""
+    p = subprocess.Popen([exe, "-h"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    output = p.communicate()
+    version_line = output[0].splitlines()[1]
+    version = re.match("(?:Version:|bgzip \(htslib\))\s+(\d+\.\d+\.\d+)", version_line).group(1)
+    return version
+
+
+def _check_bgzip_version(exe):
+    missing_file_exception = OSError if six.PY2 else FileNotFoundError
 
     try:
-        bgzip_version = _get_version(exe)
-    except Exception as e:
-        raise RuntimeError("Could not find version string in {exe}".format(exe=exe))
+        bgzip_version = _get_bgzip_version(exe)
+    except AttributeError:
+        raise RuntimeError("Didn't find version string when executing {exe}".format(exe=exe))
+    except missing_file_exception:
+        raise RuntimeError("Error while exceuting {exe}; does it exist?".format(exe=exe))
+    except Exception:
+        raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
         raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
             exe=exe, ev=bgzip_version, rv=min_bgzip_version))
     logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
-
 
 
 class FabgzReader(object):
