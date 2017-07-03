@@ -52,8 +52,8 @@ setup(
 
     install_requires = [
         "biopython>=1.67",
-        "bioutils>=0.2.0",
-        "ipython",
+        "bioutils==0.2.4",
+        "ipython==5.4.1",
         "pysam",
         "six",
         "tqdm",
@@ -67,6 +67,7 @@ setup(
         #"sphinx_rtd_theme",
         #"sphinxcontrib-fulltoc",
         "wheel",
+        "ipython==5.4.1"
     ],
 
     tests_require = [

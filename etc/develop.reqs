@@ -1,5 +1,5 @@
 flake8
-ipython
+ipython==5.0
 pytest
 pytest-cov
 restview
