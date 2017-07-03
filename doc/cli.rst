@@ -53,7 +53,6 @@ nested within the source directory.)
 
 
 
-
 Exporting all sequences
 @@@@@@@@@@@@@@@@@@@@@@@
 
@@ -64,4 +63,11 @@ Exporting all sequences
   GTACGCCCCCTCCCCCCGTCCCTATCGGCAGAACCGGAGGCCAACCTTCGCGATCCCTTGCTGCGGGCCCGGAGATCAAACGTGGCCCGCCCCCGGCAGG
   GCACAGCGCGCTGGGCAACCGCGATCCGGCGCCGGACTGGAGGGGTCGATGCGCGGCGCGCTGGGGCGCACAGGGGACGGAGCCCGGGTCTTGCTCCCCA
 
+
+
+Configuration Notes
+@@@@@@@@@@@@@@@@@@@
+
+* SEQREPO_BGZIP_PATH may be used to specify an alternative location
+  for the bgzip binary. (Default: /usr/bin/bgzip)
 
