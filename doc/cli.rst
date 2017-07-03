@@ -18,11 +18,11 @@ Loading
 
 ::
 
-  $ seqrepo -d $SEQREPO_ROOT/master init
+  $ seqrepo --root-directory $SEQREPO_ROOT/master init
   
-  $ seqrepo -d $SEQREPO_ROOT/master load -n ncbi mirror/ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/human.*.gz
+  $ seqrepo --root-directory $SEQREPO_ROOT/master load -n ncbi mirror/ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/human.*.gz
   
-  $ seqrepo -d $SEQREPO_ROOT/master show-status
+  $ seqrepo --root-directory $SEQREPO_ROOT/master show-status
   seqrepo 0.1.0
   root directory: /usr/local/share/seqrepo/master, 0.2 GB
   backends: fastadir (schema 1), seqaliasdb (schema 1) 
