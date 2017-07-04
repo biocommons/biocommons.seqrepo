@@ -103,7 +103,7 @@ def parse_arguments():
         "--namespace",
         "-n",
         required=True,
-        help="namespace name (e.g., ncbi, ensembl, lrg)", )
+        help="namespace name (e.g., NCBI, Ensembl, LRG)", )
 
     # init
     ap = subparsers.add_parser("init", help="initialize seqrepo directory")
@@ -124,7 +124,7 @@ def parse_arguments():
         "--namespace",
         "-n",
         required=True,
-        help="namespace name (e.g., ncbi, ensembl, lrg)", )
+        help="namespace name (e.g., NCBI, Ensembl, LRG)", )
 
     # pull
     ap = subparsers.add_parser("pull", help="pull incremental update from seqrepo mirror")
@@ -169,7 +169,7 @@ def add_assembly_names(opts):
     logger = logging.getLogger(__name__)
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)
-    ncbi_alias_map = {r["alias"]: r["seq_id"] for r in sr.aliases.find_aliases(namespace="ncbi", current_only=False)}
+    ncbi_alias_map = {r["alias"]: r["seq_id"] for r in sr.aliases.find_aliases(namespace="NCBI", current_only=False)}
     namespaces = [r["namespace"] for r in sr.aliases._db.execute("select distinct namespace from seqalias")]
     assemblies = bioutils.assemblies.get_assemblies()
     assemblies_to_load = sorted([k for k in assemblies if k not in namespaces])
@@ -265,20 +265,21 @@ def load(opts):
             seq_bar.set_description("seen: {nss} seqs; added: {nsa} seqs, {naa} aliases".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
             seq = str(rec.seq)
-            if opts.namespace == "-":
+            if opts.namespace == "-":  # namespace from defline
+                raise RuntimeError("Unused, right?")
                 aliases = [
                     {
                         "namespace": k,
                         "alias": e[1]
                     }
                     for k, gi in itertools.groupby((r.split(":") for r in rec.description.split()), key=lambda e: e[0])
-                    for e in gi if (k.startswith("ncbi") or k.startswith("ensembl"))
+                    for e in gi if (k.startswith("NCBI") or k.startswith("Ensembl"))
                 ]
-            elif opts.namespace == "ncbi" and "|" in rec.id:
+            elif opts.namespace == "NCBI" and "|" in rec.id:
                 aliases = [m.groupdict() for m in defline_re.finditer(rec.id)]
                 for a in aliases:
                     if a["namespace"] == "ref":
-                        a["namespace"] = "ncbi"
+                        a["namespace"] = "NCBI"
             else:
                 aliases = [{"namespace": opts.namespace, "alias": rec.id}]
             n_sa, n_aa = sr.store(seq, aliases)

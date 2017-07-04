@@ -136,19 +136,19 @@ class SeqRepo(object):
                     "alias": seqhash
                 },
                 {
-                    "namespace": "sha512",
+                    "namespace": "SHA512",
                     "alias": bioutils.digests.seq_sha512(seq)
                 },
                 {
-                    "namespace": "sha1",
+                    "namespace": "SHA1",
                     "alias": bioutils.digests.seq_sha1(seq)
                 },
                 {
-                    "namespace": "md5",
+                    "namespace": "MD5",
                     "alias": bioutils.digests.seq_md5(seq)
                 },
                 {
-                    "namespace": "seguid",
+                    "namespace": "SEGUID",
                     "alias": bioutils.digests.seq_seguid(seq)
                 },
             ]
