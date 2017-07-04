@@ -28,8 +28,6 @@ logger = logging.getLogger(__name__)
 expected_schema_version = 1
 
 
-
-
 class FastaDir(BaseReader, BaseWriter):
     """This class provides simple a simple key-value interface to a
     directory of compressed fasta files.

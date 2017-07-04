@@ -10,13 +10,11 @@ logger = logging.getLogger(__name__)
 expected_schema_version = 1
 
 min_sqlite_version_info = (3, 8, 0)
-if sqlite3.sqlite_version_info < min_sqlite_version_info:  # pragma: no cover
+if sqlite3.sqlite_version_info < min_sqlite_version_info:    # pragma: no cover
     min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
     msg = "{} requires sqlite3 >= {} but {} is installed".format(__package__, min_sqlite_version,
                                                                  sqlite3.sqlite_version)
     raise ImportError(msg)
-
-
 
 
 class SeqAliasDB(object):
@@ -37,10 +35,9 @@ class SeqAliasDB(object):
         self._db.row_factory = sqlite3.Row
 
         # if we're not at the expected schema version for this code, bail
-        if schema_version != expected_schema_version:  # pragma: no cover
+        if schema_version != expected_schema_version:    # pragma: no cover
             raise RuntimeError("Upgrade required: Database schema"
                                "version is {} and code expects {}".format(schema_version, expected_schema_version))
-
 
     # ############################################################################
     # Special methods
@@ -49,7 +46,6 @@ class SeqAliasDB(object):
         c = self._db.execute("select exists(select 1 from seqalias where seq_id = ? limit 1) as ex",
                              (seq_id, )).fetchone()
         return True if c["ex"] else False
-
 
     # ############################################################################
     # Public methods
@@ -121,8 +117,8 @@ class SeqAliasDB(object):
 
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         try:
-            c = self._db.execute("insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)",
-                                 (seq_id, namespace, alias))
+            c = self._db.execute("insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)", (seq_id, namespace,
+                                                                                                      alias))
             return c.lastrowid
         except sqlite3.IntegrityError:
             pass
@@ -142,7 +138,6 @@ class SeqAliasDB(object):
         logger.debug(log_pfx + ": deprecating {s1}".format(s1=current_rec["seq_id"]))
         self._db.execute("update seqalias set is_current = 0 where seqalias_id = ?", [current_rec["seqalias_id"]])
         return self.store_alias(seq_id, namespace, alias)
-
 
     # ############################################################################
     # Internal methods

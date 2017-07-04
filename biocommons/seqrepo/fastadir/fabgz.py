@@ -124,7 +124,6 @@ class FabgzWriter(object):
 
             logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
 
-
     def __del__(self):
         if self._fh is not None:
             logger.error("FabgzWriter({}) was not explicitly closed; may result in lost data".format(self.filename))

@@ -44,8 +44,7 @@ def commonpath(paths):
     splitpaths0 = splitpaths[0]
     splitpaths1n = splitpaths[1:]
     min_length = min(len(p) for p in splitpaths)
-    equal = [i for i in range(min_length)
-             if all(splitpaths0[i] == sp[i] for sp in splitpaths1n)]
+    equal = [i for i in range(min_length) if all(splitpaths0[i] == sp[i] for sp in splitpaths1n)]
     max_equal = max(equal or [-1])
     commonelems = splitpaths0[:max_equal + 1]
     commonpath = os.sep.join(commonelems)
@@ -53,16 +52,17 @@ def commonpath(paths):
 
 
 if __name__ == "__main__":
+
     def cmp1(pathlist):
         bi = os.path.commonpath(pathlist)
         c = commonpath(pathlist)
-        print("{eq:5s} {bi:20s} {c:20s} {paths}".format(eq = str(bi == c), bi=bi, c=c, paths=", ".join(pathlist)))
+        print("{eq:5s} {bi:20s} {c:20s} {paths}".format(eq=str(bi == c), bi=bi, c=c, paths=", ".join(pathlist)))
 
     paths = ["/a/b/c", "/a/b/c//", "///a///b///c", "/a/b/d", "/a/b", "/a", "/"]
     paths = ["/a/b/c", "/a/b/c//", "///a///b///c", "/a/b/d", "/a/b", "/a", "/"]
     for i in range(0, len(paths)):
-        cmp1(paths[:i+1])
-    
+        cmp1(paths[:i + 1])
+
     paths2 = [p.lstrip("/") for p in paths]
     for i in range(1, len(paths2)):
         cmp1(paths2[:i])

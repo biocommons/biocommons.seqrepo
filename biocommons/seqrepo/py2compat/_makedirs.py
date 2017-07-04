@@ -2,8 +2,10 @@ import os
 
 import six
 
+
 class FileExistsError(OSError):
     pass
+
 
 def makedirs(name, mode=0o777, exist_ok=False):
     """cheapo replacement for py3 makedirs with support for exist_ok

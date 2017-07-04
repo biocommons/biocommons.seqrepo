@@ -39,11 +39,10 @@ def test_write_reread():
     shutil.rmtree(tmpdir)
 
 
-
 def test_errors():
     with pytest.raises(RuntimeError):
         far = FabgzWriter("/tmp/badsuffix")
-    
+
 
 if __name__ == "__main__":
     test_write_reread()

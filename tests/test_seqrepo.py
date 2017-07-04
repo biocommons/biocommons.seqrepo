@@ -8,12 +8,14 @@ def seqrepo(tmpdir_factory):
     dir = str(tmpdir_factory.mktemp('seqrepo'))
     return SeqRepo(dir, writeable=True)
 
+
 @pytest.fixture(scope="session")
 def seqrepo_ro(tmpdir_factory):
     dir = str(tmpdir_factory.mktemp('seqrepo'))
     sr = SeqRepo(dir, writeable=True)
-    del sr                      # close it
+    del sr    # close it
     return SeqRepo(dir)
+
 
 @pytest.fixture(scope="session")
 def seqrepo_keepcase(tmpdir_factory):
@@ -26,12 +28,11 @@ def test_create(seqrepo):
 
 
 def test_store(seqrepo):
-    seqrepo.store("SMELLASSWEET", [{"namespace": "en", "alias": "rose"},
-                                   {"namespace": "fr", "alias": "rose"}])
-    seqrepo.store("smellassweet", [{"namespace": "es", "alias": "rosa"}])  # same sequence, new alias
+    seqrepo.store("SMELLASSWEET", [{"namespace": "en", "alias": "rose"}, {"namespace": "fr", "alias": "rose"}])
+    seqrepo.store("smellassweet", [{"namespace": "es", "alias": "rosa"}])    # same sequence, new alias
 
-    seqrepo.store("ASINCHANGE",   [{"namespace": "en", "alias": "coin"}])  # same alias, diff seqs in diff namespaces
-    seqrepo.store("ASINACORNER",  [{"namespace": "fr", "alias": "coin"}])
+    seqrepo.store("ASINCHANGE", [{"namespace": "en", "alias": "coin"}])    # same alias, diff seqs in diff namespaces
+    seqrepo.store("ASINACORNER", [{"namespace": "fr", "alias": "coin"}])
     seqrepo.commit()
 
 
@@ -40,7 +41,7 @@ def test_fetch(seqrepo):
     assert seqrepo["rose"] == "SMELLASSWEET"
     assert seqrepo.fetch("rosa") == "SMELLASSWEET"
     assert "rosa" in seqrepo
-    
+
     assert len(list(rec for rec in seqrepo)) == 3
 
     assert seqrepo.fetch("rosa", start=5, end=7) == "AS"

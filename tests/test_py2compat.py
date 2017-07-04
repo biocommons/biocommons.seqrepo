@@ -5,6 +5,7 @@ import six
 
 from biocommons.seqrepo.py2compat import makedirs, FileExistsError
 
+
 def test_makedirs(tmpdir_factory):
     tmpdir = str(tmpdir_factory.mktemp('p2compat'))
     dn = os.path.join(tmpdir, "test")

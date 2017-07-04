@@ -20,7 +20,7 @@ ct_n_residues = 1e9
 # namespace-alias separator
 nsa_sep = ":"
 
-uri_re = re.compile("([^:]+):(.+)")   
+uri_re = re.compile("([^:]+):(.+)")
 
 
 class SeqRepo(object):
@@ -78,7 +78,6 @@ class SeqRepo(object):
     def __str__(self):
         return "SeqRepo(root_dir={self._root_dir})".format(self=self)
 
-
     def fetch(self, alias, start=None, end=None, namespace=None):
         recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
 
@@ -91,7 +90,6 @@ class SeqRepo(object):
 
         return self.sequences.fetch(seq_ids.pop(), start, end)
 
-
     def fetch_uri(self, uri, start=None, end=None):
         """fetch sequence for URI/CURIE of the form namespace:alias, such as
         NCBI:NM_000059.3.
@@ -100,7 +98,6 @@ class SeqRepo(object):
 
         namespace, alias = uri_re.match(uri).groups()
         return self.fetch(alias=alias, namespace=namespace, start=start, end=end)
-
 
     def store(self, seq, nsaliases):
         """nsaliases is a list of dicts, like:
@@ -122,20 +119,38 @@ class SeqRepo(object):
         # add sequence if not present
         n_seqs_added = n_aliases_added = 0
         msg = "sh{nsa_sep}{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
-            seq_id=seq_id, l=len(seq), na=len(nsaliases), nsa_sep=nsa_sep,
+            seq_id=seq_id,
+            l=len(seq),
+            na=len(nsaliases),
+            nsa_sep=nsa_sep,
             aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
         if seq_id not in self.sequences:
             logger.info("Storing " + msg)
-            if len(seq) > ct_n_residues:  # pragma: no cover
+            if len(seq) > ct_n_residues:    # pragma: no cover
                 logger.debug("Precommit for large sequence")
                 self.commit()
             self.sequences.store(seq_id, seq)
             seq_aliases = [
-                {"namespace": "sh",      "alias": seqhash},
-                {"namespace": "sha512",  "alias": bioutils.digests.seq_sha512(seq)},
-                {"namespace": "sha1",    "alias": bioutils.digests.seq_sha1(seq)},
-                {"namespace": "md5",     "alias": bioutils.digests.seq_md5(seq)},
-                {"namespace": "seguid",  "alias": bioutils.digests.seq_seguid(seq)},
+                {
+                    "namespace": "sh",
+                    "alias": seqhash
+                },
+                {
+                    "namespace": "sha512",
+                    "alias": bioutils.digests.seq_sha512(seq)
+                },
+                {
+                    "namespace": "sha1",
+                    "alias": bioutils.digests.seq_sha1(seq)
+                },
+                {
+                    "namespace": "md5",
+                    "alias": bioutils.digests.seq_md5(seq)
+                },
+                {
+                    "namespace": "seguid",
+                    "alias": bioutils.digests.seq_seguid(seq)
+                },
             ]
             for sa in seq_aliases:
                 self.aliases.store_alias(seq_id=seq_id, **sa)
@@ -158,9 +173,8 @@ class SeqRepo(object):
                 self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
             n_aliases_added += len(upd_tuples)
-        if (self._pending_sequences > ct_n_seqs
-            or self._pending_aliases > ct_n_aliases
-            or self._pending_sequences_len > ct_n_residues):  # pragma: no cover
+        if (self._pending_sequences > ct_n_seqs or self._pending_aliases > ct_n_aliases
+                or self._pending_sequences_len > ct_n_residues):    # pragma: no cover
             logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
                         "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self))
             self.commit()
