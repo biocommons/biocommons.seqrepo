@@ -4,7 +4,7 @@
 # Used by Reece to push new instances -- likely not relevant for anyone else
 
 # minion is an ssh alias
-host=minion
+host=minion-tunnel
 
 # seqrepo root directory
 seqrepo_root=/usr/local/share/seqrepo
@@ -23,6 +23,6 @@ echo "push_instance=${push_instance}"
 (
     set -ex
     cd $seqrepo_root
-    rsync -avHP "$push_instance/" --link-dest="../$prev_instance/" minion:"dl.biocommons.org/seqrepo/$push_instance.tmp/"
-    ssh minion /bin/mv "dl.biocommons.org/seqrepo/$push_instance.tmp/" "dl.biocommons.org/seqrepo/$push_instance/"
+    rsync -avHP "$push_instance/" --link-dest="../$prev_instance/" $host:"dl.biocommons.org/seqrepo/$push_instance.tmp/"
+    ssh $host /bin/mv "dl.biocommons.org/seqrepo/$push_instance.tmp/" "dl.biocommons.org/seqrepo/$push_instance/"
 )
