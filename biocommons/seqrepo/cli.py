@@ -71,7 +71,12 @@ def parse_arguments():
     top_p.add_argument("--verbose", "-v", action="count", default=0, help="be verbose; multiple accepted")
     top_p.add_argument("--version", action="version", version=__version__)
 
-    subparsers = top_p.add_subparsers(title='subcommands')
+    # dest and required bits are to work around a bug in the Python 3 version of argparse
+    # when no subcommands are provided
+    # https://stackoverflow.com/questions/22990977/why-does-this-argparse-code-behave-differently-between-python-2-and-3
+    # http://bugs.python.org/issue9253#msg186387
+    subparsers = top_p.add_subparsers(title='subcommands', dest='_subcommands')
+    subparsers.required = True
 
     # add-assembly-names
     ap = subparsers.add_parser(
@@ -420,7 +425,9 @@ def upgrade(opts):
 def main():
     opts = parse_arguments()
     #pprint.pprint(opts); sys.exit(1)
-    verbose_log_level = logging.WARN if opts.verbose == 0 else logging.INFO if opts.verbose == 1 else logging.DEBUG
+    verbose_log_level = (logging.WARN if opts.verbose == 0 else
+                         logging.INFO if opts.verbose == 1 else
+                         logging.DEBUG)
     logging.basicConfig(level=verbose_log_level)
     opts.func(opts)
 
