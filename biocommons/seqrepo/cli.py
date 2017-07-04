@@ -262,7 +262,7 @@ def load(opts):
         seq_bar = tqdm.tqdm(SeqIO.parse(fh, "fasta"), unit=" seqs", disable=disable_bar, leave=False)
         for rec in seq_bar:
             n_seqs_seen += 1
-            seq_bar.set_description("seen: {nss} seqs; added: {nsa} seqs, {naa} aliases".format(
+            seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
             seq = str(rec.seq)
             if opts.namespace == "-":  # namespace from defline
