@@ -36,6 +36,7 @@ from . import __version__, SeqRepo
 from .py2compat import commonpath, gzip_open_encoded, makedirs
 
 instance_name_re = re.compile('^201\d{5}$')    # smells like a datestamp
+SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 
 #instance_name_re = re.compile('^[89]\d+$')  # debugging
 
@@ -67,7 +68,7 @@ def parse_arguments():
         description=__doc__.split("\n\n")[0],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog="seqrepo " + __version__ + ". See https://github.com/biocommons/biocommons.seqrepo for more information")
-    top_p.add_argument("--root-directory", "-r", default="/usr/local/share/seqrepo", help="seqrepo root directory")
+    top_p.add_argument("--root-directory", "-r", default=SEQREPO_ROOT_DIR, help="seqrepo root directory")
     top_p.add_argument("--verbose", "-v", action="count", default=0, help="be verbose; multiple accepted")
     top_p.add_argument("--version", action="version", version=__version__)
 
@@ -329,7 +330,7 @@ def show_status(opts):
 
     sr = SeqRepo(seqrepo_dir)
     print("seqrepo {version}".format(version=__version__))
-    print("root directory: {sr._root_dir}, {ts:.1f} GB".format(sr=sr, ts=tot_size / 1e9))
+    print("instance directory: {sr._root_dir}, {ts:.1f} GB".format(sr=sr, ts=tot_size / 1e9))
     print("backends: fastadir (schema {fd_v}), seqaliasdb (schema {sa_v}) ".format(
         fd_v=sr.sequences.schema_version(), sa_v=sr.aliases.schema_version()))
     print("sequences: {ss[n_sequences]} sequences, {ss[tot_length]} residues, {ss[n_files]} files".format(
