@@ -39,7 +39,7 @@ class FastaDir(BaseReader, BaseWriter):
     random access to arbitrary regions of even large (chromosome-size)
     sequences (thanks to pysam.FastaFile).
 
-    When the key is a hash based on sequence (e.g., sha512), the
+    When the key is a hash based on sequence (e.g., SHA512), the
     combination provides a convenient non-redundant storage of
     sequences, with fast access to sequences and sequence slices,
     compact storage and easy replication.

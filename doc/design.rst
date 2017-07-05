@@ -72,8 +72,8 @@ SeqRepo
 
 * Parses fasta files for aliases and generates computed hashes
 
-Known reference types: gi, refseq, ensembl, lrg, grc, bic
-hashes: sha1, sha1/8, sha256, sha512, md5, seguid
+Known reference types: gi, refseq, Ensembl, LRG, GRC, BIC
+hashes: SHA1, SHA1/8, SHA256, SHA512, MD5, SEGUID
 
 
 

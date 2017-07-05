@@ -35,6 +35,6 @@ API Usage
    {'added': '2016-08-18 17:40:49',
     'alias': 'NM_013305.4',
     'is_current': 1,
-    'namespace': 'ncbi',
+    'namespace': 'NCBI',
     'seq_id': '-16o-XuCMVXM-y75LtlLPpmznaDqTn1b',
     'seqalias_id': 144390}]

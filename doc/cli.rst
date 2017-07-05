@@ -20,7 +20,7 @@ Loading
 
   $ seqrepo --root-directory $SEQREPO_ROOT/master init
   
-  $ seqrepo --root-directory $SEQREPO_ROOT/master load -n ncbi mirror/ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/human.*.gz
+  $ seqrepo --root-directory $SEQREPO_ROOT/master load -n NCBI mirror/ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/human.*.gz
   
   $ seqrepo --root-directory $SEQREPO_ROOT/master show-status
   seqrepo 0.1.0
@@ -35,21 +35,17 @@ Making a snapshot
 
 Snapshots are made with the snapshot command::
 
-  $ seqrepo -v -d $SEQREPO_ROOT/master snapshot 20160231
+  $ seqrepo -v snapshot 20160231
   INFO:biocommons.seqrepo.cli:snapshot created in $SEQREPO_ROOT/20160231
 
 The snapshot command:
 
-  * creates the same directory structure as the source directory (`-d`)
+  * creates the same directory structure as the source directory
   * hardlinks the sequence files and indexes to the new location
   * copies the sqlite databases
   * removes write permissions from directories and sqlite databases
     (sequence files are made unwritable after creation).
 
-If the snapshot argument is a full path, that is used as the
-destination.  Otherwise, the argument is assumed to be relative to the
-parent of the directory specified by `-d`. (A snapshot may not be
-nested within the source directory.)
 
 
 
@@ -58,8 +54,8 @@ Exporting all sequences
 
 ::
 
-  $ seqrepo -v -d $SEQREPO_ROOT/master export | head
-  >ncbi:NM_013305.4 seguid:EqjiLe... md5:04e8c3c75... sha512:000a70c470f6... sha1:12a8e22d...
+  $ seqrepo -v -r $SEQREPO_ROOT export | head
+  >NCBI:NM_013305.4 seguid:EqjiLe... MD5:04e8c3c75... SHA512:000a70c470f6... SHA1:12a8e22d...
   GTACGCCCCCTCCCCCCGTCCCTATCGGCAGAACCGGAGGCCAACCTTCGCGATCCCTTGCTGCGGGCCCGGAGATCAAACGTGGCCCGCCCCCGGCAGG
   GCACAGCGCGCTGGGCAACCGCGATCCGGCGCCGGACTGGAGGGGTCGATGCGCGGCGCGCTGGGGCGCACAGGGGACGGAGCCCGGGTCTTGCTCCCCA
 
