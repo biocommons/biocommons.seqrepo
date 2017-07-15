@@ -15,9 +15,10 @@
 # sys.platform: linux2
 # sys.version: 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
 # sqlite3.sqlite_version: 3.16.2
-# ('SeqRepo(root_dir=/tmp/sr, writeable=False)', (8281, 8280, 'SMELLASSWEET'))
-# ('SeqRepo(root_dir=/tmp/sr, writeable=True)', (8283, 8280, 'SMELLASSWEET'))
-
+# pid 9659 created SeqRepo(root_dir=/tmp/sr, writeable=False)
+# (9660, 9659, 'SMELLASSWEET')
+# pid 9659 created SeqRepo(root_dir=/tmp/sr, writeable=True)
+# (9662, 9659, 'SMELLASSWEET')
 
 
 import os
@@ -51,10 +52,11 @@ def make_seqrepo(writeable):
     sr = SeqRepo("/tmp/sr", writeable=True)
     sr.store("SMELLASSWEET", [{"namespace": "en", "alias": "rose"}, {"namespace": "fr", "alias": "rose"}])
 
-    if writeable == False:
+    if writeable is False:
         del sr
         sr = SeqRepo("/tmp/sr", writeable=writeable)
 
+    print("pid {pid} created {sr}".format(pid=os.getpid(), sr=sr))
     return sr
 
 
@@ -63,7 +65,7 @@ if __name__ == "__main__":
 
     def _test(sr):
         r = fetch_in_thread(sr, nsa)
-        print(str(sr), r)
+        print(r)
 
     print("sys.platform: " + sys.platform)
     print("sys.version: " + sys.version.replace("\n", " "))
