@@ -76,7 +76,7 @@ class SeqRepo(object):
             yield (srec, arecs)
 
     def __str__(self):
-        return "SeqRepo(root_dir={self._root_dir})".format(self=self)
+        return "SeqRepo(root_dir={self._root_dir}, writeable={self._writeable})".format(self=self)
 
     def fetch(self, alias, start=None, end=None, namespace=None):
         recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
