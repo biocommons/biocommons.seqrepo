@@ -209,7 +209,7 @@ def export(opts):
         for i in range(0, len(seq), line_width):
             yield seq[i:i + line_width]
 
-    seqrepo_dir = _latest_instance_path(opts)
+    seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
     for srec, arecs in sr:
         nsad = convert_alias_records_to_ns_dict(arecs)
