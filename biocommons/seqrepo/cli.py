@@ -14,6 +14,7 @@ Try::
 from __future__ import division, print_function, unicode_literals
 
 import argparse
+import datetime
 import io
 import itertools
 import logging
@@ -148,7 +149,9 @@ def parse_arguments():
     ap.set_defaults(func=snapshot)
     ap.add_argument(
         "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
-    ap.add_argument("destination_directory", help="destination directory name (must not already exist)")
+    ap.add_argument("--destination-name", "-d",
+                    default=datetime.datetime.utcnow().strftime("%F"),
+                    help="destination directory name (must not already exist)")
 
     # start-shell
     ap = subparsers.add_parser("start-shell", help="start interactive shell with initialized seqrepo")
@@ -352,7 +355,7 @@ def snapshot(opts):
     logger = logging.getLogger(__name__)
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
 
-    dst_dir = opts.destination_directory
+    dst_dir = opts.destination_name
     if not dst_dir.startswith("/"):
         # interpret dst_dir as relative to parent dir of seqrepo_dir
         dst_dir = os.path.join(opts.root_directory, dst_dir)

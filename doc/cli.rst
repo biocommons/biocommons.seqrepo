@@ -35,8 +35,8 @@ Making a snapshot
 
 Snapshots are made with the snapshot command::
 
-  $ seqrepo -v snapshot 20160231
-  INFO:biocommons.seqrepo.cli:snapshot created in $SEQREPO_ROOT/20160231
+  $ seqrepo -v snapshot 2017-07-17
+  INFO:biocommons.seqrepo.cli:snapshot created in $SEQREPO_ROOT/2017-07-17
 
 The snapshot command:
 
