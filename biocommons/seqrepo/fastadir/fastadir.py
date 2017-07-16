@@ -88,7 +88,7 @@ class FastaDir(BaseReader, BaseWriter):
             yield recd
 
     def __len__(self):
-        return self.stats()["n_seqs"]
+        return self.stats()["n_sequences"]
 
     # ############################################################################
     # Public methods

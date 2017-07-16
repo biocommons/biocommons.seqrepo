@@ -23,6 +23,8 @@ def test_write_reread():
 
     assert "3" in fd
 
+    assert len(fd) == 3
+
     assert fd["3"] == "seq3", "test __getitem__ lookup"
 
     with pytest.raises(KeyError):
