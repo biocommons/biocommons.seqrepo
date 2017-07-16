@@ -130,38 +130,14 @@ class SeqRepo(object):
                 logger.debug("Precommit for large sequence")
                 self.commit()
             self.sequences.store(seq_id, seq)
-            seq_aliases = [
-                {
-                    "namespace": "sh",
-                    "alias": seqhash
-                },
-                {
-                    "namespace": "SHA512",
-                    "alias": bioutils.digests.seq_sha512(seq)
-                },
-                {
-                    "namespace": "SHA1",
-                    "alias": bioutils.digests.seq_sha1(seq)
-                },
-                {
-                    "namespace": "MD5",
-                    "alias": bioutils.digests.seq_md5(seq)
-                },
-                {
-                    "namespace": "SEGUID",
-                    "alias": bioutils.digests.seq_seguid(seq)
-                },
-            ]
-            for sa in seq_aliases:
-                self.aliases.store_alias(seq_id=seq_id, **sa)
+            n_seqs_added += 1
             self._pending_sequences += 1
             self._pending_sequences_len += len(seq)
-            self._pending_aliases += len(seq_aliases)
-            n_seqs_added += 1
+            self._pending_aliases += self._update_digest_aliases(seq_id, seq)
         else:
             logger.debug("Sequence exists: " + msg)
 
-        # add/update aliases
+        # add/update external aliases for new and existing sequences
         # updating is optimized to load only new <seq_id,ns,alias> tuples
         existing_aliases = self.aliases.fetch_aliases(seq_id)
         ea_tuples = [(r["seq_id"], r["namespace"], r["alias"]) for r in existing_aliases]
@@ -193,3 +169,36 @@ class SeqRepo(object):
     def __del__(self):
         if self._writeable:
             self.commit()
+
+
+    def _update_digest_aliases(self, seq_id, seq):
+        """compute digest aliases for seq and update; returns number of digest
+        aliases (some of which may have already existed)
+
+        For the moment, sha512 is computed for seq_id separately from
+        the sha512 here.  We should fix that.
+
+        """
+
+        ir = bioutils.digests.seq_vmc_identifier(seq)
+        seq_aliases = [
+            {
+                "namespace": ir["namespace"],
+                "alias": ir["accession"],
+            },
+            {
+                "namespace": "SHA1",
+                "alias": bioutils.digests.seq_sha1(seq)
+            },
+            {
+                "namespace": "MD5",
+                "alias": bioutils.digests.seq_md5(seq)
+            },
+            {
+                "namespace": "SEGUID",
+                "alias": bioutils.digests.seq_seguid(seq)
+            },
+        ]
+        for sa in seq_aliases:
+            self.aliases.store_alias(seq_id=seq_id, **sa)
+        return len(seq_aliases)

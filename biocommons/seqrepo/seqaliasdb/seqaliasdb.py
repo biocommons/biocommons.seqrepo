@@ -120,6 +120,7 @@ class SeqAliasDB(object):
         try:
             c = self._db.execute("insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)", (seq_id, namespace,
                                                                                                       alias))
+            # success => new record
             return c.lastrowid
         except sqlite3.IntegrityError:
             pass
@@ -127,7 +128,7 @@ class SeqAliasDB(object):
         # IntegrityError fall-through
         logger.debug(log_pfx + ": collision")
 
-        # this record is guaranteed to exist uniquely
+        # existing record is guaranteed to exist uniquely; fetchone() should always succeed
         current_rec = self.find_aliases(namespace=namespace, alias=alias).fetchone()
 
         # if seq_id matches current record, it's a duplicate (seq_id, namespace, alias) tuple
