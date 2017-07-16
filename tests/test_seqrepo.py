@@ -59,6 +59,20 @@ def test_fetch(seqrepo):
     assert seqrepo.fetch_uri("fr:coin") == "ASINACORNER"
 
 
+def test_digests(seqrepo):
+    """tests one set of digests"""
+
+    # (3.5) snafu$ SEQREPO_ROOT_DIR=/tmp/pytest-of-reece/pytest-0/seqrepo0 seqrepo export -i .
+    assert seqrepo.fetch_uri("fr:coin") == "ASINACORNER"
+    assert seqrepo.fetch_uri("SEGUID:aMQF/cdHkAayLkVYs8XV2u+Hy34") == "ASINACORNER"
+    assert seqrepo.fetch_uri("SHA1:68c405fdc7479006b22e4558b3c5d5daef87cb7e") == "ASINACORNER"
+    assert seqrepo.fetch_uri("sh:LDz34B6fA_fLxFoc2agLrXQRYuupOGGM") == "ASINACORNER"
+    assert seqrepo.fetch_uri("MD5:ea81b52627e387fc6edd8b9412cd3a99") == "ASINACORNER"
+    assert seqrepo.fetch_uri("SHA512:2c3cf7e01e9f03f7cbc45a1cd9a80bad741162"
+                             "eba938618caa413786cb4e4e62f89f8892c6870da1368"
+                             "c6e9a9e102999d51729ccfd08b0d32fcd21a0f57b6e78") == "ASINACORNER"
+
+
 def test_errors(seqrepo_ro):
     with pytest.raises(RuntimeError):
         seqrepo_ro.store("SHOULDFAIL", [{"namespace": "fr", "alias": "coin"}])
