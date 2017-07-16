@@ -35,10 +35,13 @@ import tqdm
 from . import __version__, SeqRepo
 from .py2compat import commonpath, gzip_open_encoded, makedirs
 
-instance_name_re = re.compile('^201\d{5}$')    # smells like a datestamp
-SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 
+SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
+DEFAULT_INSTANCE_NAME = "master"
+
+instance_name_re = re.compile('^201\d-?\d\d-?\d\d$')    # smells like a datestamp, 20170117 or 2017-01-17
 #instance_name_re = re.compile('^[89]\d+$')  # debugging
+
 
 
 def _get_remote_instances(opts):
@@ -84,18 +87,18 @@ def parse_arguments():
         "add-assembly-names", help="add assembly aliases (from bioutils.assemblies) to existing sequences")
     ap.set_defaults(func=add_assembly_names)
     ap.add_argument(
-        "--instance-name", "-i", default="master", help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
 
     # export
     ap = subparsers.add_parser("export", help="export sequences")
     ap.set_defaults(func=export)
-    ap.add_argument("--instance-name", "-i", default=None, help="instance name; default is lastest")
+    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name")
 
     # fetch-load
     ap = subparsers.add_parser("fetch-load", help="fetch and load remote sequences")
     ap.set_defaults(func=fetch_load)
     ap.add_argument(
-        "--instance-name", "-i", default="master", help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
     ap.add_argument(
         "accessions",
         nargs="+",
@@ -110,13 +113,13 @@ def parse_arguments():
     ap = subparsers.add_parser("init", help="initialize seqrepo directory")
     ap.set_defaults(func=init)
     ap.add_argument(
-        "--instance-name", "-i", default="master", help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
 
     # load
     ap = subparsers.add_parser("load", help="load a single fasta file")
     ap.set_defaults(func=load)
     ap.add_argument(
-        "--instance-name", "-i", default="master", help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
     ap.add_argument(
         "fasta_files",
         nargs="+",
@@ -130,7 +133,7 @@ def parse_arguments():
     # pull
     ap = subparsers.add_parser("pull", help="pull incremental update from seqrepo mirror")
     ap.set_defaults(func=pull)
-    ap.add_argument("--instance-name", "-i", default=None, help="instance name; default is lastest")
+    ap.add_argument("--instance-name", "-i", default=None, help="instance name")
     ap.add_argument("--rsync-exe", default="/usr/bin/rsync", help="path to rsync executable")
     ap.add_argument("--remote-host", default="dl.biocommons.org", help="rsync server host")
     ap.add_argument("--dry-run", "-n", default=False, action="store_true")
@@ -138,25 +141,25 @@ def parse_arguments():
     # show-status
     ap = subparsers.add_parser("show-status", help="show seqrepo status")
     ap.set_defaults(func=show_status)
-    ap.add_argument("--instance-name", "-i", default=None, help="instance name; default is lastest")
+    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name")
 
     # snapshot
     ap = subparsers.add_parser("snapshot", help="create a new read-only seqrepo snapshot")
     ap.set_defaults(func=snapshot)
     ap.add_argument(
-        "--instance-name", "-i", default="master", help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
     ap.add_argument("destination_directory", help="destination directory name (must not already exist)")
 
     # start-shell
     ap = subparsers.add_parser("start-shell", help="start interactive shell with initialized seqrepo")
     ap.set_defaults(func=start_shell)
-    ap.add_argument("--instance-name", "-i", default="master", help="instance name; default is lastest")
+    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name")
 
     # upgrade
     ap = subparsers.add_parser("upgrade", help="upgrade seqrepo database and directory")
     ap.set_defaults(func=upgrade)
     ap.add_argument(
-        "--instance-name", "-i", default="master", help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
 
     opts = top_p.parse_args()
     return opts
@@ -323,7 +326,7 @@ def pull(opts):
 
 
 def show_status(opts):
-    seqrepo_dir = _latest_instance_path(opts)
+    seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     tot_size = sum(
         os.path.getsize(os.path.join(dirpath, filename))
         for dirpath, dirnames, filenames in os.walk(seqrepo_dir) for filename in filenames)
