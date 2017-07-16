@@ -148,7 +148,7 @@ def parse_arguments():
     ap = subparsers.add_parser("snapshot", help="create a new read-only seqrepo snapshot")
     ap.set_defaults(func=snapshot)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable")
     ap.add_argument("--destination-name", "-d",
                     default=datetime.datetime.utcnow().strftime("%F"),
                     help="destination directory name (must not already exist)")
@@ -162,7 +162,13 @@ def parse_arguments():
     ap = subparsers.add_parser("upgrade", help="upgrade seqrepo database and directory")
     ap.set_defaults(func=upgrade)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable")
+
+    # update digests
+    ap = subparsers.add_parser("update-digests", help="update computed digests in place")
+    ap.set_defaults(func=update_digests)
+    ap.add_argument(
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable")
 
     opts = top_p.parse_args()
     return opts
@@ -213,7 +219,7 @@ def export(opts):
     sr = SeqRepo(seqrepo_dir)
     for srec, arecs in sr:
         nsad = convert_alias_records_to_ns_dict(arecs)
-        aliases = ["{ns}:{a}".format(ns=ns, a=a) for ns, aliases in nsad.items() for a in aliases]
+        aliases = ["{ns}:{a}".format(ns=ns, a=a) for ns, aliases in sorted(nsad.items()) for a in aliases]
         print(">" + " ".join(aliases))
         for l in wrap_lines(srec["seq"], 100):
             print(l)
@@ -428,6 +434,13 @@ def upgrade(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)
     print("upgraded to schema version {}".format(sr.seqinfo.schema_version()))
+
+
+def update_digests(opts):
+    seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
+    sr = SeqRepo(seqrepo_dir, writeable=True)
+    for srec in tqdm.tqdm(sr.sequences):
+        sr._update_digest_aliases(srec["seq_id"], srec["seq"])
 
 
 def main():
