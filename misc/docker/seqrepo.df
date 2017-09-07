@@ -19,7 +19,9 @@ RUN apt update && apt install -y \
     curl \
     python3-pip \
     rsync \
-    zlib1g-dev
+    zlib1g-dev \
+    libbz2-dev \
+    liblzma-dev
 
 RUN pip3 install --upgrade setuptools pip
 
