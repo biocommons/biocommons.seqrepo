@@ -2,6 +2,7 @@
 
 .DELETE_ON_ERROR:
 .PHONY: FORCE
+.PRECIOUS :
 .SUFFIXES:
 
 SHELL:=/bin/bash -e -o pipefail
@@ -9,7 +10,6 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=biocommons.seqrepo
 PKGD=$(subst .,/,${PKG})
-
 VEDIR=venv/3.5
 
 
@@ -25,7 +25,7 @@ help:
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
-#=> venv: make a Python 3 virtual environment
+#=> venv: make a Python virtual environment
 .PHONY: venv/2.7
 venv/2.7:
 	virtualenv -p $$(type -p python2.7) $@; \
@@ -55,10 +55,14 @@ devready:
 	@echo '#################################################################################'
 
 #=> develop: install package in develop mode
+.PHONY: develop
+develop:
+	pip install -e .
+
 #=> install: install package
 #=> bdist bdist_egg bdist_wheel build sdist: distribution options
-.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist install develop
-bdist bdist_egg bdist_wheel build sdist install develop: %:
+.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist install
+bdist bdist_egg bdist_wheel build sdist install: %:
 	python setup.py $@
 
 #=> upload: upload to pypi
@@ -93,7 +97,7 @@ tox:
 reformat:
 	@if hg sum | grep -qL '^commit:.*modified'; then echo "Repository not clean" 1>&2; exit 1; fi
 	@if hg sum | grep -qL ' applied'; then echo "Repository has applied patches" 1>&2; exit 1; fi
-	yapf -i -r ${PKGD} tests
+	yapf -i -r "${PKGD}" tests
 	hg commit -m "reformatted with yapf"
 
 #=> docs -- make sphinx docs
@@ -101,6 +105,9 @@ reformat:
 doc docs: develop
 	# RTD makes json. Build here to ensure that it works.
 	make -C doc html json
+
+############################################################################
+#= CLEANUP
 
 #=> clean: remove temporary and backup files
 .PHONY: clean
@@ -115,7 +122,7 @@ cleaner: clean
 	find . \( -name \*.pyc -o -name \*.orig -o -name \*.rej \) -print0 | xargs -0r rm
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 
-#=> cleaner: remove files and directories that require more time/network fetches to rebuild
+#=> cleanest: remove files and directories that require more time/network fetches to rebuild
 .PHONY: cleanest distclean
 cleanest distclean: cleaner
 	rm -fr .eggs .tox venv
