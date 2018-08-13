@@ -40,17 +40,21 @@ from .py2compat import commonpath, gzip_open_encoded, makedirs
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 DEFAULT_INSTANCE_NAME = "master"
 
+instance_name_new_re = re.compile('^201\d-\d\d-\d\d$')  # smells like a new datestamp, 2017-01-17
+instance_name_old_re = re.compile('^201\d\d\d\d\d$')    # smells like an old datestamp, 20170117
 instance_name_re = re.compile('^201\d-?\d\d-?\d\d$')    # smells like a datestamp, 20170117 or 2017-01-17
-#instance_name_re = re.compile('^[89]\d+$')  # debugging
 
+_logger = logging.getLogger(__name__)
 
 
 def _get_remote_instances(opts):
     line_re = re.compile(r'd[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)')
-    lines = subprocess.check_output([opts.rsync_exe, "--no-motd",
-                                     opts.remote_host + "::seqrepo"]).decode().splitlines()[1:]
+    rsync_cmd = [opts.rsync_exe, "--no-motd", "--copy-dirlinks",
+                 opts.remote_host + "::seqrepo"]
+    _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
+    lines = subprocess.check_output(rsync_cmd).decode().splitlines()[1:]
     dirs = (m.group(1) for m in (line_re.match(l) for l in lines) if m)
-    return sorted(list(filter(instance_name_re.match, dirs)))
+    return sorted(list(filter(instance_name_new_re.match, dirs)))
 
 
 def _get_local_instances(opts):
@@ -72,7 +76,10 @@ def parse_arguments():
         description=__doc__.split("\n\n")[0],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog="seqrepo " + __version__ + ". See https://github.com/biocommons/biocommons.seqrepo for more information")
-    top_p.add_argument("--root-directory", "-r", default=SEQREPO_ROOT_DIR, help="seqrepo root directory")
+    top_p.add_argument("--dry-run", "-n", default=False, action="store_true")
+    top_p.add_argument("--remote-host", default="dl.biocommons.org", help="rsync server host")
+    top_p.add_argument("--root-directory", "-r", default=SEQREPO_ROOT_DIR, help="seqrepo root directory (SEQREPO_ROOT_DIR)")
+    top_p.add_argument("--rsync-exe", default="/usr/bin/rsync", help="path to rsync executable")
     top_p.add_argument("--verbose", "-v", action="count", default=0, help="be verbose; multiple accepted")
     top_p.add_argument("--version", action="version", version=__version__)
 
@@ -116,6 +123,14 @@ def parse_arguments():
     ap.add_argument(
         "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
 
+    # list-local-instances
+    ap = subparsers.add_parser("list-local-instances", help="list local seqrepo instances")
+    ap.set_defaults(func=list_local_instances)
+
+    # list-remote-instances
+    ap = subparsers.add_parser("list-remote-instances", help="list remote seqrepo instances")
+    ap.set_defaults(func=list_remote_instances)
+
     # load
     ap = subparsers.add_parser("load", help="load a single fasta file")
     ap.set_defaults(func=load)
@@ -135,9 +150,6 @@ def parse_arguments():
     ap = subparsers.add_parser("pull", help="pull incremental update from seqrepo mirror")
     ap.set_defaults(func=pull)
     ap.add_argument("--instance-name", "-i", default=None, help="instance name")
-    ap.add_argument("--rsync-exe", default="/usr/bin/rsync", help="path to rsync executable")
-    ap.add_argument("--remote-host", default="dl.biocommons.org", help="rsync server host")
-    ap.add_argument("--dry-run", "-n", default=False, action="store_true")
 
     # show-status
     ap = subparsers.add_parser("show-status", help="show seqrepo status")
@@ -174,21 +186,22 @@ def parse_arguments():
     return opts
 
 
+############################################################################
+
 def add_assembly_names(opts):
     """add assembly names as aliases to existing sequences
 
     Specifically, associate aliases like GRCh37.p9:1 with (existing) 
     """
-    logger = logging.getLogger(__name__)
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)
     ncbi_alias_map = {r["alias"]: r["seq_id"] for r in sr.aliases.find_aliases(namespace="NCBI", current_only=False)}
     namespaces = [r["namespace"] for r in sr.aliases._db.execute("select distinct namespace from seqalias")]
     assemblies = bioutils.assemblies.get_assemblies()
     assemblies_to_load = sorted([k for k in assemblies if k not in namespaces])
-    logger.info("{} assemblies to load".format(len(assemblies_to_load)))
+    _logger.info("{} assemblies to load".format(len(assemblies_to_load)))
     for assy_name in tqdm.tqdm(assemblies_to_load, unit="assembly"):
-        logger.debug("loading " + assy_name)
+        _logger.debug("loading " + assy_name)
         sequences = assemblies[assy_name]["sequences"]
         eq_sequences = [s for s in sequences if s["relationship"] == "="]
 
@@ -226,8 +239,7 @@ def export(opts):
 
 
 def fetch_load(opts):
-    logger = logging.getLogger(__name__)
-    disable_bar = logger.getEffectiveLevel() < logging.WARNING
+    disable_bar = _logger.getEffectiveLevel() < logging.WARNING
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)
@@ -237,7 +249,7 @@ def fetch_load(opts):
         ac_bar.set_description(ac)
         aliases_cur = sr.aliases.find_aliases(namespace=opts.namespace, alias=ac)
         if aliases_cur.fetchone() is not None:
-            logger.info("{ac} already in {sr}".format(ac=ac, sr=sr))
+            _logger.info("{ac} already in {sr}".format(ac=ac, sr=sr))
             continue
         seq = bioutils.seqfetcher.fetch_seq(ac)
         aliases = [{"namespace": opts.namespace, "alias": ac}]
@@ -253,9 +265,22 @@ def init(opts):
     sr = SeqRepo(seqrepo_dir, writeable=True)    # flake8: noqa
 
 
+def list_local_instances(opts):
+    instances = _get_local_instances(opts)
+    print("Local instances ({})".format(opts.root_directory))
+    for i in instances:
+        print("  " + i)
+
+
+def list_remote_instances(opts):
+    instances = _get_remote_instances(opts)
+    print("Remote instances ({})".format(opts.remote_host))
+    for i in instances:
+        print("  " + i)
+
+
 def load(opts):
-    logger = logging.getLogger(__name__)
-    disable_bar = logger.getEffectiveLevel() < logging.WARNING
+    disable_bar = _logger.getEffectiveLevel() < logging.WARNING
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
@@ -271,7 +296,7 @@ def load(opts):
             fh = gzip_open_encoded(fn, encoding="ascii")    # PY2BAGGAGE
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
-        logger.info("Opened " + fn)
+        _logger.info("Opened " + fn)
         seq_bar = tqdm.tqdm(SeqIO.parse(fh, "fasta"), unit=" seqs", disable=disable_bar, leave=False)
         for rec in seq_bar:
             n_seqs_seen += 1
@@ -301,8 +326,6 @@ def load(opts):
 
 
 def pull(opts):
-    logger = logging.getLogger(__name__)
-
     remote_instances = _get_remote_instances(opts)
     if opts.instance_name:
         instance_name = opts.instance_name
@@ -310,11 +333,11 @@ def pull(opts):
             raise KeyError("{}: not in list of remote instance names".format(instance_name))
     else:
         instance_name = remote_instances[-1]
-        logger.info("most recent seqrepo instance is " + instance_name)
+        _logger.info("most recent seqrepo instance is " + instance_name)
 
     local_instances = _get_local_instances(opts)
     if instance_name in local_instances:
-        logger.warn("{}: instance already exists; skipping".format(instance_name))
+        _logger.warn("{}: instance already exists; skipping".format(instance_name))
         return
 
     tmp_dir = tempfile.mkdtemp(dir=opts.root_directory, prefix=instance_name + ".")
@@ -326,12 +349,12 @@ def pull(opts):
         cmd += ["--link-dest=" + os.path.join(opts.root_directory, latest_local_instance) + "/"]
     cmd += ["{h}::seqrepo/{i}/".format(h=opts.remote_host, i=instance_name), tmp_dir]
 
-    logger.debug("Running: " + " ".join(cmd))
+    _logger.debug("Executing: " + " ".join(cmd))
     if not opts.dry_run:
         subprocess.check_call(cmd)
         dst_dir = os.path.join(opts.root_directory, instance_name)
         os.rename(tmp_dir, dst_dir)
-        logger.info("{}: successfully updated ({})".format(instance_name, dst_dir))
+        _logger.info("{}: successfully updated ({})".format(instance_name, dst_dir))
 
 
 def show_status(opts):
@@ -358,7 +381,6 @@ def snapshot(opts):
     copying sqlite databases, and remove write permissions from directories
 
     """
-    logger = logging.getLogger(__name__)
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
 
     dst_dir = opts.destination_name
@@ -377,9 +399,9 @@ def snapshot(opts):
 
     tmp_dir = tempfile.mkdtemp(prefix=dst_dir + ".")
 
-    logger.debug("src_dir = " + src_dir)
-    logger.debug("dst_dir = " + dst_dir)
-    logger.debug("tmp_dir = " + tmp_dir)
+    _logger.debug("src_dir = " + src_dir)
+    _logger.debug("dst_dir = " + dst_dir)
+    _logger.debug("tmp_dir = " + tmp_dir)
 
     # TODO: cleanup of tmpdir on failure
     makedirs(tmp_dir, exist_ok=True)
@@ -416,7 +438,7 @@ def snapshot(opts):
     _drop_write(tmp_dir)
     os.rename(tmp_dir, dst_dir)
 
-    logger.info("snapshot created in " + dst_dir)
+    _logger.info("snapshot created in " + dst_dir)
     os.chdir(wd)
 
 
