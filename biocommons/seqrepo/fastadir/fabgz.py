@@ -57,7 +57,7 @@ class FabgzReader(object):
         self._fh = FastaFile(filename)
 
     def fetch(self, seq_id, start=None, end=None):
-        return self._fh.fetch(seq_id.encode("utf-8"), start, end)
+        return self._fh.fetch(seq_id.encode("ascii"), start, end)
 
     def keys(self):
         return self._fh.references
