@@ -27,6 +27,5 @@ stream_decompress () {
 set -euo pipefail
 
 for url in "$@"; do
-    echo "$url" 1>&2
     stream_decompress "$url"
 done

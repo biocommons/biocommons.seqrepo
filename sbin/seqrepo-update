@@ -1,0 +1,42 @@
+#!/bin/bash
+# seqrepo-update [NCBI|Ensembl-xx|LRG] -- updates seqrepo from specified source
+# intended to be slightly tolerant of transient network errors
+
+set -eu -o pipefail
+
+max_tries=5
+failure_sleep_time=60
+
+if [ "$#" != 1 ]; then
+    echo "Usage: $0 [Ensembl-xx|LRG|NCBI]" 1>&2
+    exit 1
+fi
+
+load_with_retries () {
+    src="$1"
+    url="$2"
+    try=1
+    while [ $try -le $max_tries ]; do
+	echo "* $url (try $try)" 1>&2
+	if $sbin_dir/stream-download "$url" | seqrepo load -n "$src" -; then
+	    return 0
+	fi
+	echo "Failed; retrying in $failure_sleep_time" 1>&2
+	sleep $failure_sleep_time
+	try=$(($try + 1))
+    done
+    return 1
+}
+
+
+############################################################################
+
+src="$1"
+sbin_dir=$(dirname "$0")
+
+for url in $($sbin_dir/get-sequence-urls "$src"); do
+    if ! load_with_retries "$src" "$url"; then
+	echo "$0: failed to load $url (with retries)" 1>&2
+	exit 1
+    fi
+done
