@@ -7,7 +7,7 @@ import itertools
 import logging
 import re
 import sys
-from urllib.request import urlopen
+from urllib.request import urljoin, urlopen
 from requests_html import HTMLSession, HTML
 
 import coloredlogs
@@ -66,7 +66,9 @@ def get_ncbi_urls():
 
     u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/H_sapiens/"
     r = HTMLSession().get(u)
-    chr_urls = [l for l in r.html.absolute_links if "CHR" in l]
+    # N.B. requests_html absolute_links is broken on 3.5
+    abs_links = [urljoin(r.html.url, rl) for rl in r.html.links]
+    chr_urls = [l for l in abs_links if "CHR" in l]
     new_urls = list(itertools.chain(*[extract_sequence_urls_from_page(cu) for cu in chr_urls]))
     _logger.debug("{} urls from {}".format(len(new_urls), u))
     urls += new_urls
@@ -78,7 +80,9 @@ def _is_sequence_file(fn):
 
 def extract_sequence_urls_from_page(url, regexps=None):
     r = HTMLSession().get(url)
-    urls = [l for l in r.html.absolute_links if _is_sequence_file(l)]
+    # N.B. requests_html absolute_links is broken on 3.5
+    abs_links = [urljoin(r.html.url, rl) for rl in r.html.links]
+    urls = [l for l in abs_links if _is_sequence_file(l)]
     if regexps:
         urls = [l for l in urls if any(regexp.search(l) for regexp in regexps)]
     return urls

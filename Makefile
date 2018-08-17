@@ -34,8 +34,8 @@ venv/2.7:
 
 #=> venv: make a Python 3 virtual environment
 .PHONY: ${VEDIR}
-${VEDIR}:
-	pyvenv $@; \
+venv/3.5 venv/3.6 venv/3.7: venv/%:
+	python$* -m venv $@; \
 	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools

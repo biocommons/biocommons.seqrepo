@@ -50,6 +50,10 @@ setup(
         ],
     },
 
+    extras_require = {
+        "admin": ["coloredlogs", "requests_html"],
+    },
+
     install_requires = [
         "biopython>=1.67,<1.70",
         "bioutils>=0.3.1",
