@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+"""return URLs to sequence files at NCBI, Ensembl, LRG
+
+"""
+
+import itertools
+import logging
+import re
+import sys
+from urllib.request import urlopen
+from requests_html import HTMLSession, HTML
+
+import coloredlogs
+
+_logger = logging.getLogger(__name__)
+
+
+def get_ensembl_urls(release):
+    dir_urls = [t.format(release) for t in (
+        "http://ftp.ensembl.org/pub/release-{}/fasta/homo_sapiens/cdna/",
+        "http://ftp.ensembl.org/pub/release-{}/fasta/homo_sapiens/dna/",
+        "http://ftp.ensembl.org/pub/release-{}/fasta/homo_sapiens/pep/",
+        "http://ftp.ensembl.org/pub/release-{}/fasta/homo_sapiens/ncrna/",
+        )]
+    urls = []
+    regexps = [re.compile(regexp) for regexp in (
+        r"\.cdna\.all\.",
+        r"\.dna\.chromosome\.",
+        r"\.ncrna\.",
+        r"\.pep\.all\.",
+        )]
+    for u in dir_urls:
+        new_urls = extract_sequence_urls_from_page(u, regexps)
+        _logger.debug("{} urls from {}".format(len(new_urls), u))
+        urls += new_urls
+    
+    return urls
+
+
+def get_lrg_urls():
+    # the ftp zipfile is faster than
+    #   http://ftp.ebi.ac.uk/pub/databases/lrgex/fasta/LRG_public_fasta_files.zip
+    # and faster than the individual files from
+    #   http://ftp.ebi.ac.uk/pub/databases/lrgex/fasta/
+    #   ftp://ftp.ebi.ac.uk/pub/databases/lrgex/fasta/
+    return ["ftp://ftp.ebi.ac.uk/pub/databases/lrgex/fasta/LRG_public_fasta_files.zip"]
+
+    
+def get_ncbi_urls():
+    urls = []
+
+    u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/"
+    new_urls = extract_sequence_urls_from_page(u)
+    _logger.debug("{} urls from {}".format(len(new_urls), u))
+    urls += new_urls
+
+    u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/RefSeqGene/"
+    new_urls = extract_sequence_urls_from_page(u)
+    _logger.debug("{} urls from {}".format(len(new_urls), u))
+    urls += new_urls
+
+    u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/H_sapiens/Assembled_chromosomes/seq/"
+    new_urls = extract_sequence_urls_from_page(u)
+    _logger.debug("{} urls from {}".format(len(new_urls), u))
+    urls += new_urls
+
+    u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/H_sapiens/"
+    r = HTMLSession().get(u)
+    chr_urls = [l for l in r.html.absolute_links if "CHR" in l]
+    new_urls = list(itertools.chain(*[extract_sequence_urls_from_page(cu) for cu in chr_urls]))
+    _logger.debug("{} urls from {}".format(len(new_urls), u))
+    urls += new_urls
+    
+    return urls
+
+def _is_sequence_file(fn):
+    return any(fn.endswith(sfx) for sfx in (".faa.gz", ".fna.gz", ".fa.gz", ".fasta", ".fa"))
+
+def extract_sequence_urls_from_page(url, regexps=None):
+    r = HTMLSession().get(url)
+    urls = [l for l in r.html.absolute_links if _is_sequence_file(l)]
+    if regexps:
+        urls = [l for l in urls if any(regexp.search(l) for regexp in regexps)]
+    return urls
+
+
+if __name__ == "__main__":
+    coloredlogs.install(level="INFO", logger=_logger)
+
+    if sys.argv[1] == "NCBI":
+        urls = sorted(get_ncbi_urls())
+    elif sys.argv[1].startswith("Ensembl-"):
+        release = re.match(r"Ensembl-(\d+)", sys.argv[1]).group(1)
+        urls = sorted(get_ensembl_urls(release))
+    elif sys.argv[1] == "LRG":
+        urls = sorted(get_lrg_urls())
+    elif sys.argv[1] == "test":
+        # file:// URIs can't be relative, so these are hardcoded to work only for me :-(
+        urls = [
+	    "file:///home/reece/projects/biocommons/biocommons.seqrepo/tests/data/gztest.fa.gz",
+	    "file:///home/reece/projects/biocommons/biocommons.seqrepo/tests/data/test.fa",
+	    "file:///home/reece/projects/biocommons/biocommons.seqrepo/tests/data/ziptest.zip",
+        ]
+
+    print("\n".join(urls))
+    

@@ -103,7 +103,7 @@ def parse_arguments():
     ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name")
 
     # fetch-load
-    ap = subparsers.add_parser("fetch-load", help="fetch and load remote sequences")
+    ap = subparsers.add_parser("fetch-load", help="fetch remote sequences by accession and load them (low-throughput!)")
     ap.set_defaults(func=fetch_load)
     ap.add_argument(
         "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
@@ -280,6 +280,9 @@ def list_remote_instances(opts):
 
 
 def load(opts):
+    if opts.namespace == "-":
+        raise RuntimeError("namespace == '-' is no longer supported")
+
     disable_bar = _logger.getEffectiveLevel() < logging.WARNING
     defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
@@ -303,17 +306,8 @@ def load(opts):
             seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
             seq = str(rec.seq)
-            if opts.namespace == "-":  # namespace from defline
-                raise RuntimeError("Unused, right?")
-                aliases = [
-                    {
-                        "namespace": k,
-                        "alias": e[1]
-                    }
-                    for k, gi in itertools.groupby((r.split(":") for r in rec.description.split()), key=lambda e: e[0])
-                    for e in gi if (k.startswith("NCBI") or k.startswith("Ensembl"))
-                ]
-            elif opts.namespace == "NCBI" and "|" in rec.id:
+            if opts.namespace == "NCBI" and "|" in rec.id:
+                # NCBI deflines may have multiple accessions, pipe-separated
                 aliases = [m.groupdict() for m in defline_re.finditer(rec.id)]
                 for a in aliases:
                     if a["namespace"] == "ref":
@@ -467,7 +461,7 @@ def update_digests(opts):
 
 def main():
     opts = parse_arguments()
-    #pprint.pprint(opts); sys.exit(1)
+
     verbose_log_level = (logging.WARN if opts.verbose == 0 else
                          logging.INFO if opts.verbose == 1 else
                          logging.DEBUG)

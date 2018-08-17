@@ -1,0 +1,32 @@
+#!/bin/bash
+# stream-download -- download, decompress, concatenate urls
+# urls may be http, https, ftp, file
+# intended to stream fasta sequence files from NCBI, Ensembl, and LRG
+
+stream_decompress () {
+    url="$1"
+    case "$url" in
+	*.gz)
+	    curl -s "$url" | gzip -cdq
+	    ;;
+	*.zip)
+	    fn=$(mktemp)
+	    curl -s -o "$fn" "$url"
+	    unzip -p "$fn"
+	    /bin/rm "$fn"
+	    ;;
+	*)
+	    curl -s "$url"
+	    ;;
+    esac
+}
+
+
+############################################################################
+
+set -euo pipefail
+
+for url in "$@"; do
+    echo "$url" 1>&2
+    stream_decompress "$url"
+done

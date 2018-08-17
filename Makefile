@@ -10,7 +10,7 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=biocommons.seqrepo
 PKGD=$(subst .,/,${PKG})
-VEDIR=venv/3.5
+VEDIR=venv/3.6
 
 
 ############################################################################

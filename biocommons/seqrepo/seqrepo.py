@@ -12,7 +12,7 @@ from .py2compat import makedirs
 
 logger = logging.getLogger(__name__)
 
-# commit thresholds: commit when any one is exceeded
+# commit thresholds: commit fasta file and db when any one is exceeded
 ct_n_seqs = 20000
 ct_n_aliases = 60000
 ct_n_residues = 1e9
@@ -113,7 +113,12 @@ class SeqRepo(object):
         if self._upcase:
             seq = seq.upper()
 
-        seqhash = bioutils.digests.seq_seqhash(seq)
+        try:
+            seqhash = bioutils.digests.seq_seqhash(seq)
+        except Exception as e:
+            import pprint
+            logger.critical("Exception raised for " + pprint.pformat(nsaliases))
+            raise
         seq_id = seqhash
 
         # add sequence if not present

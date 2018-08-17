@@ -1,7 +1,9 @@
+coloredlogs
 flake8
-ipython>=5,<6
+ipython
 pytest
 pytest-cov
+requests_html
 restview
 setuptools
 tox
