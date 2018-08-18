@@ -12,7 +12,11 @@ stream_decompress () {
 	*.zip)
 	    fn=$(mktemp)
 	    curl -s -o "$fn" "$url"
-	    unzip -p "$fn"
+	    # LRG fasta files don't have newline after last sequence in file
+	    # When extracting to pipe, there are lines like
+	    #   ACGT>defline of next file
+	    # Since newlines are innocuous, insert newline before every >
+	    unzip -p "$fn" | sed -e 's/>/\n>/'
 	    /bin/rm "$fn"
 	    ;;
 	*)
