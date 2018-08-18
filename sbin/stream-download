@@ -8,6 +8,7 @@ stream_decompress () {
     case "$url" in
 	*.gz)
 	    curl -s "$url" | gzip -cdq
+	    echo		# add newline between files
 	    ;;
 	*.zip)
 	    fn=$(mktemp)
