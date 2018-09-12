@@ -31,12 +31,13 @@ load_with_retries () {
 
 ############################################################################
 
-src="$1"
 sbin_dir=$(dirname "$0")
 
-for url in $($sbin_dir/get-sequence-urls "$src"); do
-    if ! load_with_retries "$src" "$url"; then
-	echo "$0: failed to load $url (with retries)" 1>&2
-	exit 1
-    fi
+for src in NCBI LRG; do 
+    for url in $($sbin_dir/get-sequence-urls "$src"); do
+	if ! load_with_retries "$src" "$url"; then
+	    echo "$0: failed to load $url (with retries)" 1>&2
+	    exit 1
+	fi
+    done
 done
