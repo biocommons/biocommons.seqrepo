@@ -1,0 +1,20 @@
+#!/bin/bash
+# Use like this:
+# ./build 0.3.6 2018-08-21
+
+seqrepo_version=$1
+shift
+
+seqrepo_data_release=$1
+shift
+
+
+set -ex
+
+docker build -f seqrepo.df --rm=true \
+       --build-arg SEQREPO_VERSION="$seqrepo_version" \
+       --build-arg SEQREPO_DATA_RELEASE="$seqrepo_data_release" \
+       -t biocommons/seqrepo:$seqrepo_data_release .
+docker tag biocommons/seqrepo:$seqrepo_data_release biocommons/seqrepo
+docker push biocommons/seqrepo:$seqrepo_data_release
+docker push biocommons/seqrepo:latest 

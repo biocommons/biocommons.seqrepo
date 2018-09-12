@@ -18,8 +18,9 @@ First, create the data container and populate it::
 Running the container will immediately invoke ``seqrepo pull``, which
 will rsync data from ``dl.biocommons.org``.
 
-As run above, data will be stored within ``/var/lib/docker/volumes/`` on
-the host. (See Tips__ below for sharing seqrepo with the host
+As run above, data will be stored within ``/var/lib/docker/volumes/``
+on the host. This directory may be shared with other docker
+containers. (See Tips__ below for sharing seqrepo with the host
 system.)
 
 The ``biocommons/seqrepo`` image declares the volume
@@ -48,11 +49,17 @@ The ``biocommons/seqrepo`` image declares the volume
 Tips
 @@@@
 
-* If users also wish to share the seqrepo repository with the host,
-  run the image like this::
+* docker `volume binding
+  <https://docs.docker.com/engine/reference/run/#volume-shared-filesystems>`_
+  (`-v`) may be used to share the host's seqrepo repository with that
+  in the container, like this::
 
-    docker run -v /usr/local/share/seqrepo:/usr/local/share/seqrepo biocommons/seqrepo
+    mkdir /usr/local/share/seqrepo
+    docker run --user $(id -u):$(id -g) -v /usr/local/share/seqrepo:/usr/local/share/seqrepo biocommons/seqrepo
 
   In this case, the host's ``/usr/local/share/seqrepo`` (before the
-  colon) will be used as the source for the container's
-  ``/usr/local/share/seqrepo`` (after the colon).
+  colon) will be made available as the container's
+  ``/usr/local/share/seqrepo`` (after the colon).  This effectively
+  shares the seqrepo data inside and outside of the container.
+
+  NOTE: The `--user` argument must match the owner of `/usr/local/share/seqrepo`.
