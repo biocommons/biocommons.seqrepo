@@ -96,6 +96,8 @@ def parse_arguments():
     ap.set_defaults(func=add_assembly_names)
     ap.add_argument(
         "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
+    ap.add_argument(
+        "--partial-load", "-p", default=False, action="store_true", help="assign assembly aliases even if some sequences are missing")
 
     # export
     ap = subparsers.add_parser("export", help="export sequences")
@@ -204,12 +206,21 @@ def add_assembly_names(opts):
         _logger.debug("loading " + assy_name)
         sequences = assemblies[assy_name]["sequences"]
         eq_sequences = [s for s in sequences if s["relationship"] == "="]
+        if not eq_sequences:
+            _logger.info("No '=' sequences to load for {an}; skipping".format(an=assy_name))
+            continue
 
         # all assembled-molecules (1..22, X, Y, MT) have ncbi aliases in seqrepo (no partial loads)
         not_in_seqrepo = [s["refseq_ac"] for s in eq_sequences if s["refseq_ac"] not in ncbi_alias_map]
         if not_in_seqrepo:
-            raise RuntimeError("{an}: {n} NCBI accession(s) not in {seqrepo_dir} repo ({acs})".format(
-                an=assy_name, n=len(not_in_seqrepo), opts=opts, acs=", ".join(not_in_seqrepo), seqrepo_dir=seqrepo_dir))
+            _logger.warn("Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
+                an=assy_name, n=len(not_in_seqrepo), opts=opts, acs=", ".join(not_in_seqrepo[:5]+["…"]), seqrepo_dir=seqrepo_dir))
+            if not opts.partial_load:
+                _logger.warn("Skipping {an} (-p to enable partial loading)".format(an=assy_name))
+                continue
+            
+        eq_sequences = [es for es in eq_sequences if es["refseq_ac"] in ncbi_alias_map]
+        _logger.info("Loading {n} new accessions for assembly {an}".format(an=assy_name, n=len(eq_sequences)))
 
         for s in eq_sequences:
             sr.aliases.store_alias(seq_id=ncbi_alias_map[s["refseq_ac"]], namespace=assy_name, alias=s["name"])

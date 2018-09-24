@@ -96,3 +96,4 @@ doc/_build
 .eggs
 archive
 misc/docker
+.pytest_cache
