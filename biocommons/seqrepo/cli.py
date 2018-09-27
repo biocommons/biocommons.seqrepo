@@ -152,6 +152,7 @@ def parse_arguments():
     ap = subparsers.add_parser("pull", help="pull incremental update from seqrepo mirror")
     ap.set_defaults(func=pull)
     ap.add_argument("--instance-name", "-i", default=None, help="instance name")
+    ap.add_argument("--update-latest", "-l", default=False, action="store_true", help="set latest symlink to point to this instance")
 
     # show-status
     ap = subparsers.add_parser("show-status", help="show seqrepo status")
@@ -183,6 +184,10 @@ def parse_arguments():
     ap.set_defaults(func=update_digests)
     ap.add_argument(
         "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable")
+
+    # update latest (symlink)
+    ap = subparsers.add_parser("update-latest", help="create symlink `latest` to newest seqrepo instance")
+    ap.set_defaults(func=update_latest)
 
     opts = top_p.parse_args()
     return opts
@@ -360,6 +365,8 @@ def pull(opts):
         dst_dir = os.path.join(opts.root_directory, instance_name)
         os.rename(tmp_dir, dst_dir)
         _logger.info("{}: successfully updated ({})".format(instance_name, dst_dir))
+        if opts.update_latest:
+            update_latest(opts, instance_name)
 
 
 def show_status(opts):
@@ -468,6 +475,22 @@ def update_digests(opts):
     sr = SeqRepo(seqrepo_dir, writeable=True)
     for srec in tqdm.tqdm(sr.sequences):
         sr._update_digest_aliases(srec["seq_id"], srec["seq"])
+
+
+def update_latest(opts, mri=None):
+    if not mri:
+        instances = _get_local_instances(opts)
+        if not instances:
+            _logger.error("No seqrepo instances in {opts.root_directory}".format(opts=opts))
+            return
+        mri = instances[-1]
+    dst = os.path.join(opts.root_directory, "latest")
+    try:
+        os.unlink(dst)
+    except (OSError, FileNotFoundError):  # OSError on Py2, FNF on Py3
+        pass
+    os.symlink(mri, dst)
+    _logger.info("Linked `latest` -> `{}`".format(mri))
 
 
 def main():
