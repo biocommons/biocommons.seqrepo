@@ -38,7 +38,7 @@ from .py2compat import commonpath, gzip_open_encoded, makedirs
 
 
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
-DEFAULT_INSTANCE_NAME = "master"
+DEFAULT_INSTANCE_NAME = "latest"
 
 instance_name_new_re = re.compile('^201\d-\d\d-\d\d$')  # smells like a new datestamp, 2017-01-17
 instance_name_old_re = re.compile('^201\d\d\d\d\d$')    # smells like an old datestamp, 20170117
@@ -98,6 +98,8 @@ def parse_arguments():
         "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME, help="instance name; must be writeable (i.e., not a snapshot)")
     ap.add_argument(
         "--partial-load", "-p", default=False, action="store_true", help="assign assembly aliases even if some sequences are missing")
+    ap.add_argument(
+        "--reload-all", "-r", default=False, action="store_true", help="reload all assemblies, not just missing ones")
 
     # export
     ap = subparsers.add_parser("export", help="export sequences")
@@ -198,15 +200,40 @@ def parse_arguments():
 def add_assembly_names(opts):
     """add assembly names as aliases to existing sequences
 
-    Specifically, associate aliases like GRCh37.p9:1 with (existing) 
+    Specifically, associate aliases like GRCh37.p9:1 with existing
+    refseq accessions
+
+    ```
+    [{'aliases': ['chr19'],
+      'assembly_unit': 'Primary Assembly',
+      'genbank_ac': 'CM000681.2',
+      'length': 58617616,
+      'name': '19',
+      'refseq_ac': 'NC_000019.10',
+      'relationship': '=',
+      'sequence_role': 'assembled-molecule'}]
+    ```
+
+    For the above sample record, this function adds the following aliases:
+      * genbank:CM000681.2
+      * GRCh38:19
+      * GRCh38:chr19
+    to the sequence referred to by refseq:NC_000019.10.
+
     """
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)
-    ncbi_alias_map = {r["alias"]: r["seq_id"] for r in sr.aliases.find_aliases(namespace="NCBI", current_only=False)}
-    namespaces = [r["namespace"] for r in sr.aliases._db.execute("select distinct namespace from seqalias")]
+
     assemblies = bioutils.assemblies.get_assemblies()
-    assemblies_to_load = sorted([k for k in assemblies if k not in namespaces])
+    if opts.reload_all:
+        assemblies_to_load = sorted(assemblies)
+    else:
+        namespaces = [r["namespace"] for r in sr.aliases._db.execute("select distinct namespace from seqalias")]
+        assemblies_to_load = sorted(k for k in assemblies if k not in namespaces)
     _logger.info("{} assemblies to load".format(len(assemblies_to_load)))
+
+    ncbi_alias_map = {r["alias"]: r["seq_id"] for r in sr.aliases.find_aliases(namespace="NCBI", current_only=False)}
+
     for assy_name in tqdm.tqdm(assemblies_to_load, unit="assembly"):
         _logger.debug("loading " + assy_name)
         sequences = assemblies[assy_name]["sequences"]
@@ -215,7 +242,7 @@ def add_assembly_names(opts):
             _logger.info("No '=' sequences to load for {an}; skipping".format(an=assy_name))
             continue
 
-        # all assembled-molecules (1..22, X, Y, MT) have ncbi aliases in seqrepo (no partial loads)
+        # all assembled-molecules (1..22, X, Y, MT) have ncbi aliases in seqrepo
         not_in_seqrepo = [s["refseq_ac"] for s in eq_sequences if s["refseq_ac"] not in ncbi_alias_map]
         if not_in_seqrepo:
             _logger.warn("Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
@@ -228,7 +255,13 @@ def add_assembly_names(opts):
         _logger.info("Loading {n} new accessions for assembly {an}".format(an=assy_name, n=len(eq_sequences)))
 
         for s in eq_sequences:
-            sr.aliases.store_alias(seq_id=ncbi_alias_map[s["refseq_ac"]], namespace=assy_name, alias=s["name"])
+            seq_id = ncbi_alias_map[s["refseq_ac"]]
+            aliases = [{"namespace": assy_name, "alias": a} for a in [s["name"]] + s["aliases"]]
+            if "genbank_ac" in s and s["genbank_ac"]:
+                aliases += [{"namespace": "genbank", "alias": s["genbank_ac"]}]
+            for alias in aliases:
+                sr.aliases.store_alias(seq_id=seq_id, **alias)
+                _logger.debug("Added assembly alias {a[namespace]}:{a[alias]} for {seq_id}".format(a=alias, seq_id=seq_id))
         sr.commit()
 
 
