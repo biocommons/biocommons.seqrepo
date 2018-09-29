@@ -126,20 +126,21 @@ class SeqAliasDB(object):
             pass
 
         # IntegrityError fall-through
-        logger.debug(log_pfx + ": collision")
 
         # existing record is guaranteed to exist uniquely; fetchone() should always succeed
         current_rec = self.find_aliases(namespace=namespace, alias=alias).fetchone()
 
         # if seq_id matches current record, it's a duplicate (seq_id, namespace, alias) tuple
+        # and we return current record
         if current_rec["seq_id"] == seq_id:
-            logger.debug(log_pfx + ": seq_id match")
+            logger.debug(log_pfx + ": duplicate record")
             return current_rec["seqalias_id"]
 
         # otherwise, we're reassigning; deprecate old record, then retry
-        logger.debug(log_pfx + ": deprecating {s1}".format(s1=current_rec["seq_id"]))
+        logger.debug(log_pfx + ": collision; deprecating {s1}".format(s1=current_rec["seq_id"]))
         self._db.execute("update seqalias set is_current = 0 where seqalias_id = ?", [current_rec["seqalias_id"]])
         return self.store_alias(seq_id, namespace, alias)
+
 
     # ############################################################################
     # Internal methods
