@@ -1,3 +1,4 @@
+# -*-encoding:utf-8-*-
 """command line interface to a local SeqRepo repository
 
 SeqRepo is a non-redundant, compressed, journalled, file-based storage
