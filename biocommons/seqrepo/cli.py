@@ -41,15 +41,15 @@ from .py2compat import commonpath, gzip_open_encoded, makedirs
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 DEFAULT_INSTANCE_NAME = "latest"
 
-instance_name_new_re = re.compile('^201\d-\d\d-\d\d$')  # smells like a new datestamp, 2017-01-17
-instance_name_old_re = re.compile('^201\d\d\d\d\d$')    # smells like an old datestamp, 20170117
-instance_name_re = re.compile('^201\d-?\d\d-?\d\d$')    # smells like a datestamp, 20170117 or 2017-01-17
+instance_name_new_re = re.compile(r"^201\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
+instance_name_old_re = re.compile(r"^201\d\d\d\d\d$")    # smells like an old datestamp, 20170117
+instance_name_re = re.compile(r"^201\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
 
 _logger = logging.getLogger(__name__)
 
 
 def _get_remote_instances(opts):
-    line_re = re.compile(r'd[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)')
+    line_re = re.compile(r"d[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)")
     rsync_cmd = [opts.rsync_exe, "--no-motd", "--copy-dirlinks",
                  opts.remote_host + "::seqrepo"]
     _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
@@ -88,7 +88,7 @@ def parse_arguments():
     # when no subcommands are provided
     # https://stackoverflow.com/questions/22990977/why-does-this-argparse-code-behave-differently-between-python-2-and-3
     # http://bugs.python.org/issue9253#msg186387
-    subparsers = top_p.add_subparsers(title='subcommands', dest='_subcommands')
+    subparsers = top_p.add_subparsers(title="subcommands", dest="_subcommands")
     subparsers.required = True
 
     # add-assembly-names
@@ -334,7 +334,7 @@ def load(opts):
         raise RuntimeError("namespace == '-' is no longer supported")
 
     disable_bar = _logger.getEffectiveLevel() < logging.WARNING
-    defline_re = re.compile("(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
+    defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)

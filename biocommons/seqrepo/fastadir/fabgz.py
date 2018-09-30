@@ -30,7 +30,7 @@ def _get_bgzip_version(exe):
     p = subprocess.Popen([exe, "-h"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = p.communicate()
     version_line = output[0].splitlines()[1]
-    version = re.match("(?:Version:|bgzip \(htslib\))\s+(\d+\.\d+(\.\d+)?)", version_line).group(1)
+    version = re.match(r"(?:Version:|bgzip \(htslib\))\s+(\d+\.\d+(\.\d+)?)", version_line).group(1)
     return version
 
 

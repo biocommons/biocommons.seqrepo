@@ -20,7 +20,7 @@ ct_n_residues = 1e9
 # namespace-alias separator
 nsa_sep = ":"
 
-uri_re = re.compile("([^:]+):(.+)")
+uri_re = re.compile(r"([^:]+):(.+)")
 
 
 class SeqRepo(object):
