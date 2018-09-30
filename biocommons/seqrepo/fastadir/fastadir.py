@@ -109,7 +109,7 @@ class FastaDir(BaseReader, BaseWriter):
             raise KeyError(seq_id)
 
         if self._writing and self._writing["relpath"] == rec["relpath"]:
-            logger.warn("""Fetching from file opened for writing;
+            logger.warning("""Fetching from file opened for writing;
             closing first ({})""".format(rec["relpath"]))
             self.commit()
 

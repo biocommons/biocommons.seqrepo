@@ -246,10 +246,10 @@ def add_assembly_names(opts):
         # all assembled-molecules (1..22, X, Y, MT) have ncbi aliases in seqrepo
         not_in_seqrepo = [s["refseq_ac"] for s in eq_sequences if s["refseq_ac"] not in ncbi_alias_map]
         if not_in_seqrepo:
-            _logger.warn("Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
+            _logger.warning("Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
                 an=assy_name, n=len(not_in_seqrepo), opts=opts, acs=", ".join(not_in_seqrepo[:5]+["…"]), seqrepo_dir=seqrepo_dir))
             if not opts.partial_load:
-                _logger.warn("Skipping {an} (-p to enable partial loading)".format(an=assy_name))
+                _logger.warning("Skipping {an} (-p to enable partial loading)".format(an=assy_name))
                 continue
             
         eq_sequences = [es for es in eq_sequences if es["refseq_ac"] in ncbi_alias_map]
@@ -381,7 +381,7 @@ def pull(opts):
 
     local_instances = _get_local_instances(opts)
     if instance_name in local_instances:
-        _logger.warn("{}: instance already exists; skipping".format(instance_name))
+        _logger.warning("{}: instance already exists; skipping".format(instance_name))
         return
 
     tmp_dir = tempfile.mkdtemp(dir=opts.root_directory, prefix=instance_name + ".")
