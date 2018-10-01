@@ -61,7 +61,7 @@ setup(
         "pysam",
         "six",
         "tqdm",
-        "yoyo-migrations",
+        "yoyo-migrations>5,<6",
     ],
 
     setup_requires = [
