@@ -10,7 +10,7 @@ from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
 from .py2compat import makedirs
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 # commit thresholds: commit fasta file and db when any one is exceeded
 ct_n_seqs = 20000
@@ -48,7 +48,6 @@ class SeqRepo(object):
         self._pending_sequences = 0
         self._pending_sequences_len = 0
         self._pending_aliases = 0
-        self._logger = logger    # avoids issue with logger going out of scope before __del__
         self._writeable = writeable
 
         if self._writeable:
@@ -117,7 +116,7 @@ class SeqRepo(object):
             seqhash = bioutils.digests.seq_seqhash(seq)
         except Exception as e:
             import pprint
-            logger.critical("Exception raised for " + pprint.pformat(nsaliases))
+            _logger.critical("Exception raised for " + pprint.pformat(nsaliases))
             raise
         seq_id = seqhash
 
@@ -130,9 +129,9 @@ class SeqRepo(object):
             nsa_sep=nsa_sep,
             aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
         if seq_id not in self.sequences:
-            logger.info("Storing " + msg)
+            _logger.info("Storing " + msg)
             if len(seq) > ct_n_residues:    # pragma: no cover
-                logger.debug("Precommit for large sequence")
+                _logger.debug("Precommit for large sequence")
                 self.commit()
             self.sequences.store(seq_id, seq)
             n_seqs_added += 1
@@ -140,7 +139,7 @@ class SeqRepo(object):
             self._pending_sequences_len += len(seq)
             self._pending_aliases += self._update_digest_aliases(seq_id, seq)
         else:
-            logger.debug("Sequence exists: " + msg)
+            _logger.debug("Sequence exists: " + msg)
 
         # add/update external aliases for new and existing sequences
         # updating is optimized to load only new <seq_id,ns,alias> tuples
@@ -149,14 +148,14 @@ class SeqRepo(object):
         new_tuples = [(seq_id, r["namespace"], r["alias"]) for r in nsaliases]
         upd_tuples = set(new_tuples) - set(ea_tuples)
         if upd_tuples:
-            logger.info("{} new aliases for {}".format(len(upd_tuples), msg))
+            _logger.info("{} new aliases for {}".format(len(upd_tuples), msg))
             for _, namespace, alias in upd_tuples:
                 self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
             n_aliases_added += len(upd_tuples)
         if (self._pending_sequences > ct_n_seqs or self._pending_aliases > ct_n_aliases
                 or self._pending_sequences_len > ct_n_residues):    # pragma: no cover
-            logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
+            _logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
                         "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self))
             self.commit()
         return n_seqs_added, n_aliases_added
@@ -165,15 +164,11 @@ class SeqRepo(object):
         self.sequences.commit()
         self.aliases.commit()
         if self._pending_sequences + self._pending_aliases > 0:
-            self._logger.info("Committed {} sequences ({} residues) and {} aliases".format(
+            _logger.info("Committed {} sequences ({} residues) and {} aliases".format(
                 self._pending_sequences, self._pending_sequences_len, self._pending_aliases))
         self._pending_sequences = 0
         self._pending_sequences_len = 0
         self._pending_aliases = 0
-
-    def __del__(self):
-        if self._writeable:
-            self.commit()
 
 
     def _update_digest_aliases(self, seq_id, seq):
