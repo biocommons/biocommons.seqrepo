@@ -76,6 +76,7 @@ setup(
     tests_require = [
         "pytest",
         "pytest-cov",
+        "coverage<5.0",         # 5.0a2 appears to break coverage file format
     ],
 )
 
