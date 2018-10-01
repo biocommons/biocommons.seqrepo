@@ -8,7 +8,7 @@ snapshots.
 
 Released under the Apache License, 2.0.
 
-|ci_rel| |pypi_rel|
+|ci_rel| | |cov| | |pypi_rel|
 
 
 Features
