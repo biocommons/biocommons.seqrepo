@@ -3,14 +3,14 @@ sudo: required
 
 language: python
 python:
-- '2.7'
-- '3.6'
+  - '2.7'
+  - '3.6'
 cache: pip
 
 before_install:
 - wget https://launchpad.net/ubuntu/+source/htslib/1.2.1-2ubuntu1/+build/8443430/+files/tabix_1.2.1-2ubuntu1_amd64.deb
 - sudo dpkg -i tabix_1.2.1-2ubuntu1_amd64.deb
-install: pip install tox-travis coveralls
+install: pip install pytest pytest-cov tox-travis "coveralls<5.0"
 script: make tox
 after_success:
   - coveralls

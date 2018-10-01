@@ -10,7 +10,11 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=biocommons.seqrepo
 PKGD=$(subst .,/,${PKG})
-VEDIR=venv/3.6
+PYV:=3.6
+VEDIR=venv/${PYV}
+
+TEST_DIRS:=tests
+DOC_TESTS:=doc hgvs ./README.rst
 
 
 ############################################################################
@@ -25,17 +29,15 @@ help:
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
-#=> venv: make a Python virtual environment
-.PHONY: venv/2.7
-venv/2.7:
-	virtualenv -p $$(type -p python2.7) $@; \
+#=> venv: make a Python 2.7 virtual environment
+venv/2.7: venv/%:
+	virtualenv -p $$(type -p python$*) $@; \
 	source $@/bin/activate; \
 	pip install --upgrade pip setuptools
 
 #=> venv: make a Python 3 virtual environment
-.PHONY: ${VEDIR}
-venv/3.5 venv/3.6 venv/3.7: venv/%:
-	python$* -m venv $@; \
+venv/3.5 venv/3.6: venv/%:
+	python$* -mvenv $@; \
 	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
@@ -78,12 +80,23 @@ upload_%:
 # see test configuration in setup.cfg
 
 #=> test: execute tests
-.PHONY: test
+#=> test-code: test code (including embedded doctests)
+#=> test-docs: test example code in docs
+#=> test-/tag/ -- run tests marked with /tag/
+# TODO: rationalize tags
+# find tests -name \*.py | xargs perl -ln0e 'while (m/@pytest.mark.(\w+)/g) {print $1 if not $seen{$1}++}'  | sort
+# => extra fx issues mapping models normalization parametrize pnd quick regression validation
+.PHONY: test test-code test-docs
 test:
-	python setup.py pytest --addopts="--cov=${PKG} ${PKGD} tests"
+	python setup.py pytest
+test-code:
+	python setup.py pytest --addopts="${TEST_DIRS}"
+test-docs:
+	python setup.py pytest --addopts="${DOC_TESTS}"
+test-%:
+	python setup.py pytest --addopts="-m '$*' ${TEST_DIRS}"
 
-#=> tox: execute tests via tox
-.PHONY: tox
+#=> tox -- run all tox tests
 tox:
 	tox
 
@@ -101,8 +114,8 @@ reformat:
 	hg commit -m "reformatted with yapf"
 
 #=> docs -- make sphinx docs
-.PHONY: doc docs
-doc docs: develop
+.PHONY: docs
+docs: develop
 	# RTD makes json. Build here to ensure that it works.
 	make -C doc html json
 
@@ -117,16 +130,19 @@ clean:
 #=> cleaner: remove files and directories that are easily rebuilt
 .PHONY: cleaner
 cleaner: clean
-	rm -f devready.log
 	rm -fr .cache *.egg-info build dist doc/_build htmlcov
 	find . \( -name \*.pyc -o -name \*.orig -o -name \*.rej \) -print0 | xargs -0r rm
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 
 #=> cleanest: remove files and directories that require more time/network fetches to rebuild
-.PHONY: cleanest distclean
-cleanest distclean: cleaner
+.PHONY: cleanest
+cleanest: cleaner
 	rm -fr .eggs .tox venv
 
+#=> pristine distclean: above, and delete anything unknown to mercurial
+.PHONY: pristine distclean
+pristine distclean: cleanest
+	if [ -d .hg ]; then hg st -inu0 | xargs -0r /bin/rm -fv; fi
 
 ## <LICENSE>
 ## Copyright 2016 Source Code Committers
