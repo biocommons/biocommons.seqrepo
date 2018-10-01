@@ -1,4 +1,3 @@
-# -*-encoding:utf-8-*-
 """command line interface to a local SeqRepo repository
 
 SeqRepo is a non-redundant, compressed, journalled, file-based storage
@@ -12,7 +11,7 @@ Try::
 
 """
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division, print_function
 
 import argparse
 import datetime
@@ -247,7 +246,7 @@ def add_assembly_names(opts):
         not_in_seqrepo = [s["refseq_ac"] for s in eq_sequences if s["refseq_ac"] not in ncbi_alias_map]
         if not_in_seqrepo:
             _logger.warning("Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
-                an=assy_name, n=len(not_in_seqrepo), opts=opts, acs=", ".join(not_in_seqrepo[:5]+["…"]), seqrepo_dir=seqrepo_dir))
+                an=assy_name, n=len(not_in_seqrepo), opts=opts, acs=", ".join(not_in_seqrepo[:5]+["..."]), seqrepo_dir=seqrepo_dir))
             if not opts.partial_load:
                 _logger.warning("Skipping {an} (-p to enable partial loading)".format(an=assy_name))
                 continue
