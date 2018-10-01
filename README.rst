@@ -131,3 +131,5 @@ See `Installation <doc/installation.rst>`__ and `Mirroring
   :target: https://travis-ci.org/biocommons/biocommons.seqrepo
   :align: middle 
 
+.. |cov| image:: https://coveralls.io/repos/github/biocommons/biocommons.seqrepo/badge.svg?branch=
+  :target: https://coveralls.io/github/biocommons/biocommons.seqrepo?branch=
