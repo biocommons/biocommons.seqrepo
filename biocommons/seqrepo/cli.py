@@ -29,13 +29,12 @@ import tempfile
 
 import bioutils.assemblies
 import bioutils.seqfetcher
-from Bio import SeqIO
 import six
 import tqdm
 
 from . import __version__, SeqRepo
 from .py2compat import commonpath, gzip_open_encoded, makedirs
-
+from .fastaiter import FastaIter
 
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 DEFAULT_INSTANCE_NAME = "latest"
@@ -349,20 +348,19 @@ def load(opts):
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
         _logger.info("Opened " + fn)
-        seq_bar = tqdm.tqdm(SeqIO.parse(fh, "fasta"), unit=" seqs", disable=disable_bar, leave=False)
-        for rec in seq_bar:
+        seq_bar = tqdm.tqdm(FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False)
+        for rec_id, seq in seq_bar:
             n_seqs_seen += 1
             seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
-            seq = str(rec.seq)
-            if opts.namespace == "NCBI" and "|" in rec.id:
+            if opts.namespace == "NCBI" and "|" in rec_id:
                 # NCBI deflines may have multiple accessions, pipe-separated
-                aliases = [m.groupdict() for m in defline_re.finditer(rec.id)]
+                aliases = [m.groupdict() for m in defline_re.finditer(rec_id)]
                 for a in aliases:
                     if a["namespace"] == "ref":
                         a["namespace"] = "NCBI"
             else:
-                aliases = [{"namespace": opts.namespace, "alias": rec.id}]
+                aliases = [{"namespace": opts.namespace, "alias": rec_id}]
             n_sa, n_aa = sr.store(seq, aliases)
             n_seqs_added += n_sa
             n_aliases_added += n_aa
