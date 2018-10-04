@@ -18,4 +18,4 @@ def FastaIter(handle):
     if header is not None:
         yield header, "".join(seq_lines)
     else:   # no FASTA records in file
-        return None
+        return
