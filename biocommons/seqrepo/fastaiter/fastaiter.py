@@ -12,9 +12,10 @@ def FastaIter(handle):
             seq_lines = list()
             header = line[1:].rstrip()
         else:
-            seq_lines.append(line.strip())
+            if header is not None:  # not the first record
+                seq_lines.append(line.strip())
 
-    if header is not None
+    if header is not None:
         yield header, "".join(seq_lines)
     else:   # no FASTA records in file
         return None
