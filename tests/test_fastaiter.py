@@ -61,3 +61,17 @@ def test_multiple():
     with pytest.raises(StopIteration):
         six.next(iterator)
 
+
+def test_multiline():
+    data = StringIO(">seq1\nACGT\nTGCA")
+
+    iterator = FastaIter(data)
+
+    header, seq = six.next(iterator)
+    assert header == "seq1"
+    assert seq == "ACGTTGCA"
+
+    # should be empty now
+    with pytest.raises(StopIteration):
+        six.next(iterator)
+
