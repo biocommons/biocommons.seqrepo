@@ -6,6 +6,8 @@ Files must be named as .fa.bgz to be recognized as blocked gzip compressed
 
 """
 
+from __future__ import unicode_literals
+
 import io
 import logging
 import os
@@ -100,10 +102,9 @@ class FabgzWriter(object):
                 yield seq[i:i + line_width]
 
         if seq_id not in self._added:
-            self._fh.write(six.u(">") + seq_id + six.u("\n"))
-            # self._fh.writelines(six.u(l+"\n") for l in textwrap.wrap(seq, line_width))
+            self._fh.write(">" + seq_id + "\n")
             for l in wrap_lines(seq, line_width):
-                self._fh.write(six.u(l) + "\n")
+                self._fh.write(l + "\n")
             self._added.add(seq_id)
             logger.debug("added seq_id {i}; length {l}".format(i=seq_id, l=len(seq)))
         return seq_id
