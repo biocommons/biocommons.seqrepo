@@ -184,8 +184,11 @@ class SeqRepo(object):
 
 
     def translate_identifier(self, identifer, target_namespaces=None, translate_ncbi_namespace=None):
-        assert nsa_sep in identifer, "expected namespaced identifier like `RefSeq:NM_000551.3`"
-        namespace, alias = identifer.split(nsa_sep)
+        """Given a string identifier, return a list of aliases (as
+        identifiers) that refer to the same sequence.
+
+        """
+        namespace, alias = identifer.split(nsa_sep) if nsa_sep in identifer else (None, identifer)
         aliases = self.translate_alias(alias=alias,
                                        namespace=namespace,
                                        target_namespaces=target_namespaces,

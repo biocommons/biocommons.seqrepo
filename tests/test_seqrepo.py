@@ -109,7 +109,7 @@ def test_refseq_translation(tmpdir_factory):
 
 
 def test_translation(seqrepo):
-    assert "MD5:ea81b52627e387fc6edd8b9412cd3a99" in seqrepo.translate_identifier("fr:coin")
-    assert "VMC:GS_LDz34B6fA_fLxFoc2agLrXQRYuupOGGM" in seqrepo.translate_identifier("fr:coin")
-    assert ["VMC:GS_LDz34B6fA_fLxFoc2agLrXQRYuupOGGM"] == seqrepo.translate_identifier("fr:coin", target_namespaces=["VMC"])
-
+    assert "MD5:8b2698fb0b0c93558a6adbb11edb1e4b" in seqrepo.translate_identifier("en:rose"), "failed fully-qualified identifier lookup"
+    assert "MD5:8b2698fb0b0c93558a6adbb11edb1e4b" in seqrepo.translate_identifier("rose"), "failed unqualified identifier lookup"
+    assert "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr" in seqrepo.translate_identifier("en:rose"), "failed to find expected identifier in returned identifiers"
+    assert ["VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr"] == seqrepo.translate_identifier("en:rose", target_namespaces=["VMC"]), "failed to rerieve exactly the expected identifier"
