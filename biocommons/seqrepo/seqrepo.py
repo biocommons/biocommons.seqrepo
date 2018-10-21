@@ -39,7 +39,7 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir, writeable=False, upcase=True):
+    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=False):
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -48,12 +48,15 @@ class SeqRepo(object):
         self._pending_sequences_len = 0
         self._pending_aliases = 0
         self._writeable = writeable
+        self.translate_ncbi_namespace = translate_ncbi_namespace
 
         if self._writeable:
             makedirs(self._root_dir, exist_ok=True)
 
         self.sequences = FastaDir(self._seq_path, writeable=self._writeable)
-        self.aliases = SeqAliasDB(self._db_path, writeable=self._writeable)
+        self.aliases = SeqAliasDB(self._db_path,
+                                  writeable=self._writeable,
+                                  translate_ncbi_namespace=self.translate_ncbi_namespace)
 
     def __contains__(self, nsa):
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)

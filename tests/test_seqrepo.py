@@ -81,9 +81,28 @@ def test_keepcase(seqrepo_keepcase):
     assert seqrepo_keepcase["iiohab"] == "ifIonlyHADaBRAIN"
 
 
-def test_refseq_translation(seqrepo):
+def test_refseq_lookup(seqrepo):
     seqrepo.store("NCBISEQUENCE", [{"namespace": "NCBI", "alias": "ncbiac"}])
+    # commit not necessary
     assert seqrepo["ncbiac"] == "NCBISEQUENCE"
     assert seqrepo["NCBI:ncbiac"] == "NCBISEQUENCE"
     assert seqrepo["RefSeq:ncbiac"] == "NCBISEQUENCE"
     
+
+def test_refseq_translation(tmpdir_factory):
+    dir = str(tmpdir_factory.mktemp('seqrepo'))
+
+    seqrepo = SeqRepo(dir, writeable=True)
+    seqrepo.store("NCBISEQUENCE", [{"namespace": "NCBI", "alias": "ncbiac"}])
+    seqrepo.commit()
+    del seqrepo
+
+    seqrepo = SeqRepo(dir, writeable=False, translate_ncbi_namespace=False)
+    aliases = list(seqrepo.aliases.find_aliases(alias="ncbiac"))
+    assert len(aliases) == 1
+    assert aliases[0]["namespace"] == "NCBI"
+
+    seqrepo = SeqRepo(dir, writeable=False, translate_ncbi_namespace=True)
+    aliases = list(seqrepo.aliases.find_aliases(alias="ncbiac"))
+    assert len(aliases) == 1
+    assert aliases[0]["namespace"] == "RefSeq"

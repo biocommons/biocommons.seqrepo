@@ -5,7 +5,7 @@ import sqlite3
 import pkg_resources
 import yoyo
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 expected_schema_version = 1
 
@@ -22,10 +22,11 @@ class SeqAliasDB(object):
 
     """
 
-    def __init__(self, db_path, writeable=False):
+    def __init__(self, db_path, writeable=False, translate_ncbi_namespace=False):
         self._db_path = db_path
         self._db = None
         self._writeable = writeable
+        self.translate_ncbi_namespace = translate_ncbi_namespace
 
         if self._writeable:
             self._upgrade_db()
@@ -58,7 +59,7 @@ class SeqAliasDB(object):
         """return list of alias annotation records (dicts) for a given seq_id"""
         return [dict(r) for r in self.find_aliases(seq_id=seq_id, current_only=current_only)]
 
-    def find_aliases(self, seq_id=None, namespace=None, alias=None, current_only=True):
+    def find_aliases(self, seq_id=None, namespace=None, alias=None, current_only=True, translate_ncbi_namespace=None):
         """returns iterator over alias annotation records that match criteria
         
         The arguments, all optional, restrict the records that are
@@ -74,6 +75,8 @@ class SeqAliasDB(object):
         def eq_or_like(s):
             return "like" if "%" in s else "="
 
+        if translate_ncbi_namespace is None:
+            translate_ncbi_namespace = self.translate_ncbi_namespace
         if alias is not None:
             clauses += ["alias {} ?".format(eq_or_like(alias))]
             params += [alias]
@@ -91,12 +94,17 @@ class SeqAliasDB(object):
         if current_only:
             clauses += ["is_current = 1"]
 
-        sql = "select * from seqalias"
+        cols = ["seqalias_id", "seq_id", "alias", "added", "is_current"]
+        if translate_ncbi_namespace:
+            cols += ["case namespace when 'NCBI' then 'RefSeq' else namespace end as namespace"]
+        else:
+            cols += ["namespace"]
+        sql = "select {cols} from seqalias".format(cols=", ".join(cols))
         if clauses:
             sql += " where " + " and ".join("(" + c + ")" for c in clauses)
         sql += " order by seq_id, namespace, alias"
 
-        logger.debug("Executing: " + sql)
+        _logger.debug("Executing: " + sql)
         return self._db.execute(sql, params)
 
     def schema_version(self):
@@ -138,11 +146,11 @@ class SeqAliasDB(object):
         # if seq_id matches current record, it's a duplicate (seq_id, namespace, alias) tuple
         # and we return current record
         if current_rec["seq_id"] == seq_id:
-            logger.debug(log_pfx + ": duplicate record")
+            _logger.debug(log_pfx + ": duplicate record")
             return current_rec["seqalias_id"]
 
         # otherwise, we're reassigning; deprecate old record, then retry
-        logger.debug(log_pfx + ": collision; deprecating {s1}".format(s1=current_rec["seq_id"]))
+        _logger.debug(log_pfx + ": collision; deprecating {s1}".format(s1=current_rec["seq_id"]))
         self._db.execute("update seqalias set is_current = 0 where seqalias_id = ?", [current_rec["seqalias_id"]])
         return self.store_alias(seq_id, namespace, alias)
 
