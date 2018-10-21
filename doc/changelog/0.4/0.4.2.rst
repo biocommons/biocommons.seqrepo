@@ -1,0 +1,10 @@
+
+0.4.2 (2018-10-21)
+###################
+
+Changes since 0.4.1 (2018-10-21).
+
+New Features
+$$$$$$$$$$$$$
+
+* Closes `#42 <https://github.com/biocommons/hgvs/issues/42/>`_: Enable lookup of unqualified identifiers [`30a4064fcf72 <https://github.com/biocommons/hgvs/commit/30a4064fcf72>`_]
