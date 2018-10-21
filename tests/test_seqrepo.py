@@ -79,3 +79,11 @@ def test_errors(seqrepo_ro):
 def test_keepcase(seqrepo_keepcase):
     seqrepo_keepcase.store("ifIonlyHADaBRAIN", [{"namespace": "me", "alias": "iiohab"}])
     assert seqrepo_keepcase["iiohab"] == "ifIonlyHADaBRAIN"
+
+
+def test_refseq_translation(seqrepo):
+    seqrepo.store("NCBISEQUENCE", [{"namespace": "NCBI", "alias": "ncbiac"}])
+    assert seqrepo["ncbiac"] == "NCBISEQUENCE"
+    assert seqrepo["NCBI:ncbiac"] == "NCBISEQUENCE"
+    assert seqrepo["RefSeq:ncbiac"] == "NCBISEQUENCE"
+    

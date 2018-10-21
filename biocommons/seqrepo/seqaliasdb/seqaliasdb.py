@@ -78,6 +78,11 @@ class SeqAliasDB(object):
             clauses += ["alias {} ?".format(eq_or_like(alias))]
             params += [alias]
         if namespace is not None:
+            # Switch to using RefSeq for RefSeq accessions
+            # issue #38: translate "RefSeq" to "NCBI" to enable RefSeq lookups
+            # issue #31: later breaking change, translate database
+            if namespace == "RefSeq":
+                namespace = "NCBI"
             clauses += ["namespace {} ?".format(eq_or_like(namespace))]
             params += [namespace]
         if seq_id is not None:
