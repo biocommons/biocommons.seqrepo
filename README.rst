@@ -1,6 +1,14 @@
 biocommons.seqrepo
 !!!!!!!!!!!!!!!!!!
 
+**Important**: seqrepo 0.4.0 was released on 2018-10-21. 0.4.0
+provides a transition path for **breaking changes** that will occur in the
+0.5 series. See `0.4.0 Changelog
+<https://github.com/biocommons/biocommons.seqrepo/blob/master/doc/changelog/0.4/0.4.0.rst>`__
+for details.
+
+----
+
 Python package for writing and reading a local collection of
 biological sequences.  The repository is non-redundant, compressed,
 and journalled, making it efficient to store and transfer multiple
