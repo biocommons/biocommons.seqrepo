@@ -183,12 +183,12 @@ class SeqRepo(object):
         return aliases
 
 
-    def translate_identifier(self, identifer, target_namespaces=None, translate_ncbi_namespace=None):
+    def translate_identifier(self, identifier, target_namespaces=None, translate_ncbi_namespace=None):
         """Given a string identifier, return a list of aliases (as
         identifiers) that refer to the same sequence.
 
         """
-        namespace, alias = identifer.split(nsa_sep) if nsa_sep in identifer else (None, identifer)
+        namespace, alias = identifier.split(nsa_sep) if nsa_sep in identifier else (None, identifier)
         aliases = self.translate_alias(alias=alias,
                                        namespace=namespace,
                                        target_namespaces=target_namespaces,
