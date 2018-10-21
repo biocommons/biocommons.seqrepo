@@ -1,0 +1,15 @@
+clog format: 1; -*-outline-*-
+* 0.4.0 (2018-10-21)
+Changes since 0.3.9 (2018-09-30).
+** Special Attention
+★ In 0.5.0, the "NCBI" namespace will renamed to "RefSeq" to better
+reflect the official origin. To support this change, two New Features
+(below) enable clients to adopt the RefSeq namespace in advance of
+this change.
+** New Features
+*** #38: Support RefSeq namespace in find_aliases() [32f6e52]
+*** #40: Optionally generate RefSeq-namespaced records in find_aliases()
+** Other Changes
+*** #36: Remove Biopython dependency. Thanks to @afrubin.
+** Internal and Developer Changes
+*** #39: Use decode rather that six.u to convert byte strings to text strings [47295e8]
