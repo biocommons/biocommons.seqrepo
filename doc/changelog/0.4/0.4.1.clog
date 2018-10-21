@@ -1,0 +1,6 @@
+clog format: 1; -*-outline-*-
+* 0.4.1 (2018-10-21)
+Changes since 0.4.0 (2018-10-21).
+** New Features
+*** Closes #41: Implement <namespace, alias> and (string) identifier translation [cce16ce00101]
+I won't add new features to a patch level change... *usually*. :-)

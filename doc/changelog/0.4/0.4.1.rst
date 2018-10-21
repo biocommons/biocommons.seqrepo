@@ -1,0 +1,11 @@
+
+0.4.1 (2018-10-21)
+###################
+
+Changes since 0.4.0 (2018-10-21).
+
+New Features
+$$$$$$$$$$$$$
+
+* Closes `#41 <https://github.com/biocommons/hgvs/issues/41/>`_: Implement <namespace, alias> and (string) identifier translation [`cce16ce00101 <https://github.com/biocommons/hgvs/commit/cce16ce00101>`_]
+I won't add new features to a patch level change... *usually*. :-)
