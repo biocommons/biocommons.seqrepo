@@ -106,3 +106,10 @@ def test_refseq_translation(tmpdir_factory):
     aliases = list(seqrepo.aliases.find_aliases(alias="ncbiac"))
     assert len(aliases) == 1
     assert aliases[0]["namespace"] == "RefSeq"
+
+
+def test_translation(seqrepo):
+    assert "MD5:ea81b52627e387fc6edd8b9412cd3a99" in seqrepo.translate_identifier("fr:coin")
+    assert "VMC:GS_LDz34B6fA_fLxFoc2agLrXQRYuupOGGM" in seqrepo.translate_identifier("fr:coin")
+    assert ["VMC:GS_LDz34B6fA_fLxFoc2agLrXQRYuupOGGM"] == seqrepo.translate_identifier("fr:coin", target_namespaces=["VMC"])
+

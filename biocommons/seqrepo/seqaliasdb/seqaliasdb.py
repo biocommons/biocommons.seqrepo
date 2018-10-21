@@ -55,9 +55,11 @@ class SeqAliasDB(object):
         if self._writeable:
             self._db.commit()
 
-    def fetch_aliases(self, seq_id, current_only=True):
+    def fetch_aliases(self, seq_id, current_only=True, translate_ncbi_namespace=None):
         """return list of alias annotation records (dicts) for a given seq_id"""
-        return [dict(r) for r in self.find_aliases(seq_id=seq_id, current_only=current_only)]
+        return [dict(r) for r in self.find_aliases(seq_id=seq_id,
+                                                   current_only=current_only,
+                                                   translate_ncbi_namespace=translate_ncbi_namespace)]
 
     def find_aliases(self, seq_id=None, namespace=None, alias=None, current_only=True, translate_ncbi_namespace=None):
         """returns iterator over alias annotation records that match criteria
@@ -153,6 +155,8 @@ class SeqAliasDB(object):
         _logger.debug(log_pfx + ": collision; deprecating {s1}".format(s1=current_rec["seq_id"]))
         self._db.execute("update seqalias set is_current = 0 where seqalias_id = ?", [current_rec["seqalias_id"]])
         return self.store_alias(seq_id, namespace, alias)
+
+
 
 
     # ############################################################################

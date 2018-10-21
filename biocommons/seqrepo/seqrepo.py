@@ -3,7 +3,6 @@ import os
 import re
 
 import bioutils.digests
-import six
 
 from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
@@ -17,7 +16,7 @@ ct_n_aliases = 60000
 ct_n_residues = 1e9
 
 # namespace-alias separator
-nsa_sep = ":"
+nsa_sep = u":"
 
 uri_re = re.compile(r"([^:]+):(.+)")
 
@@ -79,17 +78,21 @@ class SeqRepo(object):
     def __str__(self):
         return "SeqRepo(root_dir={self._root_dir}, writeable={self._writeable})".format(self=self)
 
+    def commit(self):
+        self.sequences.commit()
+        self.aliases.commit()
+        if self._pending_sequences + self._pending_aliases > 0:
+            _logger.info("Committed {} sequences ({} residues) and {} aliases".format(
+                self._pending_sequences, self._pending_sequences_len, self._pending_aliases))
+        self._pending_sequences = 0
+        self._pending_sequences_len = 0
+        self._pending_aliases = 0
+
+
     def fetch(self, alias, start=None, end=None, namespace=None):
-        recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
+        seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
+        return self.sequences.fetch(seq_id, start, end)
 
-        seq_ids = set(r["seq_id"] for r in recs)
-        if len(seq_ids) == 0:
-            raise KeyError("Alias {} (namespace: {})".format(alias, namespace))
-        if len(seq_ids) > 1:
-            # This should only happen when namespace is None
-            raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
-
-        return self.sequences.fetch(seq_ids.pop(), start, end)
 
     def fetch_uri(self, uri, start=None, end=None):
         """fetch sequence for URI/CURIE of the form namespace:alias, such as
@@ -99,6 +102,7 @@ class SeqRepo(object):
 
         namespace, alias = uri_re.match(uri).groups()
         return self.fetch(alias=alias, namespace=namespace, start=start, end=end)
+
 
     def store(self, seq, nsaliases):
         """nsaliases is a list of dicts, like:
@@ -162,18 +166,55 @@ class SeqRepo(object):
             self.commit()
         return n_seqs_added, n_aliases_added
 
-    def commit(self):
-        self.sequences.commit()
-        self.aliases.commit()
-        if self._pending_sequences + self._pending_aliases > 0:
-            _logger.info("Committed {} sequences ({} residues) and {} aliases".format(
-                self._pending_sequences, self._pending_sequences_len, self._pending_aliases))
-        self._pending_sequences = 0
-        self._pending_sequences_len = 0
-        self._pending_aliases = 0
+
+    def translate_alias(self, alias, namespace=None, target_namespaces=None, translate_ncbi_namespace=None):
+        """given an alias and optional namespace, return a list of all other
+        aliases for same sequence
+
+        """
+
+        if translate_ncbi_namespace is None:
+            translate_ncbi_namespace = self.translate_ncbi_namespace
+        seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
+        aliases = self.aliases.fetch_aliases(seq_id=seq_id,
+                                             translate_ncbi_namespace=translate_ncbi_namespace)
+        if target_namespaces:
+            aliases = [a for a in aliases if a["namespace"] in target_namespaces]
+        return aliases
+
+
+    def translate_identifier(self, identifer, target_namespaces=None, translate_ncbi_namespace=None):
+        assert nsa_sep in identifer, "expected namespaced identifier like `RefSeq:NM_000551.3`"
+        namespace, alias = identifer.split(nsa_sep)
+        aliases = self.translate_alias(alias=alias,
+                                       namespace=namespace,
+                                       target_namespaces=target_namespaces,
+                                       translate_ncbi_namespace=translate_ncbi_namespace)
+        return [nsa_sep.join((a["namespace"], a["alias"])) for a in aliases]
+
+
+    ############################################################################
+    # Internal Methods 
+
+    def _get_unique_seqid(self, alias, namespace):
+        """given alias and namespace, return seq_id if exactly one distinct
+        sequence id is found, raise KeyError if there's no match, or
+        raise ValueError if there's more than one match.
+
+        """
+
+        recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
+        seq_ids = set(r["seq_id"] for r in recs)
+        if len(seq_ids) == 0:
+            raise KeyError("Alias {} (namespace: {})".format(alias, namespace))
+        if len(seq_ids) > 1:
+            # This should only happen when namespace is None
+            raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
+        return seq_ids.pop()
 
 
     def _update_digest_aliases(self, seq_id, seq):
+
         """compute digest aliases for seq and update; returns number of digest
         aliases (some of which may have already existed)
 
