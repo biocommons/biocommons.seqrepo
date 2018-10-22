@@ -52,6 +52,9 @@ class SeqRepo(object):
         if self._writeable:
             makedirs(self._root_dir, exist_ok=True)
 
+        if not os.path.exists(self._root_dir):
+            raise OSError("Unable to open SeqRepo directory {}".format(self._root_dir))
+
         self.sequences = FastaDir(self._seq_path, writeable=self._writeable)
         self.aliases = SeqAliasDB(self._db_path,
                                   writeable=self._writeable,
