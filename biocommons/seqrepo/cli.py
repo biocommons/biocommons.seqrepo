@@ -236,7 +236,7 @@ def add_assembly_names(opts):
     for assy_name in tqdm.tqdm(assemblies_to_load, unit="assembly"):
         _logger.debug("loading " + assy_name)
         sequences = assemblies[assy_name]["sequences"]
-        eq_sequences = [s for s in sequences if s["relationship"] == "="]
+        eq_sequences = [s for s in sequences if s["relationship"] in ("=", "<>")]
         if not eq_sequences:
             _logger.info("No '=' sequences to load for {an}; skipping".format(an=assy_name))
             continue
