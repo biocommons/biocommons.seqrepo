@@ -519,7 +519,7 @@ def update_latest(opts, mri=None):
     dst = os.path.join(opts.root_directory, "latest")
     try:
         os.unlink(dst)
-    except (OSError, FileNotFoundError):  # OSError on Py2, FNF on Py3
+    except OSError:
         pass
     os.symlink(mri, dst)
     _logger.info("Linked `latest` -> `{}`".format(mri))
