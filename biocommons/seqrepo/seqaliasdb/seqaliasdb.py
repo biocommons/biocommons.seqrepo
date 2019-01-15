@@ -22,7 +22,7 @@ class SeqAliasDB(object):
 
     """
 
-    def __init__(self, db_path, writeable=False, translate_ncbi_namespace=False):
+    def __init__(self, db_path, writeable=False, translate_ncbi_namespace=False, check_same_thread=True):
         self._db_path = db_path
         self._db = None
         self._writeable = writeable
@@ -31,7 +31,7 @@ class SeqAliasDB(object):
         if self._writeable:
             self._upgrade_db()
 
-        self._db = sqlite3.connect(self._db_path)
+        self._db = sqlite3.connect(self._db_path, check_same_thread=check_same_thread)
         schema_version = self.schema_version()
         self._db.row_factory = sqlite3.Row
 

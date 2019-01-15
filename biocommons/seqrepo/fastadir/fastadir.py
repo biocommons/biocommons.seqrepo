@@ -51,7 +51,7 @@ class FastaDir(BaseReader, BaseWriter):
 
     """
 
-    def __init__(self, root_dir, writeable=False):
+    def __init__(self, root_dir, writeable=False, check_same_thread=True):
         """Creates a new sequence repository if necessary, and then opens it"""
 
         self._root_dir = root_dir
@@ -64,7 +64,7 @@ class FastaDir(BaseReader, BaseWriter):
             makedirs(self._root_dir, exist_ok=True)
             self._upgrade_db()
 
-        self._db = sqlite3.connect(self._db_path)
+        self._db = sqlite3.connect(self._db_path, check_same_thread=check_same_thread)
         schema_version = self.schema_version()
         self._db.row_factory = sqlite3.Row
 
