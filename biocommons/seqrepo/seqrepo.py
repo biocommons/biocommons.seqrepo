@@ -38,7 +38,7 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=False):
+    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=False, check_same_thread=False):
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -48,6 +48,7 @@ class SeqRepo(object):
         self._pending_aliases = 0
         self._writeable = writeable
         self.translate_ncbi_namespace = translate_ncbi_namespace
+        self._check_same_thread = True if writeable else check_same_thread
 
         if self._writeable:
             makedirs(self._root_dir, exist_ok=True)
@@ -55,10 +56,11 @@ class SeqRepo(object):
         if not os.path.exists(self._root_dir):
             raise OSError("Unable to open SeqRepo directory {}".format(self._root_dir))
 
-        self.sequences = FastaDir(self._seq_path, writeable=self._writeable)
+        self.sequences = FastaDir(self._seq_path, writeable=self._writeable, check_same_thread=self._check_same_thread)
         self.aliases = SeqAliasDB(self._db_path,
                                   writeable=self._writeable,
-                                  translate_ncbi_namespace=self.translate_ncbi_namespace)
+                                  translate_ncbi_namespace=self.translate_ncbi_namespace,
+                                  check_same_thread=self._check_same_thread)
 
     def __contains__(self, nsa):
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
