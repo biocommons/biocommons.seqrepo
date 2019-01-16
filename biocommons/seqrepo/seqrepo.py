@@ -48,7 +48,7 @@ class SeqRepo(object):
         self._pending_aliases = 0
         self._writeable = writeable
         self.translate_ncbi_namespace = translate_ncbi_namespace
-        self._check_same_thread = check_same_thread
+        self._check_same_thread = True if writeable else check_same_thread
 
         if self._writeable:
             makedirs(self._root_dir, exist_ok=True)
