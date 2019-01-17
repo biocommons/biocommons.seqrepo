@@ -23,6 +23,10 @@ def commonpath(paths):
     '/a/b'
     >>> commonpath(["/a/b/c", "/a/b/d", "//a//b//e//"])
     '/a/b'
+    >>> commonpath([])
+    Traceback (most recent call last):
+    ...
+    ValueError: commonpath() arg is an empty sequence
 
     """
     assert os.sep == "/", "tested only on slash-delimited paths"
