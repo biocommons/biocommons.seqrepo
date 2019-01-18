@@ -36,7 +36,7 @@ def _get_bgzip_version(exe):
     return version
 
 
-def _check_bgzip_version(exe):
+def _check_bgzip(exe):
     missing_file_exception = OSError if six.PY2 else FileNotFoundError
 
     try:
@@ -44,7 +44,7 @@ def _check_bgzip_version(exe):
     except AttributeError:
         raise RuntimeError("Didn't find version string when executing {exe}".format(exe=exe))
     except missing_file_exception:
-        raise RuntimeError("Error while exceuting {exe}; does it exist?".format(exe=exe))
+        raise RuntimeError("{exe} doesn't exist; you need to install tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe))
     except Exception:
         raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
@@ -80,13 +80,13 @@ class FabgzWriter(object):
     def __init__(self, filename):
         super(FabgzWriter, self).__init__()
 
-        _check_bgzip_version(bgzip_exe)
-
         self.filename = filename
         self._fh = None
         self._basepath, suffix = os.path.splitext(self.filename)
         if suffix != ".bgz":
             raise RuntimeError("Path must end with .bgz")
+
+        _check_bgzip(bgzip_exe)
 
         files = [self.filename, self.filename + ".fai", self.filename + ".gzi", self._basepath]
         if any(os.path.exists(fn) for fn in files):
@@ -127,5 +127,5 @@ class FabgzWriter(object):
 
     def __del__(self):
         if self._fh is not None:
-            logger.error("FabgzWriter({}) was not explicitly closed; may result in lost data".format(self.filename))
+            logger.error("FabgzWriter({}) was not explicitly closed; data may be lost".format(self.filename))
             self.close()
