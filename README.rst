@@ -79,17 +79,21 @@ For more information, see `<doc/design.rst>`__.
 Requirements
 !!!!!!!!!!!!
 
-Reading a sequence repository requires several packages, all of which
-are available from pypi. Installation should be as simple as `pip
-install biocommons.seqrepo`.
+Reading a sequence repository requires several Python packages, all of
+which are available from pypi. Installation should be as simple as
+`pip install biocommons.seqrepo`.
 
-Writing sequence files also requires ``bgzip``, which provided in the
-`htslib <https://github.com/samtools/htslib>`__ repo. Ubuntu users
+*Writing* sequence files also requires ``bgzip``, which provided in
+the `htslib <https://github.com/samtools/htslib>`__ repo. Ubuntu users
 should install the ``tabix`` package with ``sudo apt install tabix``.
 
 Development and deployments are on Ubuntu. Other systems may work but
 are not tested.  Patches to get other systems working would be
 welcomed.
+
+**Mac Developers** If you get "xcrun: error: invalid active developer
+path", you need to install XCode. See this `StackOverflow answer
+<https://apple.stackexchange.com/questions/254380/why-am-i-getting-an-invalid-active-developer-path-when-attempting-to-use-git-a>`__.
 
 
 Quick Start
