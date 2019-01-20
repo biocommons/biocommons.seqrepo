@@ -30,6 +30,12 @@ def test_00_init(opts):
     init(opts)
     assert os.path.exists(opts.root_directory)
 
+    with pytest.raises(IOError) as excinfo:
+        init(opts)
+
+    seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
+    assert str(excinfo.value) == "{seqrepo_dir} exists and is not empty".format(seqrepo_dir=seqrepo_dir)
+
 
 def test_20_load(opts):
     load(opts)

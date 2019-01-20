@@ -310,7 +310,7 @@ def fetch_load(opts):
 def init(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     if os.path.exists(seqrepo_dir) and len(os.listdir(seqrepo_dir)) > 0:
-        raise IOError("{seqrepo_dir} exists and is not empty".format(opts=opts))
+        raise IOError("{seqrepo_dir} exists and is not empty".format(seqrepo_dir=seqrepo_dir))
     sr = SeqRepo(seqrepo_dir, writeable=True)    # flake8: noqa
 
 
