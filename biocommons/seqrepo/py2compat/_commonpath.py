@@ -27,7 +27,10 @@ def commonpath(paths):
     Traceback (most recent call last):
     ...
     ValueError: commonpath() arg is an empty sequence
-
+    >>> commonpath(["/absolute/path", "relative/path"])
+    Traceback (most recent call last):
+    ... 
+    ValueError: (Can't mix absolute and relative paths")
     """
     assert os.sep == "/", "tested only on slash-delimited paths"
     split_re = re.compile(os.sep + "+")
