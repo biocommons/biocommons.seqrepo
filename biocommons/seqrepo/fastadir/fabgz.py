@@ -12,6 +12,7 @@ import io
 import logging
 import os
 import re
+import shutil
 import stat
 import subprocess
 
@@ -19,12 +20,11 @@ import six
 
 from pysam import FastaFile
 
-line_width = 100
 logger = logging.getLogger(__name__)
 
-bgzip_exe = os.environ.get("SEQREPO_BGZIP_PATH", "/usr/bin/bgzip")
+line_width = 100
+
 min_bgzip_version_info = (1, 2, 1)
-min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
 
 
 def _get_bgzip_version(exe):
@@ -36,15 +36,18 @@ def _get_bgzip_version(exe):
     return version
 
 
-def _check_bgzip(exe):
+def _find_bgzip():
+    """return path to bgzip if found and meets version requirements, else exception"""
     missing_file_exception = OSError if six.PY2 else FileNotFoundError
+    min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
+    exe = os.environ.get("SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip")
 
     try:
         bgzip_version = _get_bgzip_version(exe)
     except AttributeError:
-        raise RuntimeError("Didn't find version string when executing {exe}".format(exe=exe))
+        raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
     except missing_file_exception:
-        raise RuntimeError("{exe} doesn't exist; you need to install tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe))
+        raise RuntimeError("{exe} doesn't exist; you need to install htslib (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe))
     except Exception:
         raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
@@ -52,6 +55,7 @@ def _check_bgzip(exe):
         raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
             exe=exe, ev=bgzip_version, rv=min_bgzip_version))
     logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
+    return exe
 
 
 class FabgzReader(object):
@@ -86,7 +90,7 @@ class FabgzWriter(object):
         if suffix != ".bgz":
             raise RuntimeError("Path must end with .bgz")
 
-        _check_bgzip(bgzip_exe)
+        self._bgzip_exe = _find_bgzip()
 
         files = [self.filename, self.filename + ".fai", self.filename + ".gzi", self._basepath]
         if any(os.path.exists(fn) for fn in files):
@@ -113,7 +117,7 @@ class FabgzWriter(object):
         if self._fh:
             self._fh.close()
             self._fh = None
-            subprocess.check_call([bgzip_exe, "--force", self._basepath])
+            subprocess.check_call([self._bgzip_exe, "--force", self._basepath])
             os.rename(self._basepath + ".gz", self.filename)
 
             # open file with FastaFile to create indexes, then make all read-only
