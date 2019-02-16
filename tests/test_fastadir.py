@@ -37,3 +37,25 @@ if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.DEBUG)
     test_write_reread()
+
+
+def test_schema_version():
+    tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_")
+    orig_schema_version = FastaDir.schema_version
+
+    with pytest.raises(RuntimeError):
+        FastaDir.schema_version = lambda x: 2
+        fd = FastaDir(tmpdir, writeable=True)
+
+    FastaDir.schema_version = orig_schema_version
+
+
+def test_writeability():
+    tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_")
+    fd = FastaDir(tmpdir, writeable=True)
+
+    with pytest.raises(RuntimeError):
+        fd._writeable = False
+        fd.store("NC_000001.11", "TGGTGGCACGCGCTTGTAGT")
+
+    fd._writeable = True
