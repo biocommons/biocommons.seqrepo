@@ -58,8 +58,7 @@ def commonpath(paths):
     return (os.sep if abs_paths else '') + commonpath
 
 
-if __name__ == "__main__":
-
+if __name__ == "__main__":  # pragma: no cover
     def cmp1(pathlist):
         bi = os.path.commonpath(pathlist)
         c = commonpath(pathlist)
