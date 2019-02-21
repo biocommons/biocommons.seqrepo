@@ -12,13 +12,15 @@ import io
 import logging
 import os
 import re
-import shutil
 import stat
 import subprocess
 
 import six
 
 from pysam import FastaFile
+
+from ..py2compat import which
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +42,7 @@ def _find_bgzip():
     """return path to bgzip if found and meets version requirements, else exception"""
     missing_file_exception = OSError if six.PY2 else FileNotFoundError
     min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
-    exe = os.environ.get("SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip")
+    exe = os.environ.get("SEQREPO_BGZIP_PATH", which("bgzip") or "/usr/bin/bgzip")
 
     try:
         bgzip_version = _get_bgzip_version(exe)
