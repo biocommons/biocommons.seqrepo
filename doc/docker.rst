@@ -29,7 +29,7 @@ The ``biocommons/seqrepo`` image declares the volume
 
   $ docker run -it --volumes-from seqrepo:ro ubuntu 
   root@1762eab78c3f:/# ls /usr/local/share/seqrepo/
-  20161004
+  2016-10-04
 
   root@1762eab78c3f:/# apt update && apt install -y python3-pip  zlib1g-dev
   ...
@@ -39,7 +39,7 @@ The ``biocommons/seqrepo`` image declares the volume
 
   root@1762eab78c3f:/# ipython
   In [1]: from biocommons.seqrepo import SeqRepo
-  In [2]: sr = SeqRepo("/usr/local/share/seqrepo/20161004")
+  In [2]: sr = SeqRepo("/usr/local/share/seqrepo/2016-10-04")
   In [3]: sr["NM_000059.3"][:10]
   Out[3]: 'GTGGCGCGAG'
 

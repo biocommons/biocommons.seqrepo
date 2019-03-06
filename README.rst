@@ -105,20 +105,20 @@ On Ubuntu 16.04::
   $ pip install seqrepo
   $ sudo mkdir /usr/local/share/seqrepo
   $ sudo chown $USER /usr/local/share/seqrepo
-  $ seqrepo pull -i 20160906 
-  $ seqrepo show-status -i 20160906 
+  $ seqrepo pull -i 2018-11-26 
+  $ seqrepo show-status -i 2018-11-26 
   seqrepo 0.2.3.post3.dev8+nb8298bd62283
-  root directory: /usr/local/share/seqrepo/20160906, 7.9 GB
+  root directory: /usr/local/share/seqrepo/2018-11-26, 7.9 GB
   backends: fastadir (schema 1), seqaliasdb (schema 1) 
   sequences: 773587 sequences, 93051609959 residues, 192 files
   aliases: 5579572 aliases, 5480085 current, 26 namespaces, 773587 sequences
   
-  $ seqrepo start-shell -i 20160906
+  $ seqrepo start-shell -i 2018-11-26
   In [1]: sr["NC_000001.11"][780000:780020]
   Out[1]: 'TGGTGGCACGCGCTTGTAGT'
   
   # N.B. The following output is edited for simplicity
-  $ seqrepo export -i 20160906 | head -n100
+  $ seqrepo export -i 2018-11-26 | head -n100
   >SHA1:9a2acba3dd7603f... SEGUID:mirLo912A/MppLuS1cUyFMduLUQ Ensembl-85:GENSCAN00000003538 ...
   MDSPLREDDSQTCARLWEAEVKRHSLEGLTVFGTAVQIHNVQRRAIRAKGTQEAQAELLCRGPRLLDRFLEDACILKEGRGTDTGQHCRGDARISSHLEA
   SGTHIQLLALFLVSSSDTPPSLLRFCHALEHDIRYNSSFDSYYPLSPHSRHNDDLQTPSSHLGYIITVPDPTLPLTFASLYLGMAPCTSMGSSSMGIFQS

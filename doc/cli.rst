@@ -8,7 +8,7 @@ This documentation assumes that the seqrepo base directory is::
   SEQREPO_ROOT=/usr/local/share/seqrepo
 
 Current convention is to add sequences to `$SEQREPO_ROOT/master`, then
-snapshot this to a dated directory like `$SEQREPO_ROOT/20160828`.  (This
+snapshot this to a dated directory like `$SEQREPO_ROOT/2016-08-28`.  (This
 convention is conceptually similar to source code development on a
 master branch with tags.)
 
