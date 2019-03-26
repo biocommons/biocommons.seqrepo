@@ -114,9 +114,9 @@ On Ubuntu 16.04::
   aliases: 5579572 aliases, 5480085 current, 26 namespaces, 773587 sequences
   
   # Simple Pythonic interface to sequences
-  >>> from biocommons.seqrepo import SeqRepo
-  >>> sr = SeqRepo("/usr/local/share/seqrepo/latest")
-  >>> sr["NC_000001.11"][780000:780020]
+  >> from biocommons.seqrepo import SeqRepo
+  >> sr = SeqRepo("/usr/local/share/seqrepo/latest")
+  >> sr["NC_000001.11"][780000:780020]
   'TGGTGGCACGCGCTTGTAGT'
 
   # Or, use the seqrepo shell for even easier access
