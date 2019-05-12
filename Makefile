@@ -2,7 +2,7 @@
 
 .DELETE_ON_ERROR:
 .PHONY: FORCE
-.PRECIOUS :
+.PRECIOUS:
 .SUFFIXES:
 
 SHELL:=/bin/bash -e -o pipefail
@@ -139,10 +139,6 @@ cleaner: clean
 cleanest: cleaner
 	rm -fr .eggs .tox venv
 
-#=> pristine distclean: above, and delete anything unknown to mercurial
-.PHONY: pristine distclean
-pristine distclean: cleanest
-	if [ -d .hg ]; then hg st -inu0 | xargs -0r /bin/rm -fv; fi
 
 ## <LICENSE>
 ## Copyright 2016 Source Code Committers
