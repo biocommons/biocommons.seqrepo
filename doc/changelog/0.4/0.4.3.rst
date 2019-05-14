@@ -1,0 +1,15 @@
+
+0.4.3 (2018-11-25)
+###################
+
+Changes since  (2018-10-21).
+
+New Features
+$$$$$$$$$$$$$
+
+* allow loading of assembly sequences with <> relationship [`81161d8 <https://github.com/biocommons/hgvs/commit/81161d8>`_]
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* Check for existence of root directory when initializing SeqRepo [`7d52e6f <https://github.com/biocommons/hgvs/commit/7d52e6f>`_]

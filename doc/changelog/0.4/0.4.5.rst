@@ -1,0 +1,48 @@
+
+0.4.5 (2019-05-13)
+###################
+
+Changes since  (2018-11-25).
+
+.. important:: This will be the last release support Python 2.7. See
+	       https://github.com/biocommons/org/wiki/Migrating-to-Python-3.6
+
+.. note:: This patch release is exceptional in that it contains functional
+	  changes (in addition to bug fixes).  Please use care when upgrading.
+
+
+
+Special Attention
+$$$$$$$$$$$$$$$$$$
+
+* issue warning when imported on Python < 3.6 [`003cacf43434 <https://github.com/biocommons/hgvs/commit/003cacf43434>`_]
+
+Bug Fixes
+$$$$$$$$$$
+
+* Fixes `#44 <https://github.com/biocommons/hgvs/issues/44/>`_: Trap OSError only (FileNotFoundError is subclass on Py3) [`129d285 <https://github.com/biocommons/hgvs/commit/129d285>`_]
+* Fixes `#11 <https://github.com/biocommons/hgvs/issues/11/>`_: Expose check_same_thread option for sqlite connection (`#46 <https://github.com/biocommons/hgvs/issues/46/>`_)
+* FabgzWriter: initialize _fh before checking bgzip version in order to prevent nested exception [`854a525 <https://github.com/biocommons/hgvs/commit/854a525>`_]
+
+New Features
+$$$$$$$$$$$$$
+
+* find bgzip in PATH (order: SEQREPO_BGZIP_PATH, which bgzip, hardcoded /usr/bin/bgzip) [`2a9877e <https://github.com/biocommons/hgvs/commit/2a9877e>`_]
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* converted all references to old-formatted dates [`8570e4c <https://github.com/biocommons/hgvs/commit/8570e4c>`_]
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* Closes `#45 <https://github.com/biocommons/hgvs/issues/45/>`_: Improve test coverage (`#49 <https://github.com/biocommons/hgvs/issues/49/>`_, `#47 <https://github.com/biocommons/hgvs/issues/47/>`_, `#48 <https://github.com/biocommons/hgvs/issues/48/>`_)
+* Create new venv/3 target for any Python 3 version [`641d2cc <https://github.com/biocommons/hgvs/commit/641d2cc>`_]
+* Use builtin functions instead of polyfill functions whenever possible (`#56 <https://github.com/biocommons/hgvs/issues/56/>`_) [`fb6d886 <https://github.com/biocommons/hgvs/commit/fb6d886>`_]
+* add `py2compat.which()`, a work-alike of `shutil.which()` for py2.7 [`0ce806a <https://github.com/biocommons/hgvs/commit/0ce806a>`_]
+* don't doctest README (data won't exist on travis) [`5881092 <https://github.com/biocommons/hgvs/commit/5881092>`_]
+* exclude py2compat from coverage since py27 support is now deprecated [`fd3ce88 <https://github.com/biocommons/hgvs/commit/fd3ce88>`_]
+* improved test coverage for py2compat.which and .commonpath [`fd80df6 <https://github.com/biocommons/hgvs/commit/fd80df6>`_]
+* remove py2compat entirely from run (except for existing doctests), not just the coverage report [`f02bd27 <https://github.com/biocommons/hgvs/commit/f02bd27>`_]
+* switch tox to py27,py36 (was py27,py35) [`bc1d934 <https://github.com/biocommons/hgvs/commit/bc1d934>`_]

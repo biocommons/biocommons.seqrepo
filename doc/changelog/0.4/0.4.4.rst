@@ -1,0 +1,10 @@
+
+0.4.4 (2018-11-25)
+###################
+
+Changes since  (2018-11-25).
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* use 'master' as default for write operations, 'latest' for reading [`200461c <https://github.com/biocommons/hgvs/commit/200461c>`_]
