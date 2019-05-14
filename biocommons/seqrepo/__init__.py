@@ -5,7 +5,9 @@ import logging
 import pkg_resources
 import warnings
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
+
+from ._versionwarning import *
 
 try:
     __version__ = pkg_resources.get_distribution(__name__).version
@@ -13,9 +15,11 @@ except pkg_resources.DistributionNotFound as e:    # pragma: no cover
     warnings.warn("can't get __version__ because %s package isn't installed" % __package__, Warning)
     __version__ = None
 
-logger.info(__name__ + " " + __version__)
+_logger.info(__name__ + " " + __version__)
+
 
 from .seqrepo import SeqRepo
+
 
 # <LICENSE>
 # Copyright 2016 biocommons.fastadir Contributors (https://github.com/biocommons/biocommons.fastadir/)
