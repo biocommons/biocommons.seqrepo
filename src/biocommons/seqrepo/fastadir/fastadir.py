@@ -1,4 +1,5 @@
 import datetime
+import functools
 import logging
 import os
 import sqlite3
@@ -8,7 +9,7 @@ import pkg_resources
 import six
 import yoyo
 
-from ..py2compat import lru_cache, makedirs
+
 
 from .bases import BaseReader, BaseWriter
 from .fabgz import FabgzReader, FabgzWriter
@@ -61,7 +62,7 @@ class FastaDir(BaseReader, BaseWriter):
         self._writeable = writeable
 
         if self._writeable:
-            makedirs(self._root_dir, exist_ok=True)
+            os.makedirs(self._root_dir, exist_ok=True)
             self._upgrade_db()
 
         self._db = sqlite3.connect(self._db_path, check_same_thread=check_same_thread)
@@ -153,7 +154,7 @@ class FastaDir(BaseReader, BaseWriter):
 
             dir_ = os.path.join(self._root_dir, reldir)
             path = os.path.join(self._root_dir, reldir, basename)
-            makedirs(dir_, exist_ok=True)
+            os.makedirs(dir_, exist_ok=True)
             fabgz = FabgzWriter(path)
             self._writing = {"relpath": relpath, "fabgz": fabgz}
             logger.info("Opened for writing: " + path)
@@ -178,7 +179,7 @@ class FastaDir(BaseReader, BaseWriter):
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
 
-    @lru_cache()
+    @functools.lru_cache()
     def _open_for_reading(self, path):
         logger.info("Opening for reading: " + path)
         return FabgzReader(path)

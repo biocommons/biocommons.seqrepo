@@ -6,7 +6,6 @@ import bioutils.digests
 
 from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
-from .py2compat import makedirs
 
 _logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ class SeqRepo(object):
         self._check_same_thread = True if writeable else check_same_thread
 
         if self._writeable:
-            makedirs(self._root_dir, exist_ok=True)
+            os.makedirs(self._root_dir, exist_ok=True)
 
         if not os.path.exists(self._root_dir):
             raise OSError("Unable to open SeqRepo directory {}".format(self._root_dir))

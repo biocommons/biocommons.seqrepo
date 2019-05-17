@@ -15,6 +15,7 @@ from __future__ import division, print_function
 
 import argparse
 import datetime
+import gzip
 import io
 import itertools
 import logging
@@ -27,13 +28,13 @@ import sys
 import subprocess
 import tempfile
 
+
 import bioutils.assemblies
 import bioutils.seqfetcher
 import six
 import tqdm
 
 from . import __version__, SeqRepo
-from .py2compat import commonpath, gzip_open_encoded, makedirs
 from .fastaiter import FastaIter
 
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
@@ -345,7 +346,7 @@ def load(opts):
         if fn == "-":
             fh = sys.stdin
         elif fn.endswith(".gz") or fn.endswith(".bgz"):
-            fh = gzip_open_encoded(fn, encoding="ascii")    # PY2BAGGAGE
+            fh = gzip.open(fn, mode="rt", encoding="ascii")
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
         _logger.info("Opened " + fn)
@@ -435,7 +436,7 @@ def snapshot(opts):
     src_dir = os.path.realpath(seqrepo_dir)
     dst_dir = os.path.realpath(dst_dir)
 
-    if commonpath([src_dir, dst_dir]).startswith(src_dir):
+    if os.path.commonpath([src_dir, dst_dir]).startswith(src_dir):
         raise RuntimeError("Cannot nest seqrepo directories " "({} is within {})".format(dst_dir, src_dir))
 
     if os.path.exists(dst_dir):
@@ -448,7 +449,7 @@ def snapshot(opts):
     _logger.debug("tmp_dir = " + tmp_dir)
 
     # TODO: cleanup of tmpdir on failure
-    makedirs(tmp_dir, exist_ok=True)
+    os.makedirs(tmp_dir, exist_ok=True)
     wd = os.getcwd()
     os.chdir(src_dir)
 
