@@ -136,9 +136,19 @@ On Ubuntu 16.04::
   ATACAGTGTGGTTCAAAAAAATTTGTTGTATCAAGGTAAAATAATAGCCTGAATATAATTAAGATAGTCTGTGTATACATCGATGAAAACATTGCCAATA
 
 
-
 See `Installation <doc/installation.rst>`__ and `Mirroring
 <doc/mirror.rst>`__ for more information.
+
+
+Developing
+!!!!!!!!!!
+
+Here's how to get started developing::
+
+  python3.6 -m venv
+  source venv/bin/activate
+  pip install -U setuptools pip
+  make develop
 
 
 

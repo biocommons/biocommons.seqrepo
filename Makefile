@@ -10,7 +10,7 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=biocommons.seqrepo
 PKGD=$(subst .,/,${PKG})
-PYV:=3
+PYV:=3.7
 VEDIR=venv/${PYV}
 
 TEST_DIRS:=tests
@@ -29,50 +29,31 @@ help:
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
-#=> venv: make a Python 2.7 virtual environment
-venv/2.7: venv/%:
-	virtualenv -p $$(type -p python$*) $@; \
-	source $@/bin/activate; \
-	pip install --upgrade pip setuptools
+#=> devready: create venv, install prerequisites, install pkg in develop mode
+.PHONY: devready
+devready:
+	make ${VEDIR} && source ${VEDIR}/bin/activate && make develop
+	@echo '#################################################################################'
+	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
+	@echo '#################################################################################'
 
 #=> venv: make a Python 3 virtual environment
-venv/3 venv/3.5 venv/3.6 venv/3.7: venv/%:
+venv/3.6 venv/3.7: venv/%:
 	python$* -mvenv $@; \
 	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
 
-#=> setup: setup/upgrade packages *in current environment*
-.PHONY: setup
-setup: etc/develop.reqs etc/install.reqs
-	if [ -s $(word 1,$^) ]; then pip install --upgrade -r $(word 1,$^); fi
-	if [ -s $(word 2,$^) ]; then pip install --upgrade -r $(word 2,$^); fi
-
-#=> devready: create venv, install prerequisites, install pkg in develop mode
-.PHONY: devready
-devready:
-	make ${VEDIR} && source ${VEDIR}/bin/activate && make setup develop
-	@echo '#################################################################################'
-	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
-	@echo '#################################################################################'
-
 #=> develop: install package in develop mode
 .PHONY: develop
 develop:
-	pip install -e .
+	pip install -e .[dev]
 
 #=> install: install package
 #=> bdist bdist_egg bdist_wheel build sdist: distribution options
 .PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist install
 bdist bdist_egg bdist_wheel build sdist install: %:
 	python setup.py $@
-
-#=> upload: upload to pypi
-#=> upload_*: upload to named pypi service (requires config in ~/.pypirc)
-.PHONY: upload upload_%
-upload: upload_pypi
-upload_%:
-	python setup.py bdist_egg bdist_wheel sdist upload -r $*
 
 
 ############################################################################
