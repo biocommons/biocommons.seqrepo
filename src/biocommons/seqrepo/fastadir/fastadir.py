@@ -118,6 +118,15 @@ class FastaDir(BaseReader, BaseWriter):
         fabgz = self._open_for_reading(path)
         return fabgz.fetch(seq_id, start, end)
 
+    def fetch_seqinfo(self, seq_id):
+        """fetch sequence info by seq_id
+
+        """
+        rec = self._db.execute("""select * from seqinfo where seq_id = ?""", [seq_id]).fetchone()
+        if rec is None:
+            raise KeyError(seq_id)
+        return dict(rec)
+
     def schema_version(self):
         """return schema version as integer"""
         try:
