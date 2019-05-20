@@ -366,7 +366,7 @@ def load(opts):
             n_sa, n_aa = sr.store(seq, aliases)
             n_seqs_added += n_sa
             n_aliases_added += n_aa
-
+    sr.commit()
 
 def pull(opts):
     remote_instances = _get_remote_instances(opts)
