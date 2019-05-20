@@ -1,0 +1,25 @@
+0.5.0 (2019-05-19)
+##################
+
+Changes since 0.4.5 (2019-05-13).
+
+.. important:: biocommons.seqrepo now requires Python >= 3.5.
+
+
+Special Attention
+$$$$$$$$$$$$$$$$$$
+
+* Yipee! Removed py2compat code! [`6ca5a53 <https://github.com/biocommons/biocommons.seqrepo/commit/6ca5a53>`_] (Reece Hart)
+Python < 3.5 is no longer supported.
+
+Bug Fixes
+$$$$$$$$$$
+
+* added explicit commit after sequence loading [`aefd67e <https://github.com/biocommons/biocommons.seqrepo/commit/aefd67e>`_] (Reece Hart)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* move source to src/ [`6e442e3 <https://github.com/biocommons/biocommons.seqrepo/commit/6e442e3>`_] (Reece Hart)
+* moved doc/ to docs/ (more conventional) [`6eb5639 <https://github.com/biocommons/biocommons.seqrepo/commit/6eb5639>`_] (Reece Hart)
+* travis and tox now test 3.5, 3.6, 3.7 [`605115f <https://github.com/biocommons/biocommons.seqrepo/commit/605115f>`_] (Reece Hart)

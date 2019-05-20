@@ -104,3 +104,7 @@ doc/changelog/*/.tags
 doc/changelog/*/.tags.mk
 doc/changelog/*/hg-git-remap.pl
 .vscode
+
+
+.tags
+.tags.mk

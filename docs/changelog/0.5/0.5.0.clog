@@ -1,0 +1,24 @@
+clog format: 1; -*-outline-*-
+* HEAD (2019-05-19)
+Changes since 0.4.5 (2019-05-13).
+** Special Attention
+** Deprecations
+** Bug Fixes
+** New Features
+** Other Changes
+** Internal and Developer Changes
+*** Added tag 0.4.5 for changeset e88e90fca996 [4466cd8] (Reece Hart)
+*** migrated install deps and setup.py to setup.cfg [5361e1c] (Reece Hart)
+*** move source to src/ [6e442e3] (Reece Hart)
+*** moved doc/ to docs/ (more conventional) [6eb5639] (Reece Hart)
+*** removed etc/ (previously migrated to setup.cfg) [cf66c09] (Reece Hart)
+*** set python_requires >= 3.6 [bcc0095] (Reece Hart)
+*** travis and tox now test 3.5, 3.6, 3.7 [605115f] (Reece Hart)
+*** Yipee! Removed py2compat code! [6ca5a53] (Reece Hart)
+*** added tox to dev extras [21c92b4] (Reece Hart)
+*** always learning this lesson: travis is happiest on xenial [f63ba58] (Reece Hart)
+*** set python_requires >= 3.5 [3686be7] (Reece Hart)
+*** Added support for refget API (`python3 -m biocommons.seqrepo.refget`) [5ea1124] (Reece Hart)
+*** added `service` block property name [b38ce5b] (Reece Hart)
+*** moved refget code to seqrepo-rest-service [98851c4] (Reece Hart)
+*** added explicit commit after sequence loading [aefd67e] (Reece Hart)
