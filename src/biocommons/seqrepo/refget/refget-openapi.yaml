@@ -199,29 +199,32 @@ components:
       type: object
       description: Describes the capabilities of an API implementation
       properties:
-        supported_api_versions:
-          type: array
-          items:
-            type: string
-            description: Supported versions by this API
-            example: 0.2.0
-        circular_supported:
-          type: boolean
-          description: Indicates if the service supports circular location queries
-        subsequence_limit:
-          type: integer
-          format: int64
-          nullable: true
-          description: Maximum length of sequence which may be requested using start and/or end query parameters
-        algorithms:
-          type: array
-          items:
-            type: string
-            description: An array of strings listing the digest algorithms that are supported
-            example:
-              - md5
-              - trunc512
-      required:
-        - supported_api_versions
-        - circular_supported
-        - algorithms
+        service:
+          type: object
+          properties:
+            supported_api_versions:
+              type: array
+              items:
+                type: string
+                description: Supported versions by this API
+                example: 0.2.0
+            circular_supported:
+              type: boolean
+              description: Indicates if the service supports circular location queries
+            subsequence_limit:
+              type: integer
+              format: int64
+              nullable: true
+              description: Maximum length of sequence which may be requested using start and/or end query parameters
+            algorithms:
+              type: array
+              items:
+                type: string
+                description: An array of strings listing the digest algorithms that are supported
+                example:
+                  - md5
+                  - trunc512
+          required:
+            - supported_api_versions
+            - circular_supported
+            - algorithms

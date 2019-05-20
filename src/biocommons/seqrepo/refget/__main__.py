@@ -12,7 +12,7 @@ from flask import Flask, redirect
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level="DEBUG")
+    #logging.basicConfig(level="DEBUG")
 
     spec_fn = resource_filename(__name__, "refget-openapi.yaml")
     cxapp = connexion.App(__name__, debug=True)
