@@ -31,7 +31,9 @@ class SeqAliasDB(object):
         if self._writeable:
             self._upgrade_db()
 
-        self._db = sqlite3.connect(self._db_path, check_same_thread=check_same_thread)
+        self._db = sqlite3.connect(self._db_path,
+                                   check_same_thread=check_same_thread,
+                                   detect_types=sqlite3.PARSE_DECLTYPES)
         schema_version = self.schema_version()
         self._db.row_factory = sqlite3.Row
 

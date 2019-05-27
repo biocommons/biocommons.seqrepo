@@ -14,7 +14,7 @@ import yoyo
 from .bases import BaseReader, BaseWriter
 from .fabgz import FabgzReader, FabgzWriter
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 # expected_schema_version must match (exactly) the schema version
 # stored in the associated database. If newer code introduces schema
@@ -65,7 +65,9 @@ class FastaDir(BaseReader, BaseWriter):
             os.makedirs(self._root_dir, exist_ok=True)
             self._upgrade_db()
 
-        self._db = sqlite3.connect(self._db_path, check_same_thread=check_same_thread)
+        self._db = sqlite3.connect(self._db_path,
+                                   check_same_thread=check_same_thread,
+                                   detect_types=sqlite3.PARSE_DECLTYPES)
         schema_version = self.schema_version()
         self._db.row_factory = sqlite3.Row
 
@@ -110,7 +112,7 @@ class FastaDir(BaseReader, BaseWriter):
             raise KeyError(seq_id)
 
         if self._writing and self._writing["relpath"] == rec["relpath"]:
-            logger.warning("""Fetching from file opened for writing;
+            _logger.warning("""Fetching from file opened for writing;
             closing first ({})""".format(rec["relpath"]))
             self.commit()
 
@@ -166,7 +168,7 @@ class FastaDir(BaseReader, BaseWriter):
             os.makedirs(dir_, exist_ok=True)
             fabgz = FabgzWriter(path)
             self._writing = {"relpath": relpath, "fabgz": fabgz}
-            logger.info("Opened for writing: " + path)
+            _logger.debug("Opened for writing: " + path)
 
         self._writing["fabgz"].store(seq_id, seq)
         alpha = "".join(sorted(set(seq)))
@@ -190,7 +192,7 @@ class FastaDir(BaseReader, BaseWriter):
 
     @functools.lru_cache()
     def _open_for_reading(self, path):
-        logger.info("Opening for reading: " + path)
+        _logger.debug("Opening for reading: " + path)
         return FabgzReader(path)
 
     def _dump_aliases(self):

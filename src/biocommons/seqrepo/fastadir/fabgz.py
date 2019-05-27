@@ -21,7 +21,7 @@ import six
 from pysam import FastaFile
 
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 line_width = 100
 
@@ -55,7 +55,7 @@ def _find_bgzip():
     if bgzip_version_info < min_bgzip_version_info:
         raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
             exe=exe, ev=bgzip_version, rv=min_bgzip_version))
-    logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
+    _logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
     return exe
 
 
@@ -98,7 +98,7 @@ class FabgzWriter(object):
             raise RuntimeError("One or more target files already exists ({})".format(", ".join(files)))
 
         self._fh = io.open(self._basepath, encoding="ascii", mode="w")
-        logger.debug("opened " + self.filename + " for writing")
+        _logger.debug("opened " + self.filename + " for writing")
         self._added = set()
 
     def store(self, seq_id, seq):
@@ -111,7 +111,7 @@ class FabgzWriter(object):
             for l in wrap_lines(seq, line_width):
                 self._fh.write(l + "\n")
             self._added.add(seq_id)
-            logger.debug("added seq_id {i}; length {l}".format(i=seq_id, l=len(seq)))
+            _logger.debug("added seq_id {i}; length {l}".format(i=seq_id, l=len(seq)))
         return seq_id
 
     def close(self):
@@ -128,9 +128,9 @@ class FabgzWriter(object):
             os.chmod(self.filename + ".fai", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
             os.chmod(self.filename + ".gzi", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
-            logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
+            _logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
 
     def __del__(self):
         if self._fh is not None:
-            logger.error("FabgzWriter({}) was not explicitly closed; data may be lost".format(self.filename))
+            _logger.error("FabgzWriter({}) was not explicitly closed; data may be lost".format(self.filename))
             self.close()
