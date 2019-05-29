@@ -17,8 +17,9 @@ provided, seqrepo uses it as-is. If the namespace is not provided and
 the unqualified identifier refers to a unique sequence, it is
 returned; otherwise, ambiguous identifiers will raise an error.
 
-[seqrepo-rest-service](https://github.com/biocommons/seqrepo-rest-service)
-provides a REST interface and docker image.
+`seqrepo-rest-service
+<https://github.com/biocommons/seqrepo-rest-service>`__ provides a
+REST interface and docker image.
 
 Released under the Apache License, 2.0.
 
