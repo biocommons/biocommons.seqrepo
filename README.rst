@@ -1,18 +1,24 @@
 biocommons.seqrepo
 !!!!!!!!!!!!!!!!!!
 
-**Important**: seqrepo 0.4.0 was released on 2018-10-21. 0.4.0
-provides a transition path for **breaking changes** that will occur in the
-0.5 series. See `0.4.0 Changelog
-<https://github.com/biocommons/biocommons.seqrepo/blob/master/doc/changelog/0.4/0.4.0.rst>`__
-for details.
-
-----
-
 Python package for writing and reading a local collection of
 biological sequences.  The repository is non-redundant, compressed,
 and journalled, making it efficient to store and transfer multiple
 snapshots.
+
+Clients refer to sequences and metadata using familiar identifiers,
+such as NM_000551.3 or GRCh38:1, or any of several hash-based
+identifiers. The interface supports fast slicing of arbitrary regions
+of large sequences.
+
+A "fully-qualified" identifier includes a namespace to disambiguate
+accessions (e.g., "1" in GRCh37 and GRCh38). If the namespace is
+provided, seqrepo uses it as-is. If the namespace is not provided and
+the unqualified identifier refers to a unique sequence, it is
+returned; otherwise, ambiguous identifiers will raise an error.
+
+[seqrepo-rest-service](https://github.com/biocommons/seqrepo-rest-service)
+provides a REST interface and docker image.
 
 Released under the Apache License, 2.0.
 
