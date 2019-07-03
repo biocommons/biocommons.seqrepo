@@ -29,7 +29,6 @@ def test_seqrepo_dir_not_exist(tmpdir_factory):
     dir = str(tmpdir_factory.mktemp('seqrepo')) + "-IDONTEXIST"
     with pytest.raises(OSError) as ex:
         SeqRepo(dir, writeable=False)
-    assert "Unable to open SeqRepo directory" in str(ex)
 
 
 def test_store(seqrepo):
