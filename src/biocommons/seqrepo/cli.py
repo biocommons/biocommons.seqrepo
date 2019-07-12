@@ -364,14 +364,12 @@ def load(opts):
 def _get_aliases(rec_id, opts):
     if opts.namespace == "NCBI":
         if re.search(_defline_re, rec_id):
-            print("found! " + rec_id)
             # NCBI deflines may have multiple accessions, pipe-separated
             aliases = [m.groupdict() for m in _defline_re.finditer(rec_id)]
             for a in aliases:
                 if a["namespace"] == "ref":
                     a["namespace"] = "NCBI"
         else:
-            print("Not found! " + rec_id)
             alias = rec_id[1:].split()[0]
             aliases = [{"alias": alias, "namespace": "NCBI"}]
     else:
