@@ -5,7 +5,6 @@ import os
 import tempfile
 
 import pytest
-import re
 from biocommons.seqrepo.cli import (init, load, _get_aliases)
 
 
