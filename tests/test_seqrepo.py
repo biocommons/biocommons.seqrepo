@@ -34,8 +34,6 @@ def test_seqrepo_dir_not_exist(tmpdir_factory):
 
         SeqRepo(dir, writeable=False)
 
-    assert "Unable to open SeqRepo directory" in str(ex.value)
-
 
 def test_store(seqrepo):
     seqrepo.store("SMELLASSWEET", [{"namespace": "en", "alias": "rose"}, {"namespace": "fr", "alias": "rose"}])
