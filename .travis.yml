@@ -2,7 +2,6 @@ dist: xenial
 sudo: required
 language: python
 python:
-  - "3.5"
   - "3.6"
   - "3.7"
 cache: pip
@@ -10,8 +9,17 @@ cache: pip
 before_install:
 - wget https://launchpad.net/ubuntu/+source/htslib/1.2.1-2ubuntu1/+build/8443430/+files/tabix_1.2.1-2ubuntu1_amd64.deb
 - sudo dpkg -i tabix_1.2.1-2ubuntu1_amd64.deb
-install: pip install pytest pytest-cov tox-travis coveralls pluggy==0.12.0
-script: make tox
+
+install:
+  - pip install tox-travis coveralls
+
+script:
+  - make tox
+
+# requires COVERALLS_REPO_TOKEN to be obtained from
+# https://coveralls.io/github/biocommons/<pkg>
+# and set at
+# at https://travis-ci.org/biocommons/<pkg>/settings
 after_success:
   - coveralls
 
@@ -22,7 +30,7 @@ stages:
 jobs:
   include:
     - stage: deploy
-      python: 3.6
+      python: 3.7
       install: skip
       script: skip
       deploy:
