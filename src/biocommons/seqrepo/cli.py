@@ -44,6 +44,7 @@ DEFAULT_INSTANCE_NAME_RO = "latest"
 instance_name_new_re = re.compile(r"^201\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
 instance_name_old_re = re.compile(r"^201\d\d\d\d\d$")    # smells like an old datestamp, 20170117
 instance_name_re = re.compile(r"^201\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
+_defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
 _logger = logging.getLogger(__name__)
 
@@ -328,13 +329,11 @@ def list_remote_instances(opts):
     for i in instances:
         print("  " + i)
 
-
 def load(opts):
     if opts.namespace == "-":
         raise RuntimeError("namespace == '-' is no longer supported")
 
     disable_bar = _logger.getEffectiveLevel() < logging.WARNING
-    defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)
@@ -355,18 +354,28 @@ def load(opts):
             n_seqs_seen += 1
             seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
-            if opts.namespace == "NCBI" and "|" in rec_id:
-                # NCBI deflines may have multiple accessions, pipe-separated
-                aliases = [m.groupdict() for m in defline_re.finditer(rec_id)]
-                for a in aliases:
-                    if a["namespace"] == "ref":
-                        a["namespace"] = "NCBI"
-            else:
-                aliases = [{"namespace": opts.namespace, "alias": rec_id}]
+            aliases = _get_aliases(rec_id, opts)
             n_sa, n_aa = sr.store(seq, aliases)
             n_seqs_added += n_sa
             n_aliases_added += n_aa
     sr.commit()
+
+
+def _get_aliases(rec_id, opts):
+    if opts.namespace == "NCBI":
+        if re.search(_defline_re, rec_id):
+            # NCBI deflines may have multiple accessions, pipe-separated
+            aliases = [m.groupdict() for m in _defline_re.finditer(rec_id)]
+            for a in aliases:
+                if a["namespace"] == "ref":
+                    a["namespace"] = "NCBI"
+        else:
+            alias = rec_id[1:].split()[0]
+            aliases = [{"alias": alias, "namespace": "NCBI"}]
+    else:
+        aliases = [{"namespace": opts.namespace, "alias": rec_id}]
+    return aliases
+
 
 def pull(opts):
     remote_instances = _get_remote_instances(opts)
