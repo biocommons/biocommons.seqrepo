@@ -25,7 +25,8 @@ after_success:
 
 stages:
   - test
-  - deploy
+  - name: deploy
+    if: tag IS present
 
 jobs:
   include:
