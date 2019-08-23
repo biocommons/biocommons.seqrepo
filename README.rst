@@ -79,7 +79,7 @@ XM, and XP) consumes approximately 8GB.  The minimum marginal size for
 additional snapshots is approximately 2GB (for the sqlite database,
 which is not hardlinked).
 
-For more information, see `<doc/design.rst>`__.
+For more information, see `<docs/design.rst>`__.
 
 
 
@@ -143,8 +143,8 @@ On Ubuntu 16.04::
   ATACAGTGTGGTTCAAAAAAATTTGTTGTATCAAGGTAAAATAATAGCCTGAATATAATTAAGATAGTCTGTGTATACATCGATGAAAACATTGCCAATA
 
 
-See `Installation <doc/installation.rst>`__ and `Mirroring
-<doc/mirror.rst>`__ for more information.
+See `Installation <docs/installation.rst>`__ and `Mirroring
+<docs/mirror.rst>`__ for more information.
 
 
 Developing
