@@ -1,0 +1,5 @@
+clog format: 1; -*-outline-*-
+* 0.5.1 (2019-05-26)
+Changes since 0.5.0 (2019-05-19).
+** Bug Fixes
+*** return timestamps as datetime objects [c83255b] (Reece Hart)
