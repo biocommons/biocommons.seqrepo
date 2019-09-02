@@ -1,0 +1,22 @@
+
+0.5.2 (2019-08-28)
+###################
+
+Changes since 0.5.1 (2019-05-26).
+
+New Features
+$$$$$$$$$$$$$
+
+* Closes `#64 <https://github.com/biocommons/biocommons.seqrepo/issues/64/>`_: Updating fasta header parsing to support new NCBI fasta header. (`#65 <https://github.com/biocommons/biocommons.seqrepo/issues/65/>`_) [`3cafc4c <https://github.com/biocommons/biocommons.seqrepo/commit/3cafc4c>`_] (Andreas Prlic)
+* Closes `#66 <https://github.com/biocommons/biocommons.seqrepo/issues/66/>`_: SQLite usage is changed to more Python DB API 2.0 compatible. [`54064d8 <https://github.com/biocommons/biocommons.seqrepo/commit/54064d8>`_] (Teemu Vesala)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* Fix CLI/Mirror doc URLs (doc --> docs) [`a3d4bea <https://github.com/biocommons/biocommons.seqrepo/commit/a3d4bea>`_] (Sam Pearlman)
+* Update remaining doc URLs (doc --> docs) [`6f59c41 <https://github.com/biocommons/biocommons.seqrepo/commit/6f59c41>`_] (Sam Pearlman)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* Significant updates to ci/cd config (@reece)

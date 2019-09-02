@@ -1,0 +1,10 @@
+
+0.5.1 (2019-05-26)
+###################
+
+Changes since 0.5.0 (2019-05-19).
+
+Bug Fixes
+$$$$$$$$$$
+
+* return timestamps as datetime objects [`c83255b <https://github.com/biocommons/biocommons.seqrepo/commit/c83255b>`_] (Reece Hart)
