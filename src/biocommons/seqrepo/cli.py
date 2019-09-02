@@ -370,7 +370,10 @@ def _get_aliases(rec_id, opts):
                 if a["namespace"] == "ref":
                     a["namespace"] = "NCBI"
         else:
-            alias = rec_id[1:].split()[0]
+            if rec_id[0] == '>':
+                alias = rec_id[1:].split()[0]
+            else:
+                alias = rec_id.split()[0]
             aliases = [{"alias": alias, "namespace": "NCBI"}]
     else:
         aliases = [{"namespace": opts.namespace, "alias": rec_id}]

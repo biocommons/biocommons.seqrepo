@@ -6,6 +6,9 @@ import tempfile
 
 import pytest
 from biocommons.seqrepo.cli import (init, load, _get_aliases)
+from biocommons.seqrepo.fastaiter import FastaIter
+import six
+from six import StringIO
 
 
 @pytest.fixture
@@ -62,3 +65,15 @@ def test_ncbi_fasta(opts):
     aliases2 = _get_aliases(new_fasta, opts)
     nm2 = _get_ncbi_alias(aliases2)
     assert nm2 == 'NM_000439.4'
+
+    data = StringIO(new_fasta)
+
+    iterator = FastaIter(data)
+
+    header, seq = six.next(iterator)
+    assert header.startswith('NM_000439.4 Homo sapiens proprotein convertase subtilisin/kexin type 1 (PCSK1)')
+    assert seq == "TTT"
+
+    aliases3 = _get_aliases(header, opts)
+    nm3 = _get_ncbi_alias(aliases3)
+    assert nm3 == 'NM_000439.4'
