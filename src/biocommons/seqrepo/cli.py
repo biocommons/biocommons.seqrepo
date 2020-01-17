@@ -108,6 +108,11 @@ def parse_arguments():
     ap.set_defaults(func=export)
     ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
 
+    # export aliases
+    ap = subparsers.add_parser("export-aliases", help="export aliases")
+    ap.set_defaults(func=export_aliases)
+    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
+
     # fetch-load
     ap = subparsers.add_parser("fetch-load", help="fetch remote sequences by accession and load them (low-throughput!)")
     ap.set_defaults(func=fetch_load)
@@ -268,26 +273,29 @@ def add_assembly_names(opts):
 
 
 def export(opts):
-    def convert_alias_records_to_ns_dict(records):
-        """converts a set of alias db records to a dict like {ns: [aliases], ...}
-        aliases are lexicographicaly sorted
-        """
-        records = sorted(records, key=lambda r: (r["namespace"], r["alias"]))
-        return {g: [r["alias"] for r in gi] for g, gi in itertools.groupby(records, key=lambda r: r["namespace"])}
-
-    def wrap_lines(seq, line_width):
-        for i in range(0, len(seq), line_width):
-            yield seq[i:i + line_width]
-
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
     for srec, arecs in sr:
-        nsad = convert_alias_records_to_ns_dict(arecs)
+        nsad = _convert_alias_records_to_ns_dict(arecs)
         aliases = ["{ns}:{a}".format(ns=ns, a=a) for ns, aliases in sorted(nsad.items()) for a in aliases]
         print(">" + " ".join(aliases))
-        for l in wrap_lines(srec["seq"], 100):
+        for l in _wrap_lines(srec["seq"], 100):
             print(l)
 
+
+def export_aliases(opts):
+    seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
+    sr = SeqRepo(seqrepo_dir)
+    alias_iterator = sr.aliases.find_aliases(translate_ncbi_namespace=True)
+    grouped_alias_iterator = itertools.groupby(alias_iterator, key=lambda  arec: (arec["seq_id"]))
+    for _, arecs in grouped_alias_iterator:
+        nsaliases = ["{a[namespace]}:{a[alias]}".format(a=a) for a in arecs]
+        # TODO: Tech debt: These are hacks to work around that GA4GH ids
+        # aren't officially in seqrepo yet.
+        nsaliases.sort(key=lambda a: (not a.startswith("VMC:"), a))  # VMC first
+        nsaliases[0] = nsaliases[0].replace("VMC:GS_", "GA4GH:SQ.")
+        print("\t".join(nsaliases))
+        
 
 def fetch_load(opts):
     disable_bar = _logger.getEffectiveLevel() < logging.WARNING
@@ -546,6 +554,25 @@ def main():
                          logging.DEBUG)
     logging.basicConfig(level=verbose_log_level)
     opts.func(opts)
+
+
+
+
+############################################################################
+# INTERNAL
+
+def _convert_alias_records_to_ns_dict(records):
+    """converts a set of alias db records to a dict like {ns: [aliases], ...}
+    aliases are lexicographicaly sorted
+    """
+    records = sorted(records, key=lambda r: (r["namespace"], r["alias"]))
+    return {g: [r["alias"] for r in gi] for g, gi in itertools.groupby(records, key=lambda r: r["namespace"])}
+
+def _wrap_lines(seq, line_width):
+    for i in range(0, len(seq), line_width):
+        yield seq[i:i + line_width]
+
+
 
 
 if __name__ == "__main__":

@@ -69,6 +69,9 @@ class SeqAliasDB(object):
         The arguments, all optional, restrict the records that are
         returned.  Without arguments, all aliases are returned.
 
+        Regardless of arguments, results are always ordered by (seq_id,
+        namespace, and alias).
+
         If arguments contain %, the `like` comparison operator is
         used.  Otherwise arguments must match exactly.
 
@@ -100,7 +103,7 @@ class SeqAliasDB(object):
 
         cols = ["seqalias_id", "seq_id", "alias", "added", "is_current"]
         if translate_ncbi_namespace:
-            cols += ["case namespace when 'NCBI' then 'RefSeq' else namespace end as namespace"]
+            cols += ["case namespace when 'NCBI' then 'refseq' else namespace end as namespace"]
         else:
             cols += ["namespace"]
         sql = "select {cols} from seqalias".format(cols=", ".join(cols))

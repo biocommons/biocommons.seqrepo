@@ -13,7 +13,6 @@ default:
 next.clog::
 	biocommons-changelog . >$@
 
-# TODO: use git-mapfile to map commits
 %.rst: %.clog
 	clogger-fmt \
 		-I '`#{issue_id} <https://github.com/biocommons/biocommons.seqrepo/issues/{issue_id}/>`_' \
