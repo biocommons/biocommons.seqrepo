@@ -107,11 +107,25 @@ def parse_arguments():
     ap = subparsers.add_parser("export", help="export sequences")
     ap.set_defaults(func=export)
     ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
+    ap.add_argument(
+        "--namespace",
+        "-n",
+        help="namespace name (e.g., RefSeq, NCBI, Ensembl, LRG)", )
+    ap.add_argument(
+        "--all-aliases",
+        "-a",
+        action="store_true",
+        default=False,
+        help="with -n, show all aliases for sequences rather than just namespace filtered sequences", )
 
     # export aliases
     ap = subparsers.add_parser("export-aliases", help="export aliases")
     ap.set_defaults(func=export_aliases)
     ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
+    ap.add_argument(
+        "--namespace",
+        "-n",
+        help="namespace name (e.g., RefSeq, NCBI, Ensembl, LRG)", )
 
     # fetch-load
     ap = subparsers.add_parser("fetch-load", help="fetch remote sequences by accession and load them (low-throughput!)")
@@ -276,6 +290,13 @@ def export(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
     for srec, arecs in sr:
+        if opts.namespace:
+            arecs_fltrd = [arec for arec in arecs if arec["namespace"] == opts.namespace]
+            if not arecs_fltrd:
+                # no namespace match; skip
+                continue
+            if not opts.all_aliases:
+                arecs = arecs_fltrd
         nsad = _convert_alias_records_to_ns_dict(arecs)
         aliases = ["{ns}:{a}".format(ns=ns, a=a) for ns, aliases in sorted(nsad.items()) for a in aliases]
         print(">" + " ".join(aliases))
@@ -289,6 +310,9 @@ def export_aliases(opts):
     alias_iterator = sr.aliases.find_aliases(translate_ncbi_namespace=True)
     grouped_alias_iterator = itertools.groupby(alias_iterator, key=lambda  arec: (arec["seq_id"]))
     for _, arecs in grouped_alias_iterator:
+        if opts.namespace:
+            if not any(arec for arec in arecs if arec["namespace"] == opts.namespace):
+                continue
         nsaliases = ["{a[namespace]}:{a[alias]}".format(a=a) for a in arecs]
         # TODO: Tech debt: These are hacks to work around that GA4GH ids
         # aren't officially in seqrepo yet.
