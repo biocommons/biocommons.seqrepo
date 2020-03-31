@@ -127,7 +127,7 @@ class FastaDir(BaseReader, BaseWriter):
         """fetch sequence info by seq_id
 
         """
-        rec = self._fectch_one("""select * from seqinfo where seq_id = ?""", [seq_id])
+        rec = self._fetch_one("""select * from seqinfo where seq_id = ?""", [seq_id])
 
         if rec is None:
             raise KeyError(seq_id)
