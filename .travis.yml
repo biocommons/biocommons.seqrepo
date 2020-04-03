@@ -9,6 +9,7 @@ cache: pip
 before_install:
 - wget https://launchpad.net/ubuntu/+source/htslib/1.2.1-2ubuntu1/+build/8443430/+files/tabix_1.2.1-2ubuntu1_amd64.deb
 - sudo dpkg -i tabix_1.2.1-2ubuntu1_amd64.deb
+- pip install cython
 
 install:
   - pip install tox-travis coveralls
