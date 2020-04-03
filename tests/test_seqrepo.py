@@ -115,7 +115,7 @@ def test_refseq_translation(tmpdir_factory):
     seqrepo = SeqRepo(dir, writeable=False, translate_ncbi_namespace=True)
     aliases = list(seqrepo.aliases.find_aliases(alias="ncbiac"))
     assert len(aliases) == 1
-    assert aliases[0]["namespace"] == "RefSeq"
+    assert aliases[0]["namespace"] == "refseq"
 
 
 def test_translation(seqrepo):
