@@ -41,9 +41,9 @@ SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo"
 DEFAULT_INSTANCE_NAME_RW = "master"
 DEFAULT_INSTANCE_NAME_RO = "latest"
 
-instance_name_new_re = re.compile(r"^201\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
-instance_name_old_re = re.compile(r"^201\d\d\d\d\d$")    # smells like an old datestamp, 20170117
-instance_name_re = re.compile(r"^201\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
+instance_name_new_re = re.compile(r"^20[12]\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
+instance_name_old_re = re.compile(r"^20[12]1\d\d\d\d\d$")   # smells like an old datestamp, 20170117
+instance_name_re = re.compile(r"^20[12]\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
 _defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
 _logger = logging.getLogger(__name__)
