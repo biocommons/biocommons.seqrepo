@@ -1,0 +1,13 @@
+clog format: 1; -*-outline-*-
+* 0.5.3 (2020-04-02)
+Changes since 0.5.2 (2019-08-29).
+** Bug Fixes
+*** Closes #74: update instance regexp for 2020 [5a79f46] (Reece Hart)
+*** Fix parsing of NCBI fasta header (#69) [dc5334c] (Andreas Prlic)
+** New Features
+*** Implemented export-aliases cli utility [a6c835e] (Reece Hart)
+*** Add support for namespace filtering with export & export-aliases [127a68f] (Reece Hart)
+*** Optimize special case of exporting a single namespace [65ab863] (Reece Hart)
+** Other Changes
+*** Fixed typo in fastadir [6440949] (Reece Hart)
+** Internal and Developer Changes

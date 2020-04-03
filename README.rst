@@ -23,7 +23,7 @@ REST interface and docker image.
 
 Released under the Apache License, 2.0.
 
-|ci_rel| | |cov| | |pypi_rel|
+|ci_rel| | |cov| | |pypi_rel| | `ChangeLog <https://github.com/biocommons/biocommons.seqrepo/tree/master/docs/changelog/0.5>`_
 
 
 Features
@@ -156,6 +156,7 @@ Here's how to get started developing::
   source venv/bin/activate
   pip install -U setuptools pip
   make develop
+
 
 
 

@@ -1,0 +1,27 @@
+
+0.5.3 (2020-04-02)
+###################
+
+Changes since 0.5.2 (2019-08-29).
+
+Bug Fixes
+$$$$$$$$$$
+
+* Closes `#74 <https://github.com/biocommons/biocommons.seqrepo/issues/74/>`_: update instance regexp for 2020 [`5a79f46 <https://github.com/biocommons/biocommons.seqrepo/commit/5a79f46>`_] (Reece Hart)
+* Fix parsing of NCBI fasta header (`#69 <https://github.com/biocommons/biocommons.seqrepo/issues/69/>`_) [`dc5334c <https://github.com/biocommons/biocommons.seqrepo/commit/dc5334c>`_] (Andreas Prlic)
+
+New Features
+$$$$$$$$$$$$$
+
+* Implemented export-aliases cli utility [`a6c835e <https://github.com/biocommons/biocommons.seqrepo/commit/a6c835e>`_] (Reece Hart)
+* Add support for namespace filtering with export & export-aliases [`127a68f <https://github.com/biocommons/biocommons.seqrepo/commit/127a68f>`_] (Reece Hart)
+* Optimize special case of exporting a single namespace [`65ab863 <https://github.com/biocommons/biocommons.seqrepo/commit/65ab863>`_] (Reece Hart)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* Fixed typo in fastadir [`6440949 <https://github.com/biocommons/biocommons.seqrepo/commit/6440949>`_] (Reece Hart)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
