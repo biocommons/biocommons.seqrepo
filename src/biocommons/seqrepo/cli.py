@@ -373,6 +373,8 @@ def load(opts):
     disable_bar = _logger.getEffectiveLevel() < logging.WARNING
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
+    if not os.path.isdir(seqrepo_dir):
+        raise RuntimeError(f"{seqrepo_dir}: You must manually initialize the repo first (with `seqrepo init`)")
     sr = SeqRepo(seqrepo_dir, writeable=True)
 
     n_seqs_seen = n_seqs_added = n_aliases_added = 0
