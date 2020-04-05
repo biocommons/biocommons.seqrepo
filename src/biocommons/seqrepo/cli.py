@@ -44,7 +44,7 @@ DEFAULT_INSTANCE_NAME_RO = "latest"
 instance_name_new_re = re.compile(r"^20[12]\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
 instance_name_old_re = re.compile(r"^20[12]1\d\d\d\d\d$")   # smells like an old datestamp, 20170117
 instance_name_re = re.compile(r"^20[12]\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
-_defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
+ncbi_defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
 _logger = logging.getLogger(__name__)
 
@@ -401,20 +401,44 @@ def load(opts):
 
 
 def _get_aliases(rec_id, opts):
-    if opts.namespace == "NCBI":
-        if re.search(_defline_re, rec_id):
-            # NCBI deflines may have multiple accessions, pipe-separated
-            aliases = [m.groupdict() for m in _defline_re.finditer(rec_id)]
-            for a in aliases:
-                if a["namespace"] == "ref":
-                    a["namespace"] = "NCBI"
-        else:
-            if rec_id[0] == '>':
-                alias = rec_id[1:].split()[0]
-            else:
-                alias = rec_id.split()[0]
-            aliases = [{"alias": alias, "namespace": "NCBI"}]
+    """return aliases from defline"""
+    # TODO: This no longer seems to work correctly. Ensure that these
+    # parse as expected and write tests
+    # Input examples (not all work):
+    # NCBI/RefSeq:
+    #   >gi|568815364|ref|NT_077402.3| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1
+    #   >gi|568815363|ref|NT_187170.1| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1_1
+    #   >gi|568815362|ref|NT_077912.2| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1_2
+    #   >gi|568815361|ref|NT_032977.10| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG3
+    #   >ref|NT_005334.17| Homo sapiens chromosome 2 genomic scaffold, GRCh38.p12 Primary Assembly HSCHR2_CTG1
+    #   >ref|NT_022184.16| Homo sapiens chromosome 2 genomic scaffold, GRCh38.p12 Primary Assembly HSCHR2_CTG5
+    #   >ref|NT_187177.1| Homo sapiens chromosome 2 genomic scaffold, GRCh38.p12 Primary Assembly HSCHR2_CTG7
+    #   >NG_022913.1 Homo sapiens transient receptor potential cation channel subfamily M member 2 (TRPM2), RefSeqGene on chromosome 21
+    #   >NG_016643.1 Homo sapiens gem nuclear organelle associated protein 2 (GEMIN2), RefSeqGene on chromosome 14
+    #   >NG_028313.1 Homo sapiens STEAP4 metalloreductase (STEAP4), RefSeqGene on chromosome 7
+    #   >YP_003024026.1 NADH dehydrogenase subunit 1 (mitochondrion) [Homo sapiens]
+    #   >YP_003024027.1 NADH dehydrogenase subunit 2 (mitochondrion) [Homo sapiens]
+    #   >YP_003024028.1 cytochrome c oxidase subunit I (mitochondrion) [Homo sapiens]
+    #   >NR_123721.1 Homo sapiens PKD1P6-NPIPP1 readthrough (PKD1P6-NPIPP1), transcript variant 1, non-coding RNA
+    #   >NR_036753.1 Homo sapiens zinc finger protein 847, pseudogene (ZNF847P), non-coding RNA
+    #   >NR_125392.1 Homo sapiens RNA, variant U1 small nuclear 20 (RNVU1-20), small nuclear RNA
+    # Ensembl:
+    #   >ENST00000434970.2 cdna chromosome:GRCh38:14:22439007:22439015:1 gene:ENSG00000237235.2 gene_biotype:TR_D_gene ...
+    #   >1 dna:chromosome chromosome:GRCh38:1:1:248956422:1 REF
+    #   >ENST00000516257.1 ncrna chromosome:GRCh38:15:53651977:53652123:1 gene:ENSG00000252066.1 gene_biotype:snRNA ...
+    #   >ENSP00000451515.1 pep chromosome:GRCh38:14:22439007:22439015:1 gene:ENSG00000237235.2 transcript:ENST00000434970.2 ...
+
+
+    if re.search(ncbi_defline_re, rec_id):
+        # NCBI deflines may have multiple accessions, pipe-separated
+        aliases = [m.groupdict() for m in ncbi_defline_re.finditer(rec_id)]
+        for a in aliases:
+            if a["namespace"] == "ref":
+                a["namespace"] = "NCBI"
+            alias = rec_id.split()[0]
     else:
+        rec_id = rec_id.split()[0]  # first word
+        rec_id = rec_id[1:] if rec_id[0] == ">" else rec_id
         aliases = [{"namespace": opts.namespace, "alias": rec_id}]
     return aliases
 
