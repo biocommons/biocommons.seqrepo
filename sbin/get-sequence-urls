@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 """return URLs to sequence files at NCBI, Ensembl, LRG
 
+Intended to be used to with ./stream-download as:
+
+$ namespace=Ensembl-85   # or NCBI, LRG, test
+$ ./get-sequence-urls $namespace | ./stream-download | seqrepo load -n $namespace
+
 """
 
 import itertools
@@ -33,8 +38,30 @@ def get_lrg_urls():
     #   ftp://ftp.ebi.ac.uk/pub/databases/lrgex/fasta/
     return ["ftp://ftp.ebi.ac.uk/pub/databases/lrgex/fasta/LRG_public_fasta_files.zip"]
 
+
+def get_test_urls():
+    urls = [
+        "http://dl.biocommons.org/.test/dna/Homo_sapiens.GRCh38.dna.toplevel.fa.gz",
+        "http://dl.biocommons.org/.test/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz",
+        "http://dl.biocommons.org/.test/pep/Homo_sapiens.GRCh38.pep.all.fa.gz",
+        "http://dl.biocommons.org/.test/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz",
+        ]
+    return urls
     
 def get_ncbi_urls():
+    def _is_sequence_file(fn):
+        return any(fn.endswith(sfx) for sfx in (".faa.gz", ".fna.gz", ".fa.gz", ".fasta", ".fa"))
+
+    def extract_sequence_urls_from_page(url, regexps=None):
+        r = HTMLSession().get(url)
+        # N.B. requests_html absolute_links is broken on 3.5
+        abs_links = [urljoin(r.html.url, rl) for rl in r.html.links]
+        urls = [l for l in abs_links if _is_sequence_file(l)]
+        if regexps:
+            urls = [l for l in urls if any(regexp.search(l) for regexp in regexps)]
+        return urls
+
+
     urls = []
 
     u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/"
@@ -63,36 +90,20 @@ def get_ncbi_urls():
     
     return urls
 
-def _is_sequence_file(fn):
-    return any(fn.endswith(sfx) for sfx in (".faa.gz", ".fna.gz", ".fa.gz", ".fasta", ".fa"))
-
-def extract_sequence_urls_from_page(url, regexps=None):
-    r = HTMLSession().get(url)
-    # N.B. requests_html absolute_links is broken on 3.5
-    abs_links = [urljoin(r.html.url, rl) for rl in r.html.links]
-    urls = [l for l in abs_links if _is_sequence_file(l)]
-    if regexps:
-        urls = [l for l in urls if any(regexp.search(l) for regexp in regexps)]
-    return urls
 
 
 if __name__ == "__main__":
     coloredlogs.install(level="INFO", logger=_logger)
 
     if sys.argv[1] == "NCBI":
-        urls = sorted(get_ncbi_urls())
+        urls = get_ncbi_urls()
     elif sys.argv[1].startswith("Ensembl-"):
         release = re.match(r"Ensembl-(\d+)", sys.argv[1]).group(1)
-        urls = sorted(get_ensembl_urls(release))
+        urls = get_ensembl_urls(release)
     elif sys.argv[1] == "LRG":
-        urls = sorted(get_lrg_urls())
+        urls = get_lrg_urls()
     elif sys.argv[1] == "test":
-        # file:// URIs can't be relative, so these are hardcoded to work only for me :-(
-        urls = [
-	    "file:///home/reece/projects/biocommons/biocommons.seqrepo/tests/data/gztest.fa.gz",
-	    "file:///home/reece/projects/biocommons/biocommons.seqrepo/tests/data/test.fa",
-	    "file:///home/reece/projects/biocommons/biocommons.seqrepo/tests/data/ziptest.zip",
-        ]
-
-    print("\n".join(urls))
+        urls = get_test_urls()
+        
+    print("\n".join(sorted(urls)))
     

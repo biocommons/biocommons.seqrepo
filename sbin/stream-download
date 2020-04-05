@@ -31,6 +31,14 @@ stream_decompress () {
 
 set -euo pipefail
 
-for url in "$@"; do
-    stream_decompress "$url"
-done
+if [ $# -eq 0 ]; then
+    # From stdin
+    while read url; do
+	stream_decompress "$url"
+    done
+else
+    # From argv
+    for url in "$@"; do
+	stream_decompress "$url"
+    done
+fi
