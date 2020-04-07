@@ -40,6 +40,7 @@ def test_00_init(opts):
 
 
 def test_20_load(opts):
+    init(opts)
     load(opts)
 
 
