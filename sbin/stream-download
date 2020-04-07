@@ -3,11 +3,16 @@
 # urls may be http, https, ftp, file
 # intended to stream fasta sequence files from NCBI, Ensembl, and LRG
 
+log () {
+    echo "# $@" 1>&2
+    }
+
 stream_decompress () {
     url="$1"
+    log "$url"
     case "$url" in
 	*.gz)
-	    curl -s "$url" | gzip -cdq
+	    curl -sS "$url" | gzip -cdq
 	    echo		# add newline between files
 	    ;;
 	*.zip)

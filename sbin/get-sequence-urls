@@ -2,9 +2,11 @@
 """return URLs to sequence files at NCBI, Ensembl, LRG
 
 Intended to be used to with ./stream-download as:
-
 $ namespace=Ensembl-85   # or NCBI, LRG, test
 $ ./get-sequence-urls $namespace | ./stream-download | seqrepo load -n $namespace
+
+Also useful:
+$ ./sbin/get-sequence-urls test | ./sbin/stream-download | gzip -c >|/tmp/load.fa.gz
 
 """
 
