@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import io
 import os
 import tempfile
 
 import pytest
-from biocommons.seqrepo.cli import (init, load, _get_aliases)
+
+from biocommons.seqrepo.cli import (init, load)
 from biocommons.seqrepo.fastaiter import FastaIter
-import six
-from six import StringIO
+from biocommons.seqrepo.utils import parse_defline
 
 
 @pytest.fixture
@@ -44,37 +45,38 @@ def test_20_load(opts):
     load(opts)
 
 
-def _get_ncbi_alias(aliases):
-    for al in aliases:
-        if al['namespace'] == 'NCBI':
-            return al['alias']
-    return None
 
 
-def test_ncbi_fasta(opts):
+def test_refseq_fasta(opts):
+    def _get_refseq_alias(aliases):
+        for al in aliases:
+            if al['namespace'] == 'refseq':
+                return al['alias']
+        return None
+
+
     init(opts)
-    opts.namespace = 'NCBI'
+    opts.namespace = 'refseq'
     old_fasta = '>gi|295424141|ref|NM_000439.4| Homo sapiens proprotein convertase subtilisin/kexin type 1 ' + \
                          '(PCSK1), transcript variant 1, mRNA\nTTT'
     new_fasta = '>NM_000439.4 Homo sapiens proprotein convertase subtilisin/kexin type 1 (PCSK1), ' + \
                          'transcript variant 1, mRNA\nTTT'
 
-    aliases = _get_aliases(old_fasta, opts)
-    nm = _get_ncbi_alias(aliases)
+    aliases = parse_defline(old_fasta, opts.namespace)
+    nm = _get_refseq_alias(aliases)
     assert nm == 'NM_000439.4'
 
-    aliases2 = _get_aliases(new_fasta, opts)
-    nm2 = _get_ncbi_alias(aliases2)
+    aliases2 = parse_defline(new_fasta, opts.namespace)
+    nm2 = _get_refseq_alias(aliases2)
     assert nm2 == 'NM_000439.4'
 
-    data = StringIO(new_fasta)
+    data = io.StringIO(new_fasta)
 
     iterator = FastaIter(data)
-
-    header, seq = six.next(iterator)
+    header, seq = next(iterator)
     assert header.startswith('NM_000439.4 Homo sapiens proprotein convertase subtilisin/kexin type 1 (PCSK1)')
     assert seq == "TTT"
 
-    aliases3 = _get_aliases(header, opts)
-    nm3 = _get_ncbi_alias(aliases3)
+    aliases3 = parse_defline(header, opts.namespace)
+    nm3 = _get_refseq_alias(aliases3)
     assert nm3 == 'NM_000439.4'
