@@ -1,0 +1,8 @@
+clog format: 1; -*-outline-*-
+* 0.5.4 (2020-04-06)
+Changes since 0.5.3 (2020-04-02).
+** Bug Fixes
+*** Fixed bug when parsing newer Ensembl fasta files [6c6f1d8] (Reece Hart)
+** Other Changes
+*** Closes #75: require that master directory exists prior to loading [6ee309a] (Reece Hart)
+*** Update sbin/get-sequence-urls and sbin/stream-download [6aaec85] (Reece Hart)

@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+import logging
+import sqlite3
+
+import coloredlogs
+
+
+_logger = logging.getLogger()
+
+
+commands = [
+    # Remove all Ensembl aliases from e84 and earlier
+    """delete from seqalias where namespace like 'Ensembl-%' and namespace <= 'Ensembl-84'""",
+
+    # Remove unsupported Ensembl aliases
+    """delete from seqalias where namespace like 'Ensembl-%' and alias like 'GENSCAN%'""",
+    """delete from seqalias where namespace like 'Ensembl-%' and alias like 'GL%'""",
+    """delete from seqalias where namespace like 'Ensembl-%' and alias like 'KI%'""",
+
+    # Create new namespace Ensembl aliases with earliest add date,
+    # then remove versioned Ensembl-nn aliases
+    # N.B. None of the Ensembl aliases have is_current=0
+    """insert into seqalias (seq_id, namespace, alias, added)
+         select seq_id,'Ensembl',alias,min(added) from seqalias
+         where namespace like 'Ensembl-%'
+         group by alias,seq_id""",
+    """delete from seqalias where namespace like 'Ensembl-%'""",
+
+    # Commit and vaccum to reclaim space
+    """commit""",
+    """vacuum""",
+    ]
+
+
+
+if __name__ == "__main__":
+    coloredlogs.install(level="INFO")
+    
+    db = sqlite3.connect("/usr/local/share/seqrepo/master/aliases.sqlite3")
+
+    for command in commands:
+        _logger.info(command)
+        db.execute(command)
+        

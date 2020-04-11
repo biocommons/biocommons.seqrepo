@@ -36,6 +36,8 @@ import tqdm
 
 from . import __version__, SeqRepo
 from .fastaiter import FastaIter
+from .utils import parse_defline, validate_aliases
+
 
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 DEFAULT_INSTANCE_NAME_RW = "master"
@@ -44,7 +46,6 @@ DEFAULT_INSTANCE_NAME_RO = "latest"
 instance_name_new_re = re.compile(r"^20[12]\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
 instance_name_old_re = re.compile(r"^20[12]1\d\d\d\d\d$")   # smells like an old datestamp, 20170117
 instance_name_re = re.compile(r"^20[12]\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
-ncbi_defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
 
 _logger = logging.getLogger(__name__)
 
@@ -221,7 +222,6 @@ def add_assembly_names(opts):
     ```
     [{'aliases': ['chr19'],
       'assembly_unit': 'Primary Assembly',
-      'genbank_ac': 'CM000681.2',
       'length': 58617616,
       'name': '19',
       'refseq_ac': 'NC_000019.10',
@@ -230,7 +230,6 @@ def add_assembly_names(opts):
     ```
 
     For the above sample record, this function adds the following aliases:
-      * genbank:CM000681.2
       * GRCh38:19
       * GRCh38:chr19
     to the sequence referred to by refseq:NC_000019.10.
@@ -272,8 +271,6 @@ def add_assembly_names(opts):
         for s in eq_sequences:
             seq_id = ncbi_alias_map[s["refseq_ac"]]
             aliases = [{"namespace": assy_name, "alias": a} for a in [s["name"]] + s["aliases"]]
-            if "genbank_ac" in s and s["genbank_ac"]:
-                aliases += [{"namespace": "genbank", "alias": s["genbank_ac"]}]
             for alias in aliases:
                 sr.aliases.store_alias(seq_id=seq_id, **alias)
                 _logger.debug("Added assembly alias {a[namespace]}:{a[alias]} for {seq_id}".format(a=alias, seq_id=seq_id))
@@ -367,6 +364,7 @@ def list_remote_instances(opts):
         print("  " + i)
 
 def load(opts):
+    # TODO: drop this test
     if opts.namespace == "-":
         raise RuntimeError("namespace == '-' is no longer supported")
 
@@ -389,58 +387,16 @@ def load(opts):
             fh = io.open(fn, mode="rt", encoding="ascii")
         _logger.info("Opened " + fn)
         seq_bar = tqdm.tqdm(FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False)
-        for rec_id, seq in seq_bar:
+        for defline, seq in seq_bar:
             n_seqs_seen += 1
             seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
-            aliases = _get_aliases(rec_id, opts)
+            aliases = parse_defline(defline, opts.namespace)
+            validate_aliases(aliases)
             n_sa, n_aa = sr.store(seq, aliases)
             n_seqs_added += n_sa
             n_aliases_added += n_aa
     sr.commit()
-
-
-def _get_aliases(rec_id, opts):
-    """return aliases from defline"""
-    # TODO: This no longer seems to work correctly. Ensure that these
-    # parse as expected and write tests
-    # Input examples (not all work):
-    # NCBI/RefSeq:
-    #   >gi|568815364|ref|NT_077402.3| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1
-    #   >gi|568815363|ref|NT_187170.1| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1_1
-    #   >gi|568815362|ref|NT_077912.2| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1_2
-    #   >gi|568815361|ref|NT_032977.10| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG3
-    #   >ref|NT_005334.17| Homo sapiens chromosome 2 genomic scaffold, GRCh38.p12 Primary Assembly HSCHR2_CTG1
-    #   >ref|NT_022184.16| Homo sapiens chromosome 2 genomic scaffold, GRCh38.p12 Primary Assembly HSCHR2_CTG5
-    #   >ref|NT_187177.1| Homo sapiens chromosome 2 genomic scaffold, GRCh38.p12 Primary Assembly HSCHR2_CTG7
-    #   >NG_022913.1 Homo sapiens transient receptor potential cation channel subfamily M member 2 (TRPM2), RefSeqGene on chromosome 21
-    #   >NG_016643.1 Homo sapiens gem nuclear organelle associated protein 2 (GEMIN2), RefSeqGene on chromosome 14
-    #   >NG_028313.1 Homo sapiens STEAP4 metalloreductase (STEAP4), RefSeqGene on chromosome 7
-    #   >YP_003024026.1 NADH dehydrogenase subunit 1 (mitochondrion) [Homo sapiens]
-    #   >YP_003024027.1 NADH dehydrogenase subunit 2 (mitochondrion) [Homo sapiens]
-    #   >YP_003024028.1 cytochrome c oxidase subunit I (mitochondrion) [Homo sapiens]
-    #   >NR_123721.1 Homo sapiens PKD1P6-NPIPP1 readthrough (PKD1P6-NPIPP1), transcript variant 1, non-coding RNA
-    #   >NR_036753.1 Homo sapiens zinc finger protein 847, pseudogene (ZNF847P), non-coding RNA
-    #   >NR_125392.1 Homo sapiens RNA, variant U1 small nuclear 20 (RNVU1-20), small nuclear RNA
-    # Ensembl:
-    #   >ENST00000434970.2 cdna chromosome:GRCh38:14:22439007:22439015:1 gene:ENSG00000237235.2 gene_biotype:TR_D_gene ...
-    #   >1 dna:chromosome chromosome:GRCh38:1:1:248956422:1 REF
-    #   >ENST00000516257.1 ncrna chromosome:GRCh38:15:53651977:53652123:1 gene:ENSG00000252066.1 gene_biotype:snRNA ...
-    #   >ENSP00000451515.1 pep chromosome:GRCh38:14:22439007:22439015:1 gene:ENSG00000237235.2 transcript:ENST00000434970.2 ...
-
-
-    if re.search(ncbi_defline_re, rec_id):
-        # NCBI deflines may have multiple accessions, pipe-separated
-        aliases = [m.groupdict() for m in ncbi_defline_re.finditer(rec_id)]
-        for a in aliases:
-            if a["namespace"] == "ref":
-                a["namespace"] = "NCBI"
-            alias = rec_id.split()[0]
-    else:
-        rec_id = rec_id.split()[0]  # first word
-        rec_id = rec_id[1:] if rec_id[0] == ">" else rec_id
-        aliases = [{"namespace": opts.namespace, "alias": rec_id}]
-    return aliases
 
 
 def pull(opts):

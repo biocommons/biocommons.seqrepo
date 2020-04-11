@@ -1,0 +1,10 @@
+clog format: 1; -*-outline-*-
+* 0.5.5 (2020-04-11)
+Changes since 0.5.4 (2020-04-06).
+** Bug Fixes
+*** Closes #80: Overhaul Ensembl namespace and alias loading [2f00db9] (Reece Hart)
+*** Closes #83: Reject whitespace in aliases and write script to fix existing db [480fb65] (Reece Hart)
+*** Closes #81: Drop support for gi and genbank namespaces and write script to remove from database [31a4d09] (Reece Hart)
+** Other Changes
+*** Closes #78: Isolate and test defline parsing [558cf86] (Reece Hart)
+*** log urls for stream-download [b0442b7] (Reece Hart)

@@ -2,9 +2,11 @@
 """return URLs to sequence files at NCBI, Ensembl, LRG
 
 Intended to be used to with ./stream-download as:
-
 $ namespace=Ensembl-85   # or NCBI, LRG, test
 $ ./get-sequence-urls $namespace | ./stream-download | seqrepo load -n $namespace
+
+Also useful:
+$ ./sbin/get-sequence-urls test | ./sbin/stream-download | gzip -c >|/tmp/load.fa.gz
 
 """
 
@@ -48,7 +50,7 @@ def get_test_urls():
         ]
     return urls
     
-def get_ncbi_urls():
+def get_refseq_urls():
     def _is_sequence_file(fn):
         return any(fn.endswith(sfx) for sfx in (".faa.gz", ".fna.gz", ".fa.gz", ".fasta", ".fa"))
 
@@ -64,30 +66,18 @@ def get_ncbi_urls():
 
     urls = []
 
+    # eg https://ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/human.1.protein.faa.gz
     u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/"
     new_urls = extract_sequence_urls_from_page(u)
     _logger.debug("{} urls from {}".format(len(new_urls), u))
     urls += new_urls
 
+    # eg https://ftp.ncbi.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene.5.genomic.fna.gz
     u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/RefSeqGene/"
     new_urls = extract_sequence_urls_from_page(u)
     _logger.debug("{} urls from {}".format(len(new_urls), u))
     urls += new_urls
 
-    u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/H_sapiens/Assembled_chromosomes/seq/"
-    new_urls = extract_sequence_urls_from_page(u)
-    _logger.debug("{} urls from {}".format(len(new_urls), u))
-    urls += new_urls
-
-    u = "https://ftp.ncbi.nih.gov/refseq/H_sapiens/H_sapiens/"
-    r = HTMLSession().get(u)
-    # N.B. requests_html absolute_links is broken on 3.5
-    abs_links = [urljoin(r.html.url, rl) for rl in r.html.links]
-    chr_urls = [l for l in abs_links if "CHR" in l]
-    new_urls = list(itertools.chain(*[extract_sequence_urls_from_page(cu) for cu in chr_urls]))
-    _logger.debug("{} urls from {}".format(len(new_urls), u))
-    urls += new_urls
-    
     return urls
 
 
@@ -96,7 +86,9 @@ if __name__ == "__main__":
     coloredlogs.install(level="INFO", logger=_logger)
 
     if sys.argv[1] == "NCBI":
-        urls = get_ncbi_urls()
+        raise RuntimeError("NCBI no longer supported; use 'refseq'")
+    elif sys.argv[1] == "refseq":
+        urls = get_refseq_urls()
     elif sys.argv[1].startswith("Ensembl-"):
         release = re.match(r"Ensembl-(\d+)", sys.argv[1]).group(1)
         urls = get_ensembl_urls(release)
