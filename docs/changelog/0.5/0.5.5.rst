@@ -1,0 +1,18 @@
+
+0.5.5 (2020-04-11)
+###################
+
+Changes since 0.5.4 (2020-04-06).
+
+Bug Fixes
+$$$$$$$$$$
+
+* Closes `#80 <https://github.com/biocommons/biocommons.seqrepo/issues/80/>`_: Overhaul Ensembl namespace and alias loading [`2f00db9 <https://github.com/biocommons/biocommons.seqrepo/commit/2f00db9>`_] (Reece Hart)
+* Closes `#83 <https://github.com/biocommons/biocommons.seqrepo/issues/83/>`_: Reject whitespace in aliases and write script to fix existing db [`480fb65 <https://github.com/biocommons/biocommons.seqrepo/commit/480fb65>`_] (Reece Hart)
+* Closes `#81 <https://github.com/biocommons/biocommons.seqrepo/issues/81/>`_: Drop support for gi and genbank namespaces and write script to remove from database [`31a4d09 <https://github.com/biocommons/biocommons.seqrepo/commit/31a4d09>`_] (Reece Hart)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* Closes `#78 <https://github.com/biocommons/biocommons.seqrepo/issues/78/>`_: Isolate and test defline parsing [`558cf86 <https://github.com/biocommons/biocommons.seqrepo/commit/558cf86>`_] (Reece Hart)
+* log urls for stream-download [`b0442b7 <https://github.com/biocommons/biocommons.seqrepo/commit/b0442b7>`_] (Reece Hart)

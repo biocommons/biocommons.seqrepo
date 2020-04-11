@@ -1,0 +1,16 @@
+
+0.5.4 (2020-04-06)
+###################
+
+Changes since 0.5.3 (2020-04-02).
+
+Bug Fixes
+$$$$$$$$$$
+
+* Fixed bug when parsing newer Ensembl fasta files [`6c6f1d8 <https://github.com/biocommons/biocommons.seqrepo/commit/6c6f1d8>`_] (Reece Hart)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* Closes `#75 <https://github.com/biocommons/biocommons.seqrepo/issues/75/>`_: require that master directory exists prior to loading [`6ee309a <https://github.com/biocommons/biocommons.seqrepo/commit/6ee309a>`_] (Reece Hart)
+* Update sbin/get-sequence-urls and sbin/stream-download [`6aaec85 <https://github.com/biocommons/biocommons.seqrepo/commit/6aaec85>`_] (Reece Hart)
