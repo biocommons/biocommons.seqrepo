@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 
-# biocommons/biocommons.seqrepo#80
-# Do this:
-# - Drop aliases <= Ensembl-84
-# - Drop GENSCAN, GL, and KI aliases from Ensembl-%
-# - Flatten aliases 
-
-
 import logging
 import sqlite3
 

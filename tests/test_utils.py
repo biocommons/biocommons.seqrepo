@@ -24,7 +24,6 @@ def test_parse_defline():
 
     defline = ">gi|568815364|ref|NT_077402.3| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1"
     assert parse_defline(defline, "refseq") == [
-        {"namespace": "gi", "alias": "568815364"},
         {"namespace": "refseq", "alias": "NT_077402.3"}
         ]
     
@@ -32,7 +31,6 @@ def test_parse_defline():
 
 def test_validate_aliases():
     aliases = [
-        {"namespace": "gi", "alias": "568815364"},
         {"namespace": "refseq", "alias": "NT_077402.3"}
         ]
 

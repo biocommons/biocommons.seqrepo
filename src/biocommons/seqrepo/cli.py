@@ -222,7 +222,6 @@ def add_assembly_names(opts):
     ```
     [{'aliases': ['chr19'],
       'assembly_unit': 'Primary Assembly',
-      'genbank_ac': 'CM000681.2',
       'length': 58617616,
       'name': '19',
       'refseq_ac': 'NC_000019.10',
@@ -231,7 +230,6 @@ def add_assembly_names(opts):
     ```
 
     For the above sample record, this function adds the following aliases:
-      * genbank:CM000681.2
       * GRCh38:19
       * GRCh38:chr19
     to the sequence referred to by refseq:NC_000019.10.
@@ -273,8 +271,6 @@ def add_assembly_names(opts):
         for s in eq_sequences:
             seq_id = ncbi_alias_map[s["refseq_ac"]]
             aliases = [{"namespace": assy_name, "alias": a} for a in [s["name"]] + s["aliases"]]
-            if "genbank_ac" in s and s["genbank_ac"]:
-                aliases += [{"namespace": "genbank", "alias": s["genbank_ac"]}]
             for alias in aliases:
                 sr.aliases.store_alias(seq_id=seq_id, **alias)
                 _logger.debug("Added assembly alias {a[namespace]}:{a[alias]} for {seq_id}".format(a=alias, seq_id=seq_id))
@@ -368,6 +364,7 @@ def list_remote_instances(opts):
         print("  " + i)
 
 def load(opts):
+    # TODO: drop this test
     if opts.namespace == "-":
         raise RuntimeError("namespace == '-' is no longer supported")
 
@@ -390,11 +387,11 @@ def load(opts):
             fh = io.open(fn, mode="rt", encoding="ascii")
         _logger.info("Opened " + fn)
         seq_bar = tqdm.tqdm(FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False)
-        for rec_id, seq in seq_bar:
+        for defline, seq in seq_bar:
             n_seqs_seen += 1
             seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
-            aliases = parse_defline(rec_id, opts.namespace)
+            aliases = parse_defline(defline, opts.namespace)
             validate_aliases(aliases)
             n_sa, n_aa = sr.store(seq, aliases)
             n_seqs_added += n_sa
