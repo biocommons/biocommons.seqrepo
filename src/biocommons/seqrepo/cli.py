@@ -36,7 +36,7 @@ import tqdm
 
 from . import __version__, SeqRepo
 from .fastaiter import FastaIter
-from .utils import parse_defline
+from .utils import parse_defline, validate_aliases
 
 
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
@@ -395,6 +395,7 @@ def load(opts):
             seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
                 nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
             aliases = parse_defline(rec_id, opts.namespace)
+            validate_aliases(aliases)
             n_sa, n_aa = sr.store(seq, aliases)
             n_seqs_added += n_sa
             n_aliases_added += n_aa

@@ -1,5 +1,6 @@
-from biocommons.seqrepo.utils import parse_defline
+import pytest
 
+from biocommons.seqrepo.utils import parse_defline, validate_aliases
 
 
 def test_parse_defline():
@@ -27,3 +28,17 @@ def test_parse_defline():
         {"namespace": "refseq", "alias": "NT_077402.3"}
         ]
     
+
+
+def test_validate_aliases():
+    aliases = [
+        {"namespace": "gi", "alias": "568815364"},
+        {"namespace": "refseq", "alias": "NT_077402.3"}
+        ]
+
+    assert validate_aliases(aliases)  # okay
+
+    with pytest.raises(RuntimeError):
+        validate_aliases([{"namespace": "Ensembl", "alias": "ENST012345"}])
+        
+                    
