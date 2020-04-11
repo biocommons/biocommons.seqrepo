@@ -41,4 +41,5 @@ def test_validate_aliases():
     with pytest.raises(RuntimeError):
         validate_aliases([{"namespace": "Ensembl", "alias": "ENST012345"}])
         
-                    
+    with pytest.raises(RuntimeError):
+        validate_aliases([{"namespace": "blah", "alias": "this is bogus"}])

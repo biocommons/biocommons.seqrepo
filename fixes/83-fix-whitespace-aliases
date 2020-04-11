@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+
+# biocommons/biocommons.seqrepo#80
+# Do this:
+# - Drop aliases <= Ensembl-84
+# - Drop GENSCAN, GL, and KI aliases from Ensembl-%
+# - Flatten aliases 
+
+
+import logging
+import sqlite3
+
+import coloredlogs
+
+
+_logger = logging.getLogger()
+
+
+commands = [
+    # delete seqalias records that are missing the first character
+    r"""delete from seqalias where namespace='NCBI' and alias like '_\_%' escape '\'""",
+
+    # ncbi_sa is view of NCBI aliases with corrected aliases
+    r"""create view ncbi_sa as select seqalias_id, namespace, 
+        coalesce(nullif(substr(alias,1,instr(alias,' ')-1),''),alias) as newalias,
+        seq_id, added, is_current from seqalias where namespace='NCBI'""",
+
+    # delete all seqaliases that are effectively redundant
+    r"""delete from seqalias where seqalias_id in
+        (with ordered_sa as (select newalias,seq_id,added,seqalias_id,
+                             row_number() over (partition by newalias,seq_id order by added) as n
+                             from ncbi_sa)
+        select seqalias_id from ordered_sa where n>1)""",
+
+    # update alias records to truncate on first space
+    r"""update seqalias set alias=coalesce(nullif(substr(alias,1,instr(alias,' ')-1),''),alias) 
+        where namespace='NCBI' and alias like '% %'""",
+
+    r"""drop view ncbi_sa""",
+    
+    # Commit and vaccum to reclaim space
+    """commit""",
+    """vacuum""",
+    ]
+
+
+
+if __name__ == "__main__":
+    coloredlogs.install(level="INFO")
+    
+    db = sqlite3.connect("/usr/local/share/seqrepo/master/aliases.sqlite3")
+
+    for command in commands:
+        _logger.info(command)
+        db.execute(command)
+        

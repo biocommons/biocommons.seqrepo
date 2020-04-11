@@ -2,6 +2,7 @@ import re
 
 
 ncbi_defline_re = re.compile(r"(?P<namespace>gi|ref)\|(?P<alias>[^|]+)")
+invalid_alias_chars_re = re.compile(r"[^-+./_\w]")
 
 
 def parse_defline(defline, namespace):
@@ -33,6 +34,8 @@ def validate_aliases(aliases):
 
     for alias_rec in aliases:
         namespace, alias = alias_rec["namespace"], alias_rec["alias"]
+        if invalid_alias_chars_re.search(alias):
+            raise RuntimeError(f"alias {alias} contains invalid char (one of {invalid_alias_chars_re})")
         if namespace.startswith("Ensembl"):
             if "." not in alias:
                 raise RuntimeError(f"{namespace} alias {alias} is unversioned")
