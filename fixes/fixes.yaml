@@ -1,0 +1,55 @@
+"1":
+  descr: Drop unused gi and genbank namespaces
+  sql:
+    - delete from seqalias where namespace in ('gi', 'genbank')
+
+"2":
+  descr: Delete seqalias records that are missing the first character
+  sql:
+    - delete from seqalias where namespace='NCBI' and alias like '_\_%' escape '\'
+    
+"3":
+  descr: Drop Ensembl releases before <= e84 
+  sql:
+    - delete from seqalias where namespace like 'Ensembl-%' and namespace <= 'Ensembl-84'
+
+"4":
+  descr: Drop unused Ensembl accessions
+  sql:
+    - delete from seqalias where namespace like 'Ensembl-%' and alias like 'GENSCAN%'
+    - delete from seqalias where namespace like 'Ensembl-%' and alias like 'GL%'
+    - delete from seqalias where namespace like 'Ensembl-%' and alias like 'KI%'
+
+
+
+#    # Create new namespace Ensembl aliases with earliest add date,
+#    # then remove versioned Ensembl-nn aliases
+#    # N.B. None of the Ensembl aliases have is_current=0
+#    """insert into seqalias (seq_id, namespace, alias, added)
+#         select seq_id,'Ensembl',alias,min(added) from seqalias
+#         where namespace like 'Ensembl-%'
+#         group by alias,seq_id""",
+#    """delete from seqalias where namespace like 'Ensembl-%'""",
+#
+#
+#
+#    # delete all seqaliases that are effectively redundant
+#    r"""create view new_sa as 
+#        select seqalias_id, namespace, 
+#          coalesce(nullif(substr(alias,1,instr(alias,' ')-1),''),alias) as newalias,
+#          seq_id, added, is_current
+#        from seqalias
+#        where alias like '% %'""",
+#    r"""create view ordered_sa as 
+#        select new_sa.*,
+#          row_number() over (partition by namespace,newalias,seq_id order by added) as n
+#        from new_sa""",
+#    r"""delete from seqalias where seqalias_id in (select seqalias_id from ordered_sa where n>1)""",
+#    r"""commit""",
+#
+#    # update alias records to truncate on first space
+#    r"""update seqalias set alias=coalesce(nullif(substr(alias,1,instr(alias,' ')-1),''),alias) 
+#        where alias like '% %'""",
+#    r"""commit""",
+#
+#    r"""drop view new_sa""",
