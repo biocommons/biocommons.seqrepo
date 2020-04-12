@@ -1,0 +1,7 @@
+clog format: 1; -*-outline-*-
+* 0.5.6 (2020-04-12)
+Changes since 0.5.5 (2020-04-11).
+** Bug Fixes
+*** For Ensembl, warn only about unversioned ^ENS aliases; require NCBI aliases to be versioned [d857fbc] (Reece Hart)
+** New Features
+*** Replace fix scripts with unified fixer script [a0bfb63],[460ff94] (Reece Hart)

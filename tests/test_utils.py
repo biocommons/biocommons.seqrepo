@@ -31,13 +31,18 @@ def test_parse_defline():
 
 def test_validate_aliases():
     aliases = [
-        {"namespace": "refseq", "alias": "NT_077402.3"}
+        {"namespace": "refseq", "alias": "NM_012345.6"},
+        {"namespace": "Ensembl", "alias": "ENST012345.6"}
         ]
 
     assert validate_aliases(aliases)  # okay
 
     with pytest.raises(RuntimeError):
-        validate_aliases([{"namespace": "Ensembl", "alias": "ENST012345"}])
+        validate_aliases([{"namespace": "blah", "alias": "aliases can't have spaces"}])
+
+    with pytest.raises(RuntimeError):
+        validate_aliases([{"namespace": "refseq", "alias": "NM_012345"}])
         
     with pytest.raises(RuntimeError):
-        validate_aliases([{"namespace": "blah", "alias": "this is bogus"}])
+        validate_aliases([{"namespace": "Ensembl", "alias": "ENST012345"}])
+        
