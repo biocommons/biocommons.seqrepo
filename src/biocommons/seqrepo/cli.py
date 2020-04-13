@@ -43,8 +43,6 @@ SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo"
 DEFAULT_INSTANCE_NAME_RW = "master"
 DEFAULT_INSTANCE_NAME_RO = "latest"
 
-instance_name_new_re = re.compile(r"^20[12]\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
-instance_name_old_re = re.compile(r"^20[12]1\d\d\d\d\d$")   # smells like an old datestamp, 20170117
 instance_name_re = re.compile(r"^20[12]\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
 
 _logger = logging.getLogger(__name__)
@@ -57,7 +55,7 @@ def _get_remote_instances(opts):
     _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
     lines = subprocess.check_output(rsync_cmd).decode().splitlines()[1:]
     dirs = (m.group(1) for m in (line_re.match(l) for l in lines) if m)
-    return sorted(list(filter(instance_name_new_re.match, dirs)))
+    return sorted(list(filter(instance_name_re.match, dirs)))
 
 
 def _get_local_instances(opts):
