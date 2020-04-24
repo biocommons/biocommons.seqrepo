@@ -43,6 +43,8 @@ SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo"
 DEFAULT_INSTANCE_NAME_RW = "master"
 DEFAULT_INSTANCE_NAME_RO = "latest"
 
+instance_name_new_re = re.compile(r"^20[12]\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
+instance_name_old_re = re.compile(r"^20[12]1\d\d\d\d\d$")   # smells like an old datestamp, 20170117
 instance_name_re = re.compile(r"^20[12]\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
 
 _logger = logging.getLogger(__name__)
@@ -55,7 +57,7 @@ def _get_remote_instances(opts):
     _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
     lines = subprocess.check_output(rsync_cmd).decode().splitlines()[1:]
     dirs = (m.group(1) for m in (line_re.match(l) for l in lines) if m)
-    return sorted(list(filter(instance_name_re.match, dirs)))
+    return sorted(list(filter(instance_name_new_re.match, dirs)))
 
 
 def _get_local_instances(opts):
@@ -105,6 +107,9 @@ def parse_arguments():
     # export
     ap = subparsers.add_parser("export", help="export sequences")
     ap.set_defaults(func=export)
+    ap.add_argument("ALIASES",
+                    nargs="*",
+                    help="specific aliases to export")
     ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
     ap.add_argument(
         "--namespace",
@@ -279,7 +284,22 @@ def export(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
 
-    if opts.namespace:
+    if opts.ALIASES:
+        def alias_generator():
+            for alias in set(opts.ALIASES):
+                yield from sr.aliases.find_aliases(namespace=opts.namespace,  # None okay
+                                                   alias=alias,
+                                                   translate_ncbi_namespace=True)
+        def _rec_iterator():
+            """yield (srec, [arec]) tuples to export"""
+            grouped_alias_iterator = itertools.groupby(alias_generator(),
+                                                       key=lambda arec: (arec["seq_id"]))
+            for seq_id, arecs in grouped_alias_iterator:
+                srec = sr.sequences.fetch_seqinfo(seq_id)
+                srec["seq"] = sr.sequences.fetch(seq_id)
+                yield srec, arecs
+        
+    elif opts.namespace:
         def _rec_iterator():
             """yield (srec, [arec]) tuples to export"""
             alias_iterator = sr.aliases.find_aliases(namespace=opts.namespace,
