@@ -74,10 +74,11 @@ collapse-ensembl:
     # then remove versioned Ensembl-nn aliases
     # N.B. None of the Ensembl aliases have is_current=0
     - insert into seqalias (seq_id, namespace, alias, added)
-         select seq_id,'Ensembl',alias,min(added) from seqalias
-         where namespace like 'Ensembl-%'
+         select seq_id,'_enew',alias,min(added) from seqalias
+         where namespace like 'Ensembl%'
          group by alias,seq_id
-    - delete from seqalias where namespace like 'Ensembl-%'
+    - delete from seqalias where namespace like 'Ensembl%'
+    - update seqalias set namespace='Ensembl' where namespace='_enew'
 
   tests:
     -
