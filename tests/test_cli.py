@@ -45,8 +45,6 @@ def test_20_load(opts):
     load(opts)
 
 
-
-
 def test_refseq_fasta(opts):
     def _get_refseq_alias(aliases):
         for al in aliases:
