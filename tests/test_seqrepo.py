@@ -76,7 +76,7 @@ def test_refseq_lookup(seqrepo):
     # commit not necessary
     assert seqrepo["ncbiac"] == "NCBISEQUENCE"
     assert seqrepo["NCBI:ncbiac"] == "NCBISEQUENCE"
-    assert seqrepo["RefSeq:ncbiac"] == "NCBISEQUENCE"
+    assert seqrepo["refseq:ncbiac"] == "NCBISEQUENCE"
     
 
 def test_refseq_translation(tmpdir_factory):

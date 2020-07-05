@@ -114,7 +114,7 @@ def parse_arguments():
     ap.add_argument(
         "--namespace",
         "-n",
-        help="namespace name (e.g., RefSeq, NCBI, Ensembl, LRG)", )
+        help="namespace name (e.g., refseq, NCBI, Ensembl, LRG)", )
 
     # export aliases
     ap = subparsers.add_parser("export-aliases", help="export aliases")
@@ -123,7 +123,7 @@ def parse_arguments():
     ap.add_argument(
         "--namespace",
         "-n",
-        help="namespace name (e.g., RefSeq, NCBI, Ensembl, LRG)", )
+        help="namespace name (e.g., refseq, NCBI, Ensembl, LRG)", )
 
     # fetch-load
     ap = subparsers.add_parser("fetch-load", help="fetch remote sequences by accession and load them (low-throughput!)")
