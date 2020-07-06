@@ -37,7 +37,7 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=False, check_same_thread=False):
+    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=None, check_same_thread=False):
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -46,7 +46,6 @@ class SeqRepo(object):
         self._pending_sequences_len = 0
         self._pending_aliases = 0
         self._writeable = writeable
-        self.translate_ncbi_namespace = translate_ncbi_namespace
         self._check_same_thread = True if writeable else check_same_thread
 
         if self._writeable:
@@ -58,8 +57,10 @@ class SeqRepo(object):
         self.sequences = FastaDir(self._seq_path, writeable=self._writeable, check_same_thread=self._check_same_thread)
         self.aliases = SeqAliasDB(self._db_path,
                                   writeable=self._writeable,
-                                  translate_ncbi_namespace=self.translate_ncbi_namespace,
                                   check_same_thread=self._check_same_thread)
+
+        if translate_ncbi_namespace is not None:
+            _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
 
     def __contains__(self, nsa):
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
@@ -177,11 +178,10 @@ class SeqRepo(object):
 
         """
 
-        if translate_ncbi_namespace is None:
-            translate_ncbi_namespace = self.translate_ncbi_namespace
+        if translate_ncbi_namespace is not None:
+            _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
         seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
-        aliases = self.aliases.fetch_aliases(seq_id=seq_id,
-                                             translate_ncbi_namespace=translate_ncbi_namespace)
+        aliases = self.aliases.fetch_aliases(seq_id=seq_id)
         if target_namespaces:
             aliases = [a for a in aliases if a["namespace"] in target_namespaces]
         return aliases
@@ -192,11 +192,13 @@ class SeqRepo(object):
         identifiers) that refer to the same sequence.
 
         """
+        if translate_ncbi_namespace is not None:
+            _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
+
         namespace, alias = identifier.split(nsa_sep) if nsa_sep in identifier else (None, identifier)
         aliases = self.translate_alias(alias=alias,
                                        namespace=namespace,
-                                       target_namespaces=target_namespaces,
-                                       translate_ncbi_namespace=translate_ncbi_namespace)
+                                       target_namespaces=target_namespaces)
         return [nsa_sep.join((a["namespace"], a["alias"])) for a in aliases]
 
 
