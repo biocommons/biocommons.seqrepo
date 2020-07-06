@@ -14,27 +14,120 @@ All translations occur in seqaliasdb.
 """
 
 import copy
-
-translations = [
-    # (DB namespace, API namespace)
-    ("NCBI", "refseq"),
-    ("Ensembl", "ensembl"),
-    ("LRG", "lrg"),
-    ]
+import datetime
 
 
-ns_db2api = {db: api for db, api in translations}
-ns_api2db = {api: db for db, api in translations}
+
+def translate_db2api(namespace, alias):
+    """
+    >>> translate_db2api("VMC", "GS_1234")
+    [('sha512t24u', '1234'), ('ga4gh', 'GS.1234')]
+
+    """
+
+    if namespace == "NCBI":
+        return [("refseq", alias)]
+    if namespace == "Ensembl":
+        return [("ensembl", alias)]
+    if namespace == "LRG":
+        return [("lrg", alias)]
+    if namespace == "VMC":
+        return [
+            ("sha512t24u", alias[3:] if alias else None),
+            ("ga4gh", "GS." + alias[3:] if alias else None),
+        ]
+    return []
+
+
+def translate_api2db(namespace, alias):
+    """
+    >>> translate_api2db("ga4gh", "GS.1234")
+    [('VMC', 'GS_1234')]
+
+    """
+
+    if namespace.lower() == "refseq":
+        return [("NCBI", alias)]
+    if namespace == "ensembl":
+        return [("Ensembl", alias)]
+    if namespace == "lrg":
+        return [("LRG", alias)]
+    if namespace == "sha512t24u":
+        return [
+            ("VMC", "GS_" + alias if alias else None),
+        ]
+    if namespace == "ga4gh":
+        return [
+            ("VMC", "GS_" + alias[3:]),
+        ]
+    return []
+
+
 
 def translate_alias_records(aliases_itr):
     """given an iterator of find_aliases results, return a stream with
     translated records"""
     
-    for a in aliases_itr:
-        yield a
+    for arec in aliases_itr:
+        yield arec
 
-        ns = a["namespace"]
-        if ns in ns_db2api:
-            a2 = copy.copy(a)
-            a2["namespace"] = ns_db2api[ns]
-            yield a2
+        for ns, a in translate_db2api(arec["namespace"], arec["alias"]):
+            arec2 = copy.copy(arec)
+            arec2["namespace"] = ns
+            arec2["alias"] = a
+            yield arec2
+
+
+
+
+if __name__ == "__main__":
+    aliases = [
+        {'seqalias_id': 16,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': 'ncbiac/e',
+         'added': datetime.datetime(2020, 7, 6, 5, 27, 23),
+         'is_current': 1,
+         'namespace': 'Ensembl'},
+        {'seqalias_id': 16,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': 'ncbiac/e',
+         'added': datetime.datetime(2020, 7, 6, 5, 27, 23),
+         'is_current': 1,
+         'namespace': 'ensembl'},
+        {'seqalias_id': 3,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': 'be8a4c35767bb783a7b8b6dc04ba3718',
+         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
+         'is_current': 1,
+         'namespace': 'MD5'},
+        {'seqalias_id': 5,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': 'ncbiac',
+         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
+         'is_current': 1,
+         'namespace': 'NCBI'},
+        {'seqalias_id': 5,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': 'ncbiac',
+         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
+         'is_current': 1,
+         'namespace': 'refseq'},
+        {'seqalias_id': 4,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': '5W5mCzikufDcezdNTGKLa9zricw',
+         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
+         'is_current': 1,
+         'namespace': 'SEGUID'},
+        {'seqalias_id': 2,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': 'e56e660b38a4b9f0dc7b374d4c628b6bdceb89cc',
+         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
+         'is_current': 1,
+         'namespace': 'SHA1'},
+        {'seqalias_id': 1,
+         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'alias': 'GS_9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
+         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
+         'is_current': 1,
+         'namespace': 'VMC'}
+    ]

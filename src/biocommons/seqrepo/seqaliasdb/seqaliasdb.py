@@ -5,7 +5,7 @@ import sqlite3
 import pkg_resources
 import yoyo
 
-from .._internal.translate import translate_alias_records, ns_api2db
+from .._internal.translate import translate_alias_records, translate_api2db
 from .._internal.logging_support import DuplicateFilter
 
 _logger = logging.getLogger(__name__)
@@ -78,8 +78,7 @@ class SeqAliasDB(object):
         The arguments, all optional, restrict the records that are
         returned.  Without arguments, all aliases are returned.
 
-        Regardless of arguments, results are always ordered by (seq_id,
-        namespace, and alias).
+        Regardless of arguments, results are ordered by seq_id.
 
         If arguments contain %, the `like` comparison operator is
         used.  Otherwise arguments must match exactly.
@@ -95,15 +94,15 @@ class SeqAliasDB(object):
         if translate_ncbi_namespace is not None:
             _logger.warning("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
 
+        if namespace is not None:
+            ns_api2db = translate_api2db(namespace, alias)
+            if ns_api2db:
+                namespace, alias = ns_api2db[0]
+            clauses += ["namespace {} ?".format(eq_or_like(namespace))]
+            params += [namespace]
         if alias is not None:
             clauses += ["alias {} ?".format(eq_or_like(alias))]
             params += [alias]
-        if namespace is not None:
-            # #31: translate "refseq" in API to "NCBI" for db (transitional)
-            if namespace.lower() == "refseq":
-                namespace = "NCBI"
-            clauses += ["namespace {} ?".format(eq_or_like(namespace))]
-            params += [namespace]
         if seq_id is not None:
             clauses += ["seq_id {} ?".format(eq_or_like(seq_id))]
             params += [seq_id]
@@ -148,8 +147,9 @@ class SeqAliasDB(object):
         if not self._writeable:
             raise RuntimeError("Cannot write -- opened read-only")
 
-        if namespace in ns_api2db:
-            namespace = ns_api2db[namespace]
+        ns_api2db = translate_api2db(namespace, alias)
+        if ns_api2db:
+            namespace, alias = ns_api2db[0]
 
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         cursor = self._db.cursor()

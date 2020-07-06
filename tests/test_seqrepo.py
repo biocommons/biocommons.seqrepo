@@ -105,6 +105,10 @@ def test_namespace_translation(tmpdir_factory):
     seq_id = seqrepo._get_unique_seqid(alias="ncbiac", namespace="NCBI")
     aliases = list(seqrepo.aliases.find_aliases(seq_id=seq_id))
     assert any(a for a in aliases if a["namespace"] == "refseq")
+    assert any(a for a in aliases if a["namespace"] == "ga4gh")
+
+    assert seqrepo["ga4gh:GS."+seq_id]   == "NCBISEQUENCE"
+    assert seqrepo["sha512t24u:"+seq_id] == "NCBISEQUENCE"
     
 
 
