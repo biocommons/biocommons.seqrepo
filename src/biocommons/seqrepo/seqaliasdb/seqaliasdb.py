@@ -5,10 +5,11 @@ import sqlite3
 import pkg_resources
 import yoyo
 
+from .._internal.translate import translate_alias_records, ns_api2db
 from .._internal.logging_support import DuplicateFilter
 
 _logger = logging.getLogger(__name__)
-_logger.addFilter(DuplicateFilter())
+#_logger.addFilter(DuplicateFilter())
 
 
 expected_schema_version = 1
@@ -26,11 +27,13 @@ class SeqAliasDB(object):
 
     """
 
-    def __init__(self, db_path, writeable=False, translate_ncbi_namespace=False, check_same_thread=True):
+    def __init__(self, db_path, writeable=False, translate_ncbi_namespace=None, check_same_thread=True):
         self._db_path = db_path
         self._db = None
         self._writeable = writeable
-        self.translate_ncbi_namespace = translate_ncbi_namespace
+
+        if translate_ncbi_namespace is not None:
+            _logger.warning("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
 
         if self._writeable:
             self._upgrade_db()
@@ -64,12 +67,13 @@ class SeqAliasDB(object):
     def fetch_aliases(self, seq_id, current_only=True, translate_ncbi_namespace=None):
         """return list of alias annotation records (dicts) for a given seq_id"""
         _logger.warning("SeqAliasDB::fetch_aliases() is deprecated; use find_aliases(seq_id=...) instead")
+        if translate_ncbi_namespace is not None:
+            _logger.warning("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
         return [dict(r) for r in self.find_aliases(seq_id=seq_id,
-                                                   current_only=current_only,
-                                                   translate_ncbi_namespace=translate_ncbi_namespace)]
+                                                   current_only=current_only)]
 
     def find_aliases(self, seq_id=None, namespace=None, alias=None, current_only=True, translate_ncbi_namespace=None):
-        """returns iterator over alias annotation records that match criteria
+        """returns iterator over alias annotation dicts that match criteria
         
         The arguments, all optional, restrict the records that are
         returned.  Without arguments, all aliases are returned.
@@ -81,21 +85,21 @@ class SeqAliasDB(object):
         used.  Otherwise arguments must match exactly.
 
         """
+
         clauses = []
         params = []
 
         def eq_or_like(s):
             return "like" if "%" in s else "="
 
-        if translate_ncbi_namespace is None:
-            translate_ncbi_namespace = self.translate_ncbi_namespace
+        if translate_ncbi_namespace is not None:
+            _logger.warning("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
+
         if alias is not None:
             clauses += ["alias {} ?".format(eq_or_like(alias))]
             params += [alias]
         if namespace is not None:
-            # Switch to using RefSeq for RefSeq accessions
-            # issue #38: translate "RefSeq" to "NCBI" to enable RefSeq lookups
-            # issue #31: later breaking change, translate database
+            # #31: translate "refseq" in API to "NCBI" for db (transitional)
             if namespace.lower() == "refseq":
                 namespace = "NCBI"
             clauses += ["namespace {} ?".format(eq_or_like(namespace))]
@@ -107,19 +111,16 @@ class SeqAliasDB(object):
             clauses += ["is_current = 1"]
 
         cols = ["seqalias_id", "seq_id", "alias", "added", "is_current"]
-        if translate_ncbi_namespace:
-            cols += ["case namespace when 'NCBI' then 'refseq' else namespace end as namespace"]
-        else:
-            cols += ["namespace"]
+        cols += ["namespace"]
         sql = "select {cols} from seqalias".format(cols=", ".join(cols))
         if clauses:
             sql += " where " + " and ".join("(" + c + ")" for c in clauses)
         sql += " order by seq_id, namespace, alias"
 
-        _logger.debug("Executing: " + sql)
+        _logger.debug("Executing: {} with params {}".format(sql, params))
         cursor = self._db.cursor()
         cursor.execute(sql, params)
-        return cursor
+        return translate_alias_records(dict(r) for r in cursor)
 
     def schema_version(self):
         """return schema version as integer"""
@@ -147,6 +148,9 @@ class SeqAliasDB(object):
         if not self._writeable:
             raise RuntimeError("Cannot write -- opened read-only")
 
+        if namespace in ns_api2db:
+            namespace = ns_api2db[namespace]
+
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         cursor = self._db.cursor()
         try:
@@ -163,7 +167,7 @@ class SeqAliasDB(object):
         # IntegrityError fall-through
 
         # existing record is guaranteed to exist uniquely; fetchone() should always succeed
-        current_rec = self.find_aliases(namespace=namespace, alias=alias).fetchone()
+        current_rec = next(self.find_aliases(namespace=namespace, alias=alias))
 
         # if seq_id matches current record, it's a duplicate (seq_id, namespace, alias) tuple
         # and we return current record

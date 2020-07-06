@@ -76,26 +76,36 @@ def test_refseq_lookup(seqrepo):
     # commit not necessary
     assert seqrepo["ncbiac"] == "NCBISEQUENCE"
     assert seqrepo["NCBI:ncbiac"] == "NCBISEQUENCE"
-    assert seqrepo["RefSeq:ncbiac"] == "NCBISEQUENCE"
+    assert seqrepo["refseq:ncbiac"] == "NCBISEQUENCE"
     
 
-def test_refseq_translation(tmpdir_factory):
+def test_namespace_translation(tmpdir_factory):
     dir = str(tmpdir_factory.mktemp('seqrepo'))
-
     seqrepo = SeqRepo(dir, writeable=True)
-    seqrepo.store("NCBISEQUENCE", [{"namespace": "NCBI", "alias": "ncbiac"}])
+
+    # store sequences
+    seqrepo.store("NCBISEQUENCE",    [{"namespace": "NCBI",    "alias": "ncbiac"   }])
+    seqrepo.store("ENSEMBLSEQUENCE", [{"namespace": "Ensembl", "alias": "ensemblac"}])
+    seqrepo.store("LRGSEQUENCE",     [{"namespace": "LRG",     "alias": "lrgac"   }])
+    seqrepo.store("REFSEQSEQUENCE",  [{"namespace": "refseq",  "alias": "refseqac" }])  # should be stored as NCBI:refseqac
     seqrepo.commit()
-    del seqrepo
 
-    seqrepo = SeqRepo(dir, writeable=False, translate_ncbi_namespace=False)
-    aliases = list(seqrepo.aliases.find_aliases(alias="ncbiac"))
-    assert len(aliases) == 1
-    assert aliases[0]["namespace"] == "NCBI"
+    # lookups, no query translation
+    assert seqrepo["NCBI:ncbiac"]       == "NCBISEQUENCE"
+    assert seqrepo["Ensembl:ensemblac"] == "ENSEMBLSEQUENCE"
+    assert seqrepo["LRG:lrgac"]         == "LRGSEQUENCE"
+    assert seqrepo["NCBI:refseqac"]     == "REFSEQSEQUENCE"  # tests ns translation on store
 
-    seqrepo = SeqRepo(dir, writeable=False, translate_ncbi_namespace=True)
-    aliases = list(seqrepo.aliases.find_aliases(alias="ncbiac"))
-    assert len(aliases) == 1
-    assert aliases[0]["namespace"] == "refseq"
+    # lookups, w/ query translation
+    assert seqrepo["refseq:ncbiac"]     == "NCBISEQUENCE"
+    assert seqrepo["RefSeq:ncbiac"]     == "NCBISEQUENCE"  # case-squashed
+    assert seqrepo["Ensembl:ensemblac"] == "ENSEMBLSEQUENCE"
+    assert seqrepo["LRG:lrgac"]         == "LRGSEQUENCE"
+
+    seq_id = seqrepo._get_unique_seqid(alias="ncbiac", namespace="NCBI")
+    aliases = list(seqrepo.aliases.find_aliases(seq_id=seq_id))
+    assert any(a for a in aliases if a["namespace"] == "refseq")
+    
 
 
 def test_translation(seqrepo):
