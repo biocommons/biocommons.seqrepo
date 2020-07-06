@@ -63,7 +63,7 @@ class SeqRepo(object):
 
     def __contains__(self, nsa):
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
-        return self.aliases.find_aliases(alias=a, namespace=ns).fetchone() is not None
+        return any(self.aliases.find_aliases(alias=a, namespace=ns))
 
     def __getitem__(self, nsa):
         # lookup aliases, optionally namespaced, like NM_01234.5 or NCBI:NM_01234.5
