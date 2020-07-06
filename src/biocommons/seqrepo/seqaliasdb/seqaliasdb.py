@@ -91,7 +91,7 @@ class SeqAliasDB(object):
             # Switch to using RefSeq for RefSeq accessions
             # issue #38: translate "RefSeq" to "NCBI" to enable RefSeq lookups
             # issue #31: later breaking change, translate database
-            if namespace == "RefSeq":
+            if namespace.lower() == "refseq":
                 namespace = "NCBI"
             clauses += ["namespace {} ?".format(eq_or_like(namespace))]
             params += [namespace]
