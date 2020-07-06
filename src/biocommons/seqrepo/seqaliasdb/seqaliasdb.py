@@ -5,7 +5,11 @@ import sqlite3
 import pkg_resources
 import yoyo
 
+from .._internal.logging_support import DuplicateFilter
+
 _logger = logging.getLogger(__name__)
+_logger.addFilter(DuplicateFilter())
+
 
 expected_schema_version = 1
 
@@ -59,6 +63,7 @@ class SeqAliasDB(object):
 
     def fetch_aliases(self, seq_id, current_only=True, translate_ncbi_namespace=None):
         """return list of alias annotation records (dicts) for a given seq_id"""
+        _logger.warning("SeqAliasDB::fetch_aliases() is deprecated; use find_aliases(seq_id=...) instead")
         return [dict(r) for r in self.find_aliases(seq_id=seq_id,
                                                    current_only=current_only,
                                                    translate_ncbi_namespace=translate_ncbi_namespace)]
