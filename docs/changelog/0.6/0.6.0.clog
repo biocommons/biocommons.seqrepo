@@ -1,0 +1,20 @@
+clog format: 1; -*-outline-*-
+* 0.6.0 (2020-07-05)
+Changes since 0.5.6 (2020-04-12).
+** Special Attention
+The major change in this release is the addition of compatibility code
+to ease the transition to namespaces based on CURIE prefixes used at
+identifiers.org.  The 0.5 series added the ability to use `refseq` as
+a synonym for `NCBI`; this 0.6 series provides similar and more robust
+support for NCBI/refseq, Ensembl/ensembl, LRG/lrg, and
+VMC/ga4gh/sha512t24u digests; 0.7 will drop backward support for
+`NCBI`, `Ensembl`, and `LRG` (but preserve case-squashed variations
+found in identfiers.org).  See: #31, #80, #62.
+** Deprecations
+*** #86: Deprecated SeqAliasDB:fetch_aliases() [4a8cbb9] (Reece Hart)
+** New Features
+*** #31: Implemented store, fetch, and alias record translation for NCBI↔refseq, Ensembl↔ensembl, LRG↔lrg [f2b48ef] (Reece Hart)
+*** #62: Implemented ga4gh and sha512t24u identifiers [54c9764] (Reece Hart)
+*** Added ability to export sequence of aliases specified on command line [4d8f506] (Reece Hart)
+** Other Changes
+*** Drop support for old-style datestamps (yyyymmdd, without hyphens) [dff12bc] (Reece Hart)
