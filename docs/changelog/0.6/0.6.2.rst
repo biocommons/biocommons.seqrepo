@@ -1,0 +1,14 @@
+
+0.6.2 (2020-07-12)
+###################
+
+Changes since 0.6.1 (2020-07-07).
+
+Bug Fixes
+$$$$$$$$$$
+
+* Doh! Got the ga4gh sequence type prefix wrong. [`faa45ff <https://github.com/biocommons/biocommons.seqrepo/commit/faa45ff>`_] (Reece Hart)
+
+New Features
+$$$$$$$$$$$$$
+
