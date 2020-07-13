@@ -21,7 +21,7 @@ import datetime
 def translate_db2api(namespace, alias):
     """
     >>> translate_db2api("VMC", "GS_1234")
-    [('sha512t24u', '1234'), ('ga4gh', 'GS.1234')]
+    [('sha512t24u', '1234'), ('ga4gh', 'SQ.1234')]
 
     """
 
@@ -34,14 +34,14 @@ def translate_db2api(namespace, alias):
     if namespace == "VMC":
         return [
             ("sha512t24u", alias[3:] if alias else None),
-            ("ga4gh", "GS." + alias[3:] if alias else None),
+            ("ga4gh", "SQ." + alias[3:] if alias else None),
         ]
     return []
 
 
 def translate_api2db(namespace, alias):
     """
-    >>> translate_api2db("ga4gh", "GS.1234")
+    >>> translate_api2db("ga4gh", "SQ.1234")
     [('VMC', 'GS_1234')]
 
     """

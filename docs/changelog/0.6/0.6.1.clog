@@ -1,0 +1,6 @@
+clog format: 1; -*-outline-*-
+* 0.6.1 (2020-07-07)
+Changes since 0.6.0 (2020-07-06).
+** Other Changes
+*** Fix packaging bug: add __init__.py for _internal; not reqd for code, but wheel doesn't find package without it [5ee75ef] (Reece Hart)
+*** add testing target for 3.8 [d878d5b] (Reece Hart)
