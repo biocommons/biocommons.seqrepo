@@ -107,7 +107,7 @@ def test_namespace_translation(tmpdir_factory):
     assert any(a for a in aliases if a["namespace"] == "refseq")
     assert any(a for a in aliases if a["namespace"] == "ga4gh")
 
-    assert seqrepo["ga4gh:GS."+seq_id]   == "NCBISEQUENCE"
+    assert seqrepo["ga4gh:SQ."+seq_id]   == "NCBISEQUENCE"
     assert seqrepo["sha512t24u:"+seq_id] == "NCBISEQUENCE"
     
 
