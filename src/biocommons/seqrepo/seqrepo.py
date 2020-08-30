@@ -3,6 +3,8 @@ import os
 import re
 
 import bioutils.digests
+from bioutils.digests import seq_seqhash as sha512t24u
+
 
 from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
@@ -124,7 +126,7 @@ class SeqRepo(object):
             seq = seq.upper()
 
         try:
-            seqhash = bioutils.digests.seq_seqhash(seq)
+            seqhash = sha512t24u(seq)
         except Exception as e:
             import pprint
             _logger.critical("Exception raised for " + pprint.pformat(nsaliases))
