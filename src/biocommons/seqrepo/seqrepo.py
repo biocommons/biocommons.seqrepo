@@ -186,6 +186,7 @@ class SeqRepo(object):
         aliases = self.aliases.fetch_aliases(seq_id=seq_id)
         if target_namespaces:
             aliases = [a for a in aliases if a["namespace"] in target_namespaces]
+        aliases = [":".join([a["namespace"], a["alias"]]) for a in aliases]
         return aliases
 
 
