@@ -46,8 +46,8 @@ Deployments Scenarios
 * Local read-write archive, maintained with command
   line utility and/or API (see `Command Line Interface documentation
   <docs/cli.rst>`__).
-* Docker-based data-only container that may be linked to application container.
-* Planned: Docker image that provides REST interface for local or remote access
+* Docker data-only container that may be linked to application container.
+* SeqRepo and refget REST API for local or remote access (see `seqrepo-rest-service <https://github.com/biocommons/seqrepo-rest-service>`__)
 
 
 Technical Quick Peek
