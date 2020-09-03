@@ -1,10 +1,10 @@
+from collections.abc import Sequence
 import logging
 import os
 import re
 
 import bioutils.digests
 from bioutils.digests import seq_seqhash as sha512t24u
-
 
 from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
@@ -20,6 +20,58 @@ ct_n_residues = 1e9
 nsa_sep = u":"
 
 uri_re = re.compile(r"([^:]+):(.+)")
+
+
+
+class SequenceProxy(Sequence):
+    """Provides efficient and transparent string-like access, including
+    random access slicing and reversing, to a biological sequence that
+    is stored elsewhere.
+
+    """
+
+    def __init__(self, sr, namespace, alias):
+        self._sr = sr
+        self.seq_id = sr._get_unique_seqid(alias=alias, namespace=namespace)
+        self._md = sr.sequences.fetch_seqinfo(self.seq_id)
+
+    def _fetch(self, start=None, end=None):
+        seq_id = self.seq_id
+        return self._sr.sequences.fetch(seq_id, start, end)
+
+    def __bool__(self):
+        return str(self) != ""
+
+    def __eq__(self, s: str):
+        return str(self).__eq__(s)
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            key = slice(key, key+1)
+        if key.step is not None:
+            raise ValueError("Only contiguous sequence slices are supported")
+        return self._fetch(key.start, key.stop)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __len__(self):
+        return self._md["len"]
+
+    def __repr__(self):
+        return f"SequenceProxy(seq_id={self.seq_id}, len={len(self)})"
+
+    def __reversed__(self):
+        return self._fetch()[::-1]
+
+    def __str__(self):
+        return self._fetch()
+
+    @property
+    def aliases(self):
+        aliases = self._sr.aliases.find_aliases(seq_id=self.seq_id)
+        aliases = [":".join([a["namespace"], a["alias"]]) for a in aliases]
+        return aliases
 
 
 class SeqRepo(object):
@@ -39,7 +91,7 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=None, check_same_thread=False):
+    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=None, check_same_thread=False, use_sequenceproxy=False):
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -49,6 +101,7 @@ class SeqRepo(object):
         self._pending_aliases = 0
         self._writeable = writeable
         self._check_same_thread = True if writeable else check_same_thread
+        self.use_sequenceproxy = use_sequenceproxy
 
         if self._writeable:
             os.makedirs(self._root_dir, exist_ok=True)
@@ -69,9 +122,20 @@ class SeqRepo(object):
         return any(self.aliases.find_aliases(alias=a, namespace=ns))
 
     def __getitem__(self, nsa):
-        # lookup aliases, optionally namespaced, like NM_01234.5 or NCBI:NM_01234.5
+        """lookup aliases, optionally namespaced, like NM_01234.5 or NCBI:NM_01234.5
+
+        If SeqRepo was instantiated with use_sequenceproxy=True, a
+        SequenceProxy is returned.
+
+        A SequenceProxy is may become the default in a future version.
+
+        """
+
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
-        return self.fetch(alias=a, namespace=ns)
+        if self.use_sequenceproxy:
+            return SequenceProxy(self, alias=a, namespace=ns)
+        else:
+            return self.fetch(alias=a, namespace=ns)
 
     def __iter__(self):
         """iterate over all sequences, yielding tuples of (sequence_record, [alias_records])

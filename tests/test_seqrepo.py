@@ -1,6 +1,7 @@
 import pytest
 
 from biocommons.seqrepo import SeqRepo
+from biocommons.seqrepo.seqrepo import SequenceProxy
 
 
 def test_create(seqrepo):
@@ -11,7 +12,6 @@ def test_seqrepo_dir_not_exist(tmpdir_factory):
     """Ensure that exception is raised for non-existent seqrepo directory"""
     dir = str(tmpdir_factory.mktemp('seqrepo')) + "-IDONTEXIST"
     with pytest.raises(OSError) as ex:
-
         SeqRepo(dir, writeable=False)
 
     assert "Unable to open SeqRepo directory" in str(ex.value)
@@ -117,3 +117,13 @@ def test_translation(seqrepo):
     assert "MD5:8b2698fb0b0c93558a6adbb11edb1e4b" in seqrepo.translate_identifier("rose"), "failed unqualified identifier lookup"
     assert "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr" in seqrepo.translate_identifier("en:rose"), "failed to find expected identifier in returned identifiers"
     assert ["VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr"] == seqrepo.translate_identifier("en:rose", target_namespaces=["VMC"]), "failed to rerieve exactly the expected identifier"
+
+
+def test_sequenceproxy(seqrepo):
+    # A SequenceProxy is returned by __getitem__ when SeqRepo is
+    # instantiated with use_sequenceproxy=True
+
+    sp = SequenceProxy(seqrepo, namespace=None, alias="rosa")
+    assert sp                   # __bool__ dunder method
+    assert sp[5:7] == "AS"      # __eq__ and __getitem__
+
