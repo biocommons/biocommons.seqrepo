@@ -79,7 +79,7 @@ class SeqRepo(object):
         Both records are dicts.
         """
         for srec in self.sequences:
-            arecs = self.aliases.fetch_aliases(srec["seq_id"])
+            arecs = self.aliases.find_aliases(seq_id=srec["seq_id"])
             yield (srec, arecs)
 
     def __str__(self):
@@ -156,7 +156,7 @@ class SeqRepo(object):
 
         # add/update external aliases for new and existing sequences
         # updating is optimized to load only new <seq_id,ns,alias> tuples
-        existing_aliases = self.aliases.fetch_aliases(seq_id)
+        existing_aliases = self.aliases.find_aliases(seq_id=seq_id)
         ea_tuples = [(r["seq_id"], r["namespace"], r["alias"]) for r in existing_aliases]
         new_tuples = [(seq_id, r["namespace"], r["alias"]) for r in nsaliases]
         upd_tuples = set(new_tuples) - set(ea_tuples)
@@ -183,10 +183,10 @@ class SeqRepo(object):
         if translate_ncbi_namespace is not None:
             _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
         seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
-        aliases = self.aliases.fetch_aliases(seq_id=seq_id)
+        aliases = self.aliases.find_aliases(seq_id=seq_id)
         if target_namespaces:
             aliases = [a for a in aliases if a["namespace"] in target_namespaces]
-        aliases = [":".join([a["namespace"], a["alias"]]) for a in aliases]
+        aliases = [nsa_sep.join([a["namespace"], a["alias"]]) for a in aliases]
         return aliases
 
 
@@ -199,10 +199,9 @@ class SeqRepo(object):
             _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
 
         namespace, alias = identifier.split(nsa_sep) if nsa_sep in identifier else (None, identifier)
-        aliases = self.translate_alias(alias=alias,
+        return self.translate_alias(alias=alias,
                                        namespace=namespace,
                                        target_namespaces=target_namespaces)
-        return [nsa_sep.join((a["namespace"], a["alias"])) for a in aliases]
 
 
     ############################################################################
