@@ -91,7 +91,7 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=None, check_same_thread=False, use_sequenceproxy=False):
+    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=None, check_same_thread=False, use_sequenceproxy=True):
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -124,10 +124,8 @@ class SeqRepo(object):
     def __getitem__(self, nsa):
         """lookup aliases, optionally namespaced, like NM_01234.5 or NCBI:NM_01234.5
 
-        If SeqRepo was instantiated with use_sequenceproxy=True, a
-        SequenceProxy is returned.
-
-        A SequenceProxy is may become the default in a future version.
+        If SeqRepo was instantiated with use_sequenceproxy=True (the
+        default), a SequenceProxy is returned.
 
         """
 
