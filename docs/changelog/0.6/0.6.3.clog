@@ -1,0 +1,12 @@
+clog format: 1; -*-outline-*-
+* 0.6.3 (2020-09-04)
+Changes since 0.6.2 (2020-07-12).
+** New Features
+*** translate_alias now returns list of string identifiers rather than leaking seqaliasdb structures [2fbf43b] (Reece Hart)
+*** Closes #88: Implement SequenceProxy for return from __getitem__ [0e0256e] (Reece Hart)
+** Other Changes
+*** synchronized the digest name with that adopted by ga4gh for VRS and refget [02835ee] (Reece Hart)
+*** moved truncated digest collision analysis back to seqrepo and updated [54a8b42] (Reece Hart)
+*** make SeqRepo(..., use_sequenceproxy=True) the default [bc3b8b3] (Reece Hart)
+** Internal and Developer Changes
+*** added Timings notebook [c8296be] (Reece Hart)

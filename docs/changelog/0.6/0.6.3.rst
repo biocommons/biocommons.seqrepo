@@ -1,0 +1,23 @@
+
+0.6.3 (2020-09-04)
+###################
+
+Changes since 0.6.2 (2020-07-12).
+
+New Features
+$$$$$$$$$$$$$
+
+* translate_alias now returns list of string identifiers rather than leaking seqaliasdb structures [`2fbf43b <https://github.com/biocommons/biocommons.seqrepo/commit/2fbf43b>`_] (Reece Hart)
+* Closes `#88 <https://github.com/biocommons/biocommons.seqrepo/issues/88/>`_: Implement SequenceProxy for return from __getitem__ [`0e0256e <https://github.com/biocommons/biocommons.seqrepo/commit/0e0256e>`_] (Reece Hart)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* synchronized the digest name with that adopted by ga4gh for VRS and refget [`02835ee <https://github.com/biocommons/biocommons.seqrepo/commit/02835ee>`_] (Reece Hart)
+* moved truncated digest collision analysis back to seqrepo and updated [`54a8b42 <https://github.com/biocommons/biocommons.seqrepo/commit/54a8b42>`_] (Reece Hart)
+* make SeqRepo(..., use_sequenceproxy=True) the default [`bc3b8b3 <https://github.com/biocommons/biocommons.seqrepo/commit/bc3b8b3>`_] (Reece Hart)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* added Timings notebook [`c8296be <https://github.com/biocommons/biocommons.seqrepo/commit/c8296be>`_] (Reece Hart)
