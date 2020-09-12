@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+import collections
+import csv
+import fileinput
+import logging
+import pprint
+import re
+import sys
+
+import coloredlogs
+from dateutil.parser import parse
+
+
+_logger = logging.getLogger(__name__)
+
+# e.g., 2016/08/31 01:24:34 [32383] rsync on seqrepo/ from ec2-....compute.amazonaws.com (52.34.43.195)
+# dir = first path element only
+rsync_line_re = re.compile(r"(?P<ts>20\S+ \S+) \[\d+\] rsync on (?P<dir>[^/]+)\S* from (?P<host>\S+) \((?P<ip>.+)\)")
+
+def summarize_connects(connects):
+    ips = [c["ip"] for c in connects]
+    ip_counts = collections.Counter(ips)
+    domain_counts = collections.Counter(domain(c["host"]) for c in connects)
+    return {
+        "n_connects": len(connects),
+        "n_unique_ips": len(ip_counts.keys()),
+        "n_unique_domains": len(domain_counts.keys()),
+        #"top_5_ip": [f"{c[0]} ({c[1]})" for c in ip_counts.most_common(5)],
+        #"top_5_domains": [f"{c[0]} ({c[1]})" for c in domain_counts.most_common(5)],
+        "domains": [f"{c[0]} ({c[1]})" for c in domain_counts.most_common()],
+        }
+
+def domain(host):
+    return ".".join(host.split(".")[-2:])
+
+def read_log(flo):
+    for l in flo:
+        if "localhost" in l:
+            continue
+
+        m = rsync_line_re.match(l)
+        if not m:
+            if "rsync on" in l:
+                _logger.error(f"Missed `{l}`")
+            continue
+
+        data = m.groupdict()
+        data["ts"] = parse(data["ts"])
+        data["ym"] = data["ts"].strftime("%Y-%m")
+        data["y"] = data["ts"].strftime("%Y")
+        data["m"] = data["ts"].strftime("%m")
+        data["domain"] = domain(data["host"])
+        yield data
+
+
+if __name__ == "__main__":
+    
+    coloredlogs.install(level="INFO")
+
+
+    fields = "ym y m dir domain ts ip host".split()
+    o = csv.DictWriter(sys.stdout, fieldnames=fields, delimiter="\t", extrasaction="ignore")
+    o.writeheader()
+    for crec in read_log(fileinput.input()):
+        o.writerow(crec)
+
+    # connects_ym = collections.defaultdict(lambda: list())
+    # for crec in read_log(fileinput.input()):
+    #     connects_ym[crec["ym"]].append(crec)
+    # 
+    # summary_ym = {ym: summarize_connects(connects) for ym, connects in connects_ym.items()}
+    # 
+    # pprint.pprint(summary_ym)
