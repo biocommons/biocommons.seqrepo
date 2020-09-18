@@ -25,6 +25,12 @@ Released under the Apache License, 2.0.
 
 |ci_rel| | |cov| | |pypi_rel| | `ChangeLog <https://github.com/biocommons/biocommons.seqrepo/tree/master/docs/changelog/0.5>`_
 
+Citation
+!!!!!!!!
+
+| **SeqRepo: A system for managing local collections biological sequences.**
+| Hart RK, Prlić A. (2020)
+| `doi:10.1101/2020.09.16.299495 <https://www.biorxiv.org/content/10.1101/2020.09.16.299495v1?rss=1>`__
 
 Features
 !!!!!!!!
