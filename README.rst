@@ -17,6 +17,11 @@ provided, seqrepo uses it as-is. If the namespace is not provided and
 the unqualified identifier refers to a unique sequence, it is
 returned; otherwise, ambiguous identifiers will raise an error.
 
+SeqRepo favors identifiers from [identifiers.org](identifiers.org)
+whenever available.  Examples include
+[refseq](https://registry.identifiers.org/registry/refseq) and
+[ensembl](https://registry.identifiers.org/registry/ensembl).
+
 `seqrepo-rest-service
 <https://github.com/biocommons/seqrepo-rest-service>`__ provides a
 REST interface and docker image.
