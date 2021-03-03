@@ -33,9 +33,9 @@ Released under the Apache License, 2.0.
 Citation
 !!!!!!!!
 
-| **SeqRepo: A system for managing local collections of biological sequences.**
-| Hart RK, Prlić A. PLOS One (accepted; 2020)
-| `doi:10.1101/2020.09.16.299495 <https://www.biorxiv.org/content/10.1101/2020.09.16.299495v1>`__
+| Hart RK, Prlić A (2020)
+| SeqRepo: A system for managing local collections of biological sequences.
+| PLoS ONE 15(12): e0239883. https://doi.org/10.1371/journal.pone.0239883
 
 
 Features
