@@ -33,7 +33,7 @@ stages:
 jobs:
   include:
     - stage: deploy
-      python: 3.7
+      python: 3.8
       install: skip
       script: skip
       deploy:
@@ -44,6 +44,6 @@ jobs:
         distributions: "sdist bdist_wheel"
         on:
           tags: true
-          branch: master
+          branch: main
         password:
           secure: h9P0Lg6al7/rwSH5P7ZWq2yj5JIK4eYGXdm0nnR6vuhE8YZIQCoqh2B+43e42ifYLC+gTrefz6sbOjj6pNQNnm3ZmDrAm934B20Qb1gLbeYFu+/u7S6lLthcsNYVhufiOwHWX9zCKGIvTY+ONPOtFv0wyE/63ZS1loAD/mF7qtIYTh+rLyk68ROSBT/Jdq5yoXHNU3IGWwX/tE3YLM/qGHa8sQD0eja9z74asXLim3YPq420Yfhwy7BIQRWXCTaTHUW02Rk9wSMHWjKBJ1/rwOBNWXowi2hCM8ga+TAzJap+2gveTwNkFgQZo3lgoVLzElXTICcmfU9CJZlYbTxPCLXzndaQuPyCKt1w2woIOuFvLiXieA4gULbqJ+MK6uQH9PID3eoUc+jdB5EWg6qZDHPCObbYRIpuDBQv2fvX05ht4OxDni2kJ+XshnVwkAvFxw9xnV5j0icWj7mI8yTTmEQVAS52Q24ZWsRrfSScMgMdhWOviJPlvRINKW0WLmx47FL+Ac6bcsWzr+fTxR3LbqhbN9xrvwriUT45dY2uL9upQhy1j9RXhAl1sZoGaA63jrlW0JI22NaGCq/47ZeYbMtCpFCOmOjin/15mE2DbD2Lp/wGy32gy+iJxT+8uLAhn6vuuM3MzRt0C4fgOP4iBPxnKAq5o41d89vPqAGr4gQ=
