@@ -6,7 +6,6 @@ import sqlite3
 import time
 
 import pkg_resources
-import six
 import yoyo
 
 
@@ -110,9 +109,7 @@ class FastaDir(BaseReader, BaseWriter):
         """fetch sequence by seq_id, optionally with start, end bounds
 
         """
-        rec = self._fetch_one("""select * from seqinfo where seq_id = ? order by added desc""", [seq_id])
-        if rec is None:
-            raise KeyError(seq_id)
+        rec = self.fetch_seqinfo(seq_id)
 
         if self._writing and self._writing["relpath"] == rec["relpath"]:
             _logger.warning("""Fetching from file opened for writing;
@@ -123,11 +120,12 @@ class FastaDir(BaseReader, BaseWriter):
         fabgz = self._open_for_reading(path)
         return fabgz.fetch(seq_id, start, end)
 
+    @functools.lru_cache(maxsize=os.environ.get("SEQREPO_LRU_CACHE_MAXSIZE"))
     def fetch_seqinfo(self, seq_id):
         """fetch sequence info by seq_id
 
         """
-        rec = self._fetch_one("""select * from seqinfo where seq_id = ?""", [seq_id])
+        rec = self._fetch_one("""select * from seqinfo where seq_id = ? order by added desc""", [seq_id])
 
         if rec is None:
             raise KeyError(seq_id)

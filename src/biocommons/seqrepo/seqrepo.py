@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from functools import lru_cache
 import logging
 import os
 import re
@@ -269,6 +270,7 @@ class SeqRepo(object):
     ############################################################################
     # Internal Methods 
 
+    @lru_cache(maxsize=os.environ.get("SEQREPO_LRU_CACHE_MAXSIZE"))
     def _get_unique_seqid(self, alias, namespace):
         """given alias and namespace, return seq_id if exactly one distinct
         sequence id is found, raise KeyError if there's no match, or
