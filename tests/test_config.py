@@ -23,7 +23,7 @@ def test_SEQREPO_LRU_CACHE_MAXSIZE_none(monkeypatch):
     assert config.SEQREPO_LRU_CACHE_MAXSIZE is None
 
 
-def test_SEQREPO_LRU_CACHE_MAXSIZE_none(monkeypatch):
+def test_SEQREPO_LRU_CACHE_MAXSIZE_invalid(monkeypatch):
     monkeypatch.setenv("SEQREPO_LRU_CACHE_MAXSIZE", "invalid")
     with pytest.raises(ValueError):
         imp.reload(config)
