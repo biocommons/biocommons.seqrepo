@@ -10,6 +10,7 @@ import yoyo
 
 
 
+from ..config import SEQREPO_LRU_CACHE_MAXSIZE
 from .bases import BaseReader, BaseWriter
 from .fabgz import FabgzReader, FabgzWriter
 
@@ -120,7 +121,7 @@ class FastaDir(BaseReader, BaseWriter):
         fabgz = self._open_for_reading(path)
         return fabgz.fetch(seq_id, start, end)
 
-    @functools.lru_cache(maxsize=os.environ.get("SEQREPO_LRU_CACHE_MAXSIZE"))
+    @functools.lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def fetch_seqinfo(self, seq_id):
         """fetch sequence info by seq_id
 

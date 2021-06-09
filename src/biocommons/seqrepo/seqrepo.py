@@ -7,6 +7,7 @@ import re
 import bioutils.digests
 from bioutils.digests import seq_seqhash as sha512t24u
 
+from .config import SEQREPO_LRU_CACHE_MAXSIZE
 from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
 
@@ -270,7 +271,7 @@ class SeqRepo(object):
     ############################################################################
     # Internal Methods 
 
-    @lru_cache(maxsize=os.environ.get("SEQREPO_LRU_CACHE_MAXSIZE"))
+    @lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def _get_unique_seqid(self, alias, namespace):
         """given alias and namespace, return seq_id if exactly one distinct
         sequence id is found, raise KeyError if there's no match, or
