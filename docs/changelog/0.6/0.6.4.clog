@@ -1,0 +1,15 @@
+clog format: 1; -*-outline-*-
+* 0.6.4 (2021-06-14)
+Changes since 0.6.3 (2020-09-10).
+** New Features
+*** Cache SQLite DB lookups for seqinfo and seqid to speed up future queries (#96) [f641ac5] (Joseph Solomon)
+** Other Changes
+*** Closes #95: Set project description and long-description [32bd170] (Reece Hart)
+*** updated README with biorxiv citation [22176c5] (Reece Hart)
+** Internal and Developer Changes
+*** Require ipython for installation so that shell works [1acc18d] (Reece Hart)
+*** drop 3.6 and add 3.9 [aa6fb69] (Reece Hart)
+*** update travis to use main branch [3d6ce09] (Reece Hart)
+*** resolve warnings about deprecated pytest options [624eabe] (Reece Hart)
+*** resolve warnings about deprecated setup.cfg options [86ecd46] (Reece Hart)
+*** resolve warnings about deprecation of imp module [30ac3ba] (Reece Hart)

@@ -1,0 +1,26 @@
+
+0.6.4 (2021-06-14)
+###################
+
+Changes since 0.6.3 (2020-09-10).
+
+New Features
+$$$$$$$$$$$$$
+
+* Cache SQLite DB lookups for seqinfo and seqid to speed up future queries (`#96 <https://github.com/biocommons/biocommons.seqrepo/issues/96/>`_) [`f641ac5 <https://github.com/biocommons/biocommons.seqrepo/commit/f641ac5>`_] (Joseph Solomon)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* Closes `#95 <https://github.com/biocommons/biocommons.seqrepo/issues/95/>`_: Set project description and long-description [`32bd170 <https://github.com/biocommons/biocommons.seqrepo/commit/32bd170>`_] (Reece Hart)
+* updated README with biorxiv citation [`22176c5 <https://github.com/biocommons/biocommons.seqrepo/commit/22176c5>`_] (Reece Hart)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* Require ipython for installation so that shell works [`1acc18d <https://github.com/biocommons/biocommons.seqrepo/commit/1acc18d>`_] (Reece Hart)
+* drop 3.6 and add 3.9 [`aa6fb69 <https://github.com/biocommons/biocommons.seqrepo/commit/aa6fb69>`_] (Reece Hart)
+* update travis to use main branch [`3d6ce09 <https://github.com/biocommons/biocommons.seqrepo/commit/3d6ce09>`_] (Reece Hart)
+* resolve warnings about deprecated pytest options [`624eabe <https://github.com/biocommons/biocommons.seqrepo/commit/624eabe>`_] (Reece Hart)
+* resolve warnings about deprecated setup.cfg options [`86ecd46 <https://github.com/biocommons/biocommons.seqrepo/commit/86ecd46>`_] (Reece Hart)
+* resolve warnings about deprecation of imp module [`30ac3ba <https://github.com/biocommons/biocommons.seqrepo/commit/30ac3ba>`_] (Reece Hart)
