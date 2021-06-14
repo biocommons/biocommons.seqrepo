@@ -158,6 +158,10 @@ On Ubuntu 16.04::
 See `Installation <docs/installation.rst>`__ and `Mirroring
 <docs/mirror.rst>`__ for more information.
 
+Environment Variables
+!!!!!!!!!!!!!!!!!!!!!
+
+SEQREPO_LRU_CACHE_MAXSIZE sets the lru_cache maxsize for the sqlite query response caching. It defaults to 1 million but can also be set to "none" to be unlimited.
 
 Developing
 !!!!!!!!!!
