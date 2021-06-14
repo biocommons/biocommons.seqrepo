@@ -10,7 +10,7 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=biocommons.seqrepo
 PKGD=$(subst .,/,${PKG})
-PYV:=3.8
+PYV:=3.9
 VEDIR=venv/${PYV}
 
 TEST_DIRS:=tests
@@ -38,7 +38,8 @@ devready:
 	@echo '#################################################################################'
 
 #=> venv: make a Python 3 virtual environment
-venv/3.6 venv/3.7 venv/3.8: venv/%:
+.PHONY: venv/%
+venv/%:
 	python$* -mvenv $@; \
 	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
