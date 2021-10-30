@@ -15,8 +15,10 @@ is available somewhere.
 >>> ir = "refseq:NM_000551.3"
 >>> print(f"dp1 = {dp1}")
 ``dp1 = <biocommons.seqrepo.dataproxy.SeqRepoRESTDataProxy object at 0x10ef1d9d0>``
+
 >>> print(f"dp2 = {dp2}")
 ``dp2 = <biocommons.seqrepo.dataproxy.SeqRepoDataProxy object at 0x10d853970>``
+
 >>> assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
 >>> assert dp1.get_sequence(ir) == dp2.get_sequence(ir)
 >>> dp1.get_metadata(ir)
