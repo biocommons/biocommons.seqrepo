@@ -233,7 +233,7 @@ def _isoformat(o):
 
 
 def create_dataproxy(uri: str = None) -> _DataProxy:
-    """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
+    """Create a dataproxy from uri or SEQREPO_DATAPROXY_URI
 
     Currently accepted URI schemes:
 
@@ -245,10 +245,10 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
     """
 
     uri = (uri
-           or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None))
+           or os.environ.get("SEQREPO_DATAPROXY_URI", None))
 
     if uri is None:
-        raise ValueError("No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI")
+        raise ValueError("No data proxy URI provided or found in SEQREPO_DATAPROXY_URI")
 
     parsed_uri = urlparse(uri)
     scheme = parsed_uri.scheme
