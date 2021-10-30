@@ -1,6 +1,11 @@
 import pytest
 
 from biocommons.seqrepo import SeqRepo
+from biocommons.seqrepo.dataproxy import SeqRepoRESTDataProxy
+
+@pytest.fixture(scope="session")
+def dataproxy():
+    return SeqRepoRESTDataProxy(base_url="http://localhost:5000/seqrepo")
 
 
 @pytest.fixture(scope="session")
