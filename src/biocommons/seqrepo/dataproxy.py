@@ -150,8 +150,8 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     def _get_sequence(self, identifier, start=None, end=None):
         url = self.base_url + f"sequence/{identifier}"
-        _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}
+        _logger.info(f"Fetching {url} {params if (start or end) else ''}")
         resp = requests.get(url, params=params)
         if resp.status_code == 404:
             raise KeyError(identifier)
