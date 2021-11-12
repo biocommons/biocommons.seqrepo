@@ -16,8 +16,6 @@ from urllib.parse import urlparse
 from bioutils.accessions import coerce_namespace
 import requests
 
-
-
 _logger = logging.getLogger(__name__)
 
 
@@ -64,7 +62,6 @@ class _DataProxy(ABC):
          'length': 4560}
 
         """
-
 
     @functools.lru_cache()
     def translate_sequence_identifier(self, identifier, namespace=None):
@@ -135,7 +132,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
             "alphabet": seqinfo["alpha"],
             "added": _isoformat(seqinfo["added"]),
             "aliases": [f"{a['namespace']}:{a['alias']}" for a in aliases],
-            }
+        }
         return md
 
 
@@ -169,41 +166,6 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         return data
 
 
-class SequenceProxy(Sequence):
-    """Provides efficient and transparent string-like access, including
-    random access slicing and reversing, to a biological sequence that
-    is stored elsewhere.
-
-    """
-
-    def __init__(self, dp, alias):
-        self.dp = dp
-        self.alias = alias
-        self._md = self.dp.get_metadata(self.alias)
-
-    def __str__(self):
-        return self.dp.get_sequence(self.alias)
-
-    def __len__(self):
-        return self._md["length"]
-
-    def __reversed__(self):
-        raise NotImplementedError("Reversed iteration of a SequenceProxy is not implemented")
-
-    def __getitem__(self, key):
-        """return sequence for key (slice), fetching if necessary
-
-        """
-
-        if isinstance(key, int):
-            key = slice(key, key+1)
-        if key.step is not None:
-            raise ValueError("Only contiguous sequence slices are supported")
-
-        return self.dp.get_sequence(self.alias, key.start, key.stop)
-
-
-
 def _isoformat(o):
     """convert datetime.datetime to iso formatted timestamp
 
@@ -229,7 +191,6 @@ def _isoformat(o):
 #     def __init__(self, base_url):
 #         super().__init__()
 #         self.base_url = base_url
-
 
 
 def create_dataproxy(uri: str = None) -> _DataProxy:
@@ -265,7 +226,7 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
-            dp = SeqRepoRESTDataProxy(uri[len(provider)+1:])
+            dp = SeqRepoRESTDataProxy(uri[len(provider) + 1:])
         else:
             raise ValueError(f"SeqRepo URI scheme {parsed_uri.scheme} not implemented")
 
@@ -273,8 +234,6 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
         raise ValueError(f"DataProxy provider {provider} not implemented")
 
     return dp
-
-
 
 
 if __name__ == "__main__":
