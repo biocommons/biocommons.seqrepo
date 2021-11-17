@@ -1,6 +1,19 @@
+import os
 import pytest
 
 from biocommons.seqrepo import SeqRepo
+from biocommons.seqrepo.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
+
+
+@pytest.fixture(scope="session")
+def dataproxy():
+    sr = SeqRepo(root_dir=os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest"))
+    return SeqRepoDataProxy(sr)
+
+
+@pytest.fixture(scope="session")
+def rest_dataproxy():
+    return SeqRepoRESTDataProxy(base_url="http://localhost:5000/seqrepo")
 
 
 @pytest.fixture(scope="session")
