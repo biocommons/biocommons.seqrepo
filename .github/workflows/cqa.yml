@@ -2,7 +2,8 @@ name: Test & Upload
 
 on:
   push:
-    branches: [ main ]
+    # all for now
+    # branches: [ main ]
 
   workflow_dispatch:
 
