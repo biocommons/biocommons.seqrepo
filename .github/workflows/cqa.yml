@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Test & Upload to TestPyPI
+name: Test & Upload
 
 on:
   push:
@@ -9,18 +7,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup:
+  test_and_publish:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Sets up python3
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.8 
+          python-version: 3.9
 
       - name: install
         run: |
@@ -28,18 +23,10 @@ jobs:
           pip install -U pytest twine
           pip install .
 
-  test:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
       - name: Test
         run: |
           pytest
           
-  upload: 
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
       - name: Build and Upload
         run: |
           python3 -m build
