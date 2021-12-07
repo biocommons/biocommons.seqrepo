@@ -30,7 +30,7 @@ jobs:
           sudo apt install libhts-dev libhts3 libhtscodecs-dev libhtscodecs2 tabix
           pip install -U pip setuptools
           pip install -U pytest pytest-cov twine pytest-vcr
-          pip install .
+          pip install -e .
 
       - name: Test
         run: |
