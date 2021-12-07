@@ -1,15 +1,14 @@
-name: Build & Test
+name: Publish
 
 on:
-  pull_request:
+  push:
     branches:
-      - '*'
-      - '!main'
+      - 'main'
 
   workflow_dispatch:
 
 jobs:
-  build_and_test:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,6 +29,11 @@ jobs:
         run: |
           pytest
 
-      - name: Build
+      - name: Build and Upload
         run: |
           python3 -m build
+          python3 -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TWINE_TEST_TOKEN }}
+          TWINE_REPOSITORY: testpypi
