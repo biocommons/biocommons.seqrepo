@@ -48,7 +48,7 @@ def _find_bgzip():
     except AttributeError:
         raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
     except missing_file_exception:
-        raise RuntimeError("{exe} doesn't exist; you need to install htslib (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe))
+        raise RuntimeError("{exe} doesn't exist; you need to install htslib and tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe))
     except Exception:
         raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
