@@ -29,8 +29,8 @@ jobs:
         run: |
           sudo apt install libhts-dev libhts3 libhtscodecs-dev libhtscodecs2 tabix
           pip install -U pip setuptools
-          pip install -U pytest<6 pytest-cov twine
-          pip install .
+          pip install -U pytest pytest-cov twine
+          pip install -e .
 
       - name: Test
         run: |
