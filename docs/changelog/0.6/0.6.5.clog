@@ -1,0 +1,12 @@
+clog format: 1; -*-outline-*-
+* 0.6.5 (2021-12-06)
+Changes since 0.6.4 (2021-06-14).
+** Bug Fixes
+*** Fixes #63: Ensure that local and REST dp handle qualified and unqualified identifiers identically [def64f9] (@korikuzma)
+** New Features
+*** Add support for dataproxy and SEQREPO_DATAPROXY_URI [a9e5f44], [e6807b2] (Andreas Prlic)
+** Other Changes
+*** Updated error message regarding installation requirements [649d4bb] (Reece Hart)
+** Internal and Developer Changes
+*** logging query params if passed [5fd31d9] (Ben Robinson)
+*** Merge pull request #100 from biocommons/cqa [f1198d8] (Reece Hart)

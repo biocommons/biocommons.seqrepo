@@ -1,0 +1,26 @@
+
+0.6.5 (2021-12-06)
+###################
+
+Changes since 0.6.4 (2021-06-14).
+
+Bug Fixes
+$$$$$$$$$$
+
+* Fixes `#63 <https://github.com/biocommons/biocommons.seqrepo/issues/63/>`_: Ensure that local and REST dp handle qualified and unqualified identifiers identically [`def64f9 <https://github.com/biocommons/biocommons.seqrepo/commit/def64f9>`_] (@korikuzma)
+
+New Features
+$$$$$$$$$$$$$
+
+* Add support for dataproxy and SEQREPO_DATAPROXY_URI [`a9e5f44 <https://github.com/biocommons/biocommons.seqrepo/commit/a9e5f44>`_], [`e6807b2 <https://github.com/biocommons/biocommons.seqrepo/commit/e6807b2>`_] (Andreas Prlic)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* Updated error message regarding installation requirements [`649d4bb <https://github.com/biocommons/biocommons.seqrepo/commit/649d4bb>`_] (Reece Hart)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* logging query params if passed [`5fd31d9 <https://github.com/biocommons/biocommons.seqrepo/commit/5fd31d9>`_] (Ben Robinson)
+* Merge pull request #100 from biocommons/cqa [`f1198d8 <https://github.com/biocommons/biocommons.seqrepo/commit/f1198d8>`_] (Reece Hart)
