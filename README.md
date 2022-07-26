@@ -45,18 +45,16 @@ sequences.** PLoS ONE 15(12): e0239883. <https://doi.org/10.1371/journal.pone.02
 ## Features
 
 -   Timestamped, read-only snapshots.
--   Space-efficient storage of sequences within a single snapshot and
-    across snapshots.
+-   Space-efficient storage of sequences within a single snapshot and across snapshots.
 -   Bandwidth-efficient transfer incremental updates.
 -   Fast fetching of sequence slices on chromosome-scale sequences.
 -   Precomputed digests that may be used as sequence aliases.
--   Mappings of external aliases (i.e., accessions or identifiers like
-    NM_013305.4) to sequences.
+-   Mappings of external aliases (i.e., accessions or identifiers like NM_013305.4) to sequences.
 
 ## Deployments Scenarios
 
--   Local read-only archive, mirrored from public site, accessed via
-    Python API (see [Mirroring documentation](docs/mirror.rst))
+-   Local read-only archive, mirrored from public site, accessed via Python API (see [Mirroring
+    documentation](docs/mirror.rst))
 -   Local read-write archive, maintained with command line utility
     and/or API (see [Command Line Interface
     documentation](docs/cli.rst)).
@@ -154,9 +152,9 @@ query response caching. It defaults to 1 million but can also be set to
 
 ## Developing
 
-Here\'s how to get started developing:
+Here's how to get started developing:
 
-    python3.6 -m venv
+    make devready
     source venv/bin/activate
-    pip install -U setuptools pip
-    make develop
+    seqrepo --version
+

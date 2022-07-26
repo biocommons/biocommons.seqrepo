@@ -8,7 +8,6 @@ shift
 seqrepo_data_release=$1
 shift
 
-
 set -ex
 
 docker build -f seqrepo.df --rm=true \

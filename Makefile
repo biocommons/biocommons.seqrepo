@@ -10,8 +10,6 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=biocommons.seqrepo
 PKGD=$(subst .,/,${PKG})
-PYV:=3.9
-VEDIR=venv/${PYV}
 
 TEST_DIRS:=tests
 DOC_TESTS:=doc hgvs ./README.rst
@@ -32,15 +30,15 @@ help:
 #=> devready: create venv, install prerequisites, install pkg in develop mode
 .PHONY: devready
 devready:
-	make ${VEDIR} && source ${VEDIR}/bin/activate && make develop
+	make venv && source venv/bin/activate && make develop
 	@echo '#################################################################################'
-	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
+	@echo '###  Do not forget to `source venv/bin/activate` to use this environment  ###'
 	@echo '#################################################################################'
 
 #=> venv: make a Python 3 virtual environment
-.PHONY: venv/%
-venv/%:
-	python$* -mvenv $@; \
+.PHONY: venv
+venv:
+	python3 -mvenv $@; \
 	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools

@@ -10,7 +10,7 @@
 # docker run -it --name myapp --volumes-from seqrepo ubuntu  do-something
 
 
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 RUN apt update && apt install -y \
     curl \
@@ -22,7 +22,7 @@ RUN apt update && apt install -y \
 
 RUN pip3 install --upgrade setuptools pip
 
-RUN pip3 install --upgrade numpy scipy pandas
+RUN pip3 install --upgrade numpy pandas scipy
 
 RUN pip3 install --upgrade \
     biopython \
@@ -47,7 +47,7 @@ RUN pip3 install --upgrade \
 MAINTAINER reecehart@gmail.com
 ARG SEQREPO_VERSION
 RUN test -n "$SEQREPO_VERSION"
-ARG SEQREPO_DATA_RELEASE=2018-08-21
+ARG SEQREPO_DATA_RELEASE
 RUN test -n "$SEQREPO_DATA_RELEASE"
 
 ENV SEQREPO_DATA_RELEASE ${SEQREPO_DATA_RELEASE}
