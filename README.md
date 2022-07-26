@@ -158,3 +158,15 @@ Here's how to get started developing:
     source venv/bin/activate
     seqrepo --version
 
+## Building a docker image
+
+Docker images are available at https://hub.docker.com/r/biocommons/seqrepo.  Tags correspond to the
+version of data, not the version of seqrepo, because the intent is to make it easy to depend on a
+local version of seqrepo *files*.  Each docker image is an installation of seqrepo that downloads
+the corresponding version of seqrepo data.  When used in conjunction with docker volumes for
+persistence, this provides an easy way to incorporate seqrepo data into a docker stack.
+
+### Building
+
+    cd misc/docker
+    make 2021-01-29.log  # builds and pushes to hub.docker.com (i.e., you need creds)
