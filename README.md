@@ -21,7 +21,7 @@ origins or sequence sets (e.g., "1" in GRCh37 and GRCh38). If the namespace is p
 uses it as-is; if the namespace is not provided and the unqualified identifier refers to a unique
 sequence, it is returned; otherwise, the use of ambiguous identifiers raise an error.
 
-SeqRepo favors naamespaces from [identifiers.org](https://identifiers.org) whenever available.
+SeqRepo favors namespaces from [identifiers.org](https://identifiers.org) whenever available.
 Examples include [refseq](<https://registry.identifiers.org/registry/refseq>) and
 [ensembl](<https://registry.identifiers.org/registry/ensembl>).
 
