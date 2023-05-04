@@ -1,5 +1,3 @@
-import logging
-
 class DuplicateFilter:
     """
     Filters away duplicate log messages.

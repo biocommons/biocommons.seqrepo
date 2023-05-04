@@ -5,16 +5,15 @@ See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 
 """
 
-from abc import ABC, abstractmethod
-from collections.abc import Sequence
 import datetime
 import functools
 import logging
 import os
+from abc import ABC, abstractmethod
 from urllib.parse import urlparse
 
-from bioutils.accessions import coerce_namespace
 import requests
+from bioutils.accessions import coerce_namespace
 
 _logger = logging.getLogger(__name__)
 
@@ -205,8 +204,7 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
 
     """
 
-    uri = (uri
-           or os.environ.get("SEQREPO_DATAPROXY_URI", None))
+    uri = uri or os.environ.get("SEQREPO_DATAPROXY_URI", None)
 
     if uri is None:
         raise ValueError("No data proxy URI provided or found in SEQREPO_DATAPROXY_URI")
@@ -223,10 +221,11 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
         if proto in ("", "file"):
             # pylint: disable=import-error, import-outside-toplevel
             from biocommons.seqrepo import SeqRepo
+
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
-            dp = SeqRepoRESTDataProxy(uri[len(provider) + 1:])
+            dp = SeqRepoRESTDataProxy(uri[len(provider) + 1 :])
         else:
             raise ValueError(f"SeqRepo URI scheme {parsed_uri.scheme} not implemented")
 

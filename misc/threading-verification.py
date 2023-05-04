@@ -22,9 +22,9 @@
 
 
 import os
-from multiprocessing import Process, Queue
 import sqlite3
 import sys
+from multiprocessing import Process, Queue
 
 from biocommons.seqrepo import SeqRepo
 
@@ -37,7 +37,7 @@ def fetch_in_thread(sr, nsa):
     def fetch_seq(q, nsa):
         pid, ppid = os.getpid(), os.getppid()
         q.put((pid, ppid, sr[nsa]))
-    
+
     q = Queue()
     p = Process(target=fetch_seq, args=(q, nsa))
     p.start()
@@ -46,9 +46,9 @@ def fetch_in_thread(sr, nsa):
 
     assert pid != ppid, "sequence was not fetched from thread"
     return pid, ppid, seq
-    
 
-def make_seqrepo(writeable):    
+
+def make_seqrepo(writeable):
     sr = SeqRepo("/tmp/sr", writeable=True)
     sr.store("SMELLASSWEET", [{"namespace": "en", "alias": "rose"}, {"namespace": "fr", "alias": "rose"}])
 
@@ -70,6 +70,6 @@ if __name__ == "__main__":
     print("sys.platform: " + sys.platform)
     print("sys.version: " + sys.version.replace("\n", " "))
     print("sqlite3.sqlite_version: " + sqlite3.sqlite_version)
-    
+
     _test(make_seqrepo(writeable=False))
     _test(make_seqrepo(writeable=True))

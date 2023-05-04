@@ -1,6 +1,5 @@
 import re
 
-
 ncbi_defline_re = re.compile(r"(?P<namespace>ref)\|(?P<alias>[^|]+)")
 invalid_alias_chars_re = re.compile(r"[^-+./_\w]")
 

@@ -1,7 +1,6 @@
+import pytest
 import six
 from six.moves import StringIO
-
-import pytest
 
 from biocommons.seqrepo.fastaiter import FastaIter
 
@@ -74,4 +73,3 @@ def test_multiline():
     # should be empty now
     with pytest.raises(StopIteration):
         six.next(iterator)
-

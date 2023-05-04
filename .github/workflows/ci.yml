@@ -17,7 +17,45 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install dependencies
+        run: |
+            # Install / update package management tools
+            pip install -U pip setuptools
+            # Test dependencies
+            pip install -U pytest pytest-cov pytest-vcr black==23.3.0 flake8>=6.0,<7.0 isort>=5.0,<6.0
+            # Dump installed packages and versions
+            pip freeze
+
+      - name: Run linting tools
+        run: |
+          black -l 120 --check --diff .
+          isort --profile=black --check --diff .
+          flake8 src tests docs setup.py
+
+      - name: Comment PR
+        if: github.event_name == 'pull_request' && failure()
+        uses: marocchino/sticky-pull-request-comment@v1.1.0
+        with:
+          message: |
+            - Please format your Python code with [black](https://black.readthedocs.io): `make black`
+            - Please organize your imports [isorts](https://isort.readthedocs.io): `make isort`
+            - Please ensure that your code passes [flake8](https://flake8.pycqa.org/en/latest/): `make flake8`
+
+            You can trigger all lints locally by running `black -l 120 --check . && isort --profile=black --check . && flake8 src tests docs setup.py`
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   testing:
+    needs: linting
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,12 +74,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
           sudo apt install libhts-dev libhts3 libhtscodecs-dev libhtscodecs2 tabix
+          # Install / update package management tools.
           pip install -U pip setuptools
-          pip install -U pytest pytest-cov pytest-vcr
+          # Test dependencies
+          pip install -U pytest pytest-cov pytest-vcr black==23.3.0 flake8>=6.0,<7.0 isort>=5.0,<6.0
+          # Install the local package itself in editable mode.
           pip install -e .
+          # Dump installed packages and versions
+          pip freeze
 
       - name: Run tests
         run: |

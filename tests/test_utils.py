@@ -23,17 +23,11 @@ def test_parse_defline():
     assert parse_defline(defline, "refseq") == [{"namespace": "refseq", "alias": "NG_007107.2"}]
 
     defline = ">gi|568815364|ref|NT_077402.3| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1"
-    assert parse_defline(defline, "refseq") == [
-        {"namespace": "refseq", "alias": "NT_077402.3"}
-        ]
-    
+    assert parse_defline(defline, "refseq") == [{"namespace": "refseq", "alias": "NT_077402.3"}]
 
 
 def test_validate_aliases():
-    aliases = [
-        {"namespace": "refseq", "alias": "NM_012345.6"},
-        {"namespace": "Ensembl", "alias": "ENST012345.6"}
-        ]
+    aliases = [{"namespace": "refseq", "alias": "NM_012345.6"}, {"namespace": "Ensembl", "alias": "ENST012345.6"}]
 
     assert validate_aliases(aliases)  # okay
 
@@ -42,7 +36,6 @@ def test_validate_aliases():
 
     with pytest.raises(RuntimeError):
         validate_aliases([{"namespace": "refseq", "alias": "NM_012345"}])
-        
+
     with pytest.raises(RuntimeError):
         validate_aliases([{"namespace": "Ensembl", "alias": "ENST012345"}])
-        

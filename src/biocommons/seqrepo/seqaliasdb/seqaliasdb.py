@@ -1,4 +1,3 @@
-import itertools
 import logging
 import sqlite3
 
@@ -6,19 +5,19 @@ import pkg_resources
 import yoyo
 
 from .._internal.translate import translate_alias_records, translate_api2db
-from .._internal.logging_support import DuplicateFilter
 
 _logger = logging.getLogger(__name__)
-#_logger.addFilter(DuplicateFilter())
+# _logger.addFilter(DuplicateFilter())
 
 
 expected_schema_version = 1
 
 min_sqlite_version_info = (3, 8, 0)
-if sqlite3.sqlite_version_info < min_sqlite_version_info:    # pragma: no cover
+if sqlite3.sqlite_version_info < min_sqlite_version_info:  # pragma: no cover
     min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
-    msg = "{} requires sqlite3 >= {} but {} is installed".format(__package__, min_sqlite_version,
-                                                                 sqlite3.sqlite_version)
+    msg = "{} requires sqlite3 >= {} but {} is installed".format(
+        __package__, min_sqlite_version, sqlite3.sqlite_version
+    )
     raise ImportError(msg)
 
 
@@ -33,27 +32,30 @@ class SeqAliasDB(object):
         self._writeable = writeable
 
         if translate_ncbi_namespace is not None:
-            _logger.warning("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
+            _logger.warning(
+                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+            )
 
         if self._writeable:
             self._upgrade_db()
-        self._db = sqlite3.connect(self._db_path,
-                                   check_same_thread=check_same_thread,
-                                   detect_types=sqlite3.PARSE_DECLTYPES)
+        self._db = sqlite3.connect(
+            self._db_path, check_same_thread=check_same_thread, detect_types=sqlite3.PARSE_DECLTYPES
+        )
         self._db.row_factory = sqlite3.Row
         schema_version = self.schema_version()
         # if we're not at the expected schema version for this code, bail
-        if schema_version != expected_schema_version:    # pragma: no cover
-            raise RuntimeError("Upgrade required: Database schema"
-                               "version is {} and code expects {}".format(schema_version, expected_schema_version))
+        if schema_version != expected_schema_version:  # pragma: no cover
+            raise RuntimeError(
+                "Upgrade required: Database schema"
+                "version is {} and code expects {}".format(schema_version, expected_schema_version)
+            )
 
     # ############################################################################
     # Special methods
 
     def __contains__(self, seq_id):
         cursor = self._db.cursor()
-        cursor.execute("select exists(select 1 from seqalias where seq_id = ? limit 1) as ex",
-                             (seq_id, ))
+        cursor.execute("select exists(select 1 from seqalias where seq_id = ? limit 1) as ex", (seq_id,))
         c = cursor.fetchone()
         return True if c["ex"] else False
 
@@ -68,13 +70,14 @@ class SeqAliasDB(object):
         """return list of alias annotation records (dicts) for a given seq_id"""
         _logger.warning("SeqAliasDB::fetch_aliases() is deprecated; use find_aliases(seq_id=...) instead")
         if translate_ncbi_namespace is not None:
-            _logger.warning("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
-        return [dict(r) for r in self.find_aliases(seq_id=seq_id,
-                                                   current_only=current_only)]
+            _logger.warning(
+                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+            )
+        return [dict(r) for r in self.find_aliases(seq_id=seq_id, current_only=current_only)]
 
     def find_aliases(self, seq_id=None, namespace=None, alias=None, current_only=True, translate_ncbi_namespace=None):
         """returns iterator over alias annotation dicts that match criteria
-        
+
         The arguments, all optional, restrict the records that are
         returned.  Without arguments, all aliases are returned.
 
@@ -92,7 +95,9 @@ class SeqAliasDB(object):
             return "like" if "%" in s else "="
 
         if translate_ncbi_namespace is not None:
-            _logger.warning("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
+            _logger.warning(
+                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+            )
 
         if namespace is not None:
             ns_api2db = translate_api2db(namespace, alias)
@@ -154,16 +159,17 @@ class SeqAliasDB(object):
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         cursor = self._db.cursor()
         try:
-            cursor.execute("insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)", (seq_id, namespace,
-                                                                                                      alias))
+            cursor.execute(
+                "insert into seqalias (seq_id, namespace, alias) values (?, ?, ?)", (seq_id, namespace, alias)
+            )
             # success => new record
             return cursor.lastrowid
         except Exception as ex:
             # Every driver has own class for IntegrityError so we have to
             # investigate if the exception class name contains 'IntegrityError'
             # which we can ignore
-            if not type(ex).__name__.endswith('IntegrityError'):
-                raise(ex)
+            if not type(ex).__name__.endswith("IntegrityError"):
+                raise (ex)
         # IntegrityError fall-through
 
         # existing record is guaranteed to exist uniquely; fetchone() should always succeed
@@ -180,14 +186,12 @@ class SeqAliasDB(object):
         cursor.execute("update seqalias set is_current = 0 where seqalias_id = ?", [current_rec["seqalias_id"]])
         return self.store_alias(seq_id, namespace, alias)
 
-
-
-
     # ############################################################################
     # Internal methods
 
-    def _dump_aliases(self):    # pragma: no cover
+    def _dump_aliases(self):  # pragma: no cover
         import prettytable
+
         cursor = self._db.cursor()
         fields = "seqalias_id seq_id namespace alias added is_current".split()
         pt = prettytable.PrettyTable(field_names=fields)
@@ -199,7 +203,7 @@ class SeqAliasDB(object):
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""
         migration_path = "_data/migrations"
-        sqlite3.connect(self._db_path).close()    # ensure that it exists
+        sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
         migration_dir = pkg_resources.resource_filename(__package__, migration_path)

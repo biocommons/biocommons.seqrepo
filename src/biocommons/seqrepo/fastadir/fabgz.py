@@ -17,9 +17,7 @@ import stat
 import subprocess
 
 import six
-
 from pysam import FastaFile
-
 
 _logger = logging.getLogger(__name__)
 
@@ -48,13 +46,20 @@ def _find_bgzip():
     except AttributeError:
         raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
     except missing_file_exception:
-        raise RuntimeError("{exe} doesn't exist; you need to install htslib and tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe))
+        raise RuntimeError(
+            "{exe} doesn't exist; you need to install htslib and tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(
+                exe=exe
+            )
+        )
     except Exception:
         raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
-        raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
-            exe=exe, ev=bgzip_version, rv=min_bgzip_version))
+        raise RuntimeError(
+            "bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
+                exe=exe, ev=bgzip_version, rv=min_bgzip_version
+            )
+        )
     _logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
     return exe
 
@@ -104,12 +109,12 @@ class FabgzWriter(object):
     def store(self, seq_id, seq):
         def wrap_lines(seq, line_width):
             for i in range(0, len(seq), line_width):
-                yield seq[i:i + line_width]
+                yield seq[i : i + line_width]
 
         if seq_id not in self._added:
             self._fh.write(">" + seq_id + "\n")
-            for l in wrap_lines(seq, line_width):
-                self._fh.write(l + "\n")
+            for line in wrap_lines(seq, line_width):
+                self._fh.write(line + "\n")
             self._added.add(seq_id)
             _logger.debug("added seq_id {i}; length {l}".format(i=seq_id, l=len(seq)))
         return seq_id

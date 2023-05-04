@@ -1,15 +1,15 @@
-from collections.abc import Sequence
-from functools import lru_cache
 import logging
 import os
 import re
+from collections.abc import Sequence
+from functools import lru_cache
 
 import bioutils.digests
 from bioutils.digests import seq_seqhash as sha512t24u
 
 from .config import SEQREPO_LRU_CACHE_MAXSIZE
-from .seqaliasdb import SeqAliasDB
 from .fastadir import FastaDir
+from .seqaliasdb import SeqAliasDB
 
 _logger = logging.getLogger(__name__)
 
@@ -19,10 +19,9 @@ ct_n_aliases = 60000
 ct_n_residues = 1e9
 
 # namespace-alias separator
-nsa_sep = u":"
+nsa_sep = ":"
 
 uri_re = re.compile(r"([^:]+):(.+)")
-
 
 
 class SequenceProxy(Sequence):
@@ -49,7 +48,7 @@ class SequenceProxy(Sequence):
 
     def __getitem__(self, key):
         if isinstance(key, int):
-            key = slice(key, key+1)
+            key = slice(key, key + 1)
         if key.step is not None:
             raise ValueError("Only contiguous sequence slices are supported")
         return self._fetch(key.start, key.stop)
@@ -93,7 +92,15 @@ class SeqRepo(object):
 
     """
 
-    def __init__(self, root_dir, writeable=False, upcase=True, translate_ncbi_namespace=None, check_same_thread=False, use_sequenceproxy=True):
+    def __init__(
+        self,
+        root_dir,
+        writeable=False,
+        upcase=True,
+        translate_ncbi_namespace=None,
+        check_same_thread=False,
+        use_sequenceproxy=True,
+    ):
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -112,12 +119,12 @@ class SeqRepo(object):
             raise OSError("Unable to open SeqRepo directory {}".format(self._root_dir))
 
         self.sequences = FastaDir(self._seq_path, writeable=self._writeable, check_same_thread=self._check_same_thread)
-        self.aliases = SeqAliasDB(self._db_path,
-                                  writeable=self._writeable,
-                                  check_same_thread=self._check_same_thread)
+        self.aliases = SeqAliasDB(self._db_path, writeable=self._writeable, check_same_thread=self._check_same_thread)
 
         if translate_ncbi_namespace is not None:
-            _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
+            _logger.warn(
+                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+            )
 
     def __contains__(self, nsa):
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
@@ -153,17 +160,18 @@ class SeqRepo(object):
         self.sequences.commit()
         self.aliases.commit()
         if self._pending_sequences + self._pending_aliases > 0:
-            _logger.info("Committed {} sequences ({} residues) and {} aliases".format(
-                self._pending_sequences, self._pending_sequences_len, self._pending_aliases))
+            _logger.info(
+                "Committed {} sequences ({} residues) and {} aliases".format(
+                    self._pending_sequences, self._pending_sequences_len, self._pending_aliases
+                )
+            )
         self._pending_sequences = 0
         self._pending_sequences_len = 0
         self._pending_aliases = 0
 
-
     def fetch(self, alias, start=None, end=None, namespace=None):
         seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
         return self.sequences.fetch(seq_id, start, end)
-
 
     def fetch_uri(self, uri, start=None, end=None):
         """fetch sequence for URI/CURIE of the form namespace:alias, such as
@@ -173,7 +181,6 @@ class SeqRepo(object):
 
         namespace, alias = uri_re.match(uri).groups()
         return self.fetch(alias=alias, namespace=namespace, start=start, end=end)
-
 
     def store(self, seq, nsaliases):
         """nsaliases is a list of dicts, like:
@@ -191,8 +198,9 @@ class SeqRepo(object):
 
         try:
             seqhash = sha512t24u(seq)
-        except Exception as e:
+        except Exception:
             import pprint
+
             _logger.critical("Exception raised for " + pprint.pformat(nsaliases))
             raise
         seq_id = seqhash
@@ -204,10 +212,11 @@ class SeqRepo(object):
             l=len(seq),
             na=len(nsaliases),
             nsa_sep=nsa_sep,
-            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases))
+            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases),
+        )
         if seq_id not in self.sequences:
             _logger.info("Storing " + msg)
-            if len(seq) > ct_n_residues:    # pragma: no cover
+            if len(seq) > ct_n_residues:  # pragma: no cover
                 _logger.debug("Precommit for large sequence")
                 self.commit()
             self.sequences.store(seq_id, seq)
@@ -230,13 +239,17 @@ class SeqRepo(object):
                 self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
             n_aliases_added += len(upd_tuples)
-        if (self._pending_sequences > ct_n_seqs or self._pending_aliases > ct_n_aliases
-                or self._pending_sequences_len > ct_n_residues):    # pragma: no cover
-            _logger.info("Hit commit thresholds ({self._pending_sequences} sequences, "
-                        "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self))
+        if (
+            self._pending_sequences > ct_n_seqs
+            or self._pending_aliases > ct_n_aliases
+            or self._pending_sequences_len > ct_n_residues
+        ):  # pragma: no cover
+            _logger.info(
+                "Hit commit thresholds ({self._pending_sequences} sequences, "
+                "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(self=self)
+            )
             self.commit()
         return n_seqs_added, n_aliases_added
-
 
     def translate_alias(self, alias, namespace=None, target_namespaces=None, translate_ncbi_namespace=None):
         """given an alias and optional namespace, return a list of all other
@@ -245,7 +258,9 @@ class SeqRepo(object):
         """
 
         if translate_ncbi_namespace is not None:
-            _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
+            _logger.warn(
+                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+            )
         seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
         aliases = self.aliases.find_aliases(seq_id=seq_id)
         if target_namespaces:
@@ -253,23 +268,21 @@ class SeqRepo(object):
         aliases = [nsa_sep.join([a["namespace"], a["alias"]]) for a in aliases]
         return aliases
 
-
     def translate_identifier(self, identifier, target_namespaces=None, translate_ncbi_namespace=None):
         """Given a string identifier, return a list of aliases (as
         identifiers) that refer to the same sequence.
 
         """
         if translate_ncbi_namespace is not None:
-            _logger.warn("translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed")
+            _logger.warn(
+                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+            )
 
         namespace, alias = identifier.split(nsa_sep) if nsa_sep in identifier else (None, identifier)
-        return self.translate_alias(alias=alias,
-                                       namespace=namespace,
-                                       target_namespaces=target_namespaces)
-
+        return self.translate_alias(alias=alias, namespace=namespace, target_namespaces=target_namespaces)
 
     ############################################################################
-    # Internal Methods 
+    # Internal Methods
 
     @lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def _get_unique_seqid(self, alias, namespace):
@@ -288,7 +301,6 @@ class SeqRepo(object):
             raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
         return seq_ids.pop()
 
-
     def _update_digest_aliases(self, seq_id, seq):
 
         """compute digest aliases for seq and update; returns number of digest
@@ -301,22 +313,10 @@ class SeqRepo(object):
 
         ir = bioutils.digests.seq_vmc_identifier(seq)
         seq_aliases = [
-            {
-                "namespace": ir["namespace"],
-                "alias": ir["accession"],
-            },
-            {
-                "namespace": "SHA1",
-                "alias": bioutils.digests.seq_sha1(seq)
-            },
-            {
-                "namespace": "MD5",
-                "alias": bioutils.digests.seq_md5(seq)
-            },
-            {
-                "namespace": "SEGUID",
-                "alias": bioutils.digests.seq_seguid(seq)
-            },
+            {"namespace": ir["namespace"], "alias": ir["accession"]},
+            {"namespace": "SHA1", "alias": bioutils.digests.seq_sha1(seq)},
+            {"namespace": "MD5", "alias": bioutils.digests.seq_md5(seq)},
+            {"namespace": "SEGUID", "alias": bioutils.digests.seq_seguid(seq)},
         ]
         for sa in seq_aliases:
             self.aliases.store_alias(seq_id=seq_id, **sa)
