@@ -73,6 +73,9 @@ class FabgzReader(object):
     def __init__(self, filename):
         self._fh = FastaFile(filename)
 
+    def __del__(self):
+        self._fh.close()
+
     def fetch(self, seq_id, start=None, end=None):
         return self._fh.fetch(seq_id.encode("ascii"), start, end)
 
