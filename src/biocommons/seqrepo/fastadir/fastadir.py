@@ -38,7 +38,6 @@ class LockableFabgzReader(contextlib.AbstractContextManager):
     def __init__(self, path):
         self.lock = threading.Lock()
         self.fabgz_reader = FabgzReader(path)
-        # super().__init__(*args, **kwargs)
 
     def __enter__(self):
         self.lock.acquire()
@@ -151,17 +150,10 @@ class FastaDir(BaseReader, BaseWriter):
             self.commit()
 
         path = os.path.join(self._root_dir, rec["relpath"])
-        _logger.info(
-            "path: %s, seq_id: %s, start: %s, end: %s",
-            path, seq_id, start, end)
-
-        # fabgz = self._open_for_reading(path)
-        # return fabgz.fetch(seq_id, start, end)
 
         with self._open_for_reading(path) as fabgz:
             seq = fabgz.fetch(seq_id, start, end)
         return seq
-
 
     @functools.lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def fetch_seqinfo(self, seq_id):
@@ -248,16 +240,16 @@ class FastaDir(BaseReader, BaseWriter):
 
     @functools.lru_cache()
     def _open_for_reading(self, path):
+        """
+        Opens a FabgzReader to path, wraps in a LockableFabgzReader for use in context managers.
+        Places it in an LRU cache so file is only opened once per FastaDir object. Caller must
+        lock the LockableFabgzReader or otherwise handle concurrent access if sharing between
+        in-process concurrent execution threads, such as asyncio (e.g. WSGI/ASGI web servers)
+        """
         _logger.debug("Opening for reading: %s", path)
         if not os.path.exists(path):
             _logger.error("_open_for_reading path does not exist: %s", path)
         return LockableFabgzReader(path)
-
-    # def _open_for_reading(self, path):
-    #     _logger.debug("Opening for reading: " + path)
-    #     if not os.path.exists(path):
-    #         _logger.error("_open_for_reading path does not exist: %s", path)
-    #     return FabgzReader(path)
 
     def _dump_aliases(self):
         import prettytable

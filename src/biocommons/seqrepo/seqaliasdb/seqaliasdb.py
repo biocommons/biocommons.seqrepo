@@ -61,6 +61,9 @@ class SeqAliasDB(object):
     # ############################################################################
     # Special methods
 
+    def __del__(self):
+        self._db.close()
+
     def __contains__(self, seq_id):
         cursor = self._db.cursor()
         cursor.execute(
