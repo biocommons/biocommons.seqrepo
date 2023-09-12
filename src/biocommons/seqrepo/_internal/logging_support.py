@@ -1,5 +1,6 @@
 import logging
 
+
 class DuplicateFilter:
     """
     Filters away duplicate log messages.
@@ -19,7 +20,9 @@ class DuplicateFilter:
 
     def __enter__(self):
         if not self.logger:
-            raise RuntimeError("DuplicateFilter used as context manager without specifying logger=... argument")
+            raise RuntimeError(
+                "DuplicateFilter used as context manager without specifying logger=... argument"
+            )
         self.logger.addFilter(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):

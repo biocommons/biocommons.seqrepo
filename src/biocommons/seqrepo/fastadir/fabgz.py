@@ -17,9 +17,7 @@ import stat
 import subprocess
 
 import six
-
 from pysam import FastaFile
-
 
 _logger = logging.getLogger(__name__)
 
@@ -30,10 +28,17 @@ min_bgzip_version_info = (1, 2, 1)
 
 def _get_bgzip_version(exe):
     """return bgzip version as string"""
-    p = subprocess.Popen([exe, "-h"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    p = subprocess.Popen(
+        [exe, "-h"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
     output = p.communicate()
     version_line = output[0].splitlines()[1]
-    version = re.match(r"(?:Version:|bgzip \(htslib\))\s+(\d+\.\d+(\.\d+)?)", version_line).group(1)
+    version = re.match(
+        r"(?:Version:|bgzip \(htslib\))\s+(\d+\.\d+(\.\d+)?)", version_line
+    ).group(1)
     return version
 
 
@@ -41,20 +46,31 @@ def _find_bgzip():
     """return path to bgzip if found and meets version requirements, else exception"""
     missing_file_exception = OSError if six.PY2 else FileNotFoundError
     min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
-    exe = os.environ.get("SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip")
+    exe = os.environ.get(
+        "SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip"
+    )
 
     try:
         bgzip_version = _get_bgzip_version(exe)
     except AttributeError:
-        raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
+        raise RuntimeError(
+            "Didn't find version string in bgzip executable ({exe})".format(exe=exe)
+        )
     except missing_file_exception:
-        raise RuntimeError("{exe} doesn't exist; you need to install htslib and tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe))
+        raise RuntimeError(
+            "{exe} doesn't exist; you need to install htslib and tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(
+                exe=exe
+            )
+        )
     except Exception:
         raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
-        raise RuntimeError("bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
-            exe=exe, ev=bgzip_version, rv=min_bgzip_version))
+        raise RuntimeError(
+            "bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
+                exe=exe, ev=bgzip_version, rv=min_bgzip_version
+            )
+        )
     _logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
     return exe
 
@@ -93,9 +109,16 @@ class FabgzWriter(object):
 
         self._bgzip_exe = _find_bgzip()
 
-        files = [self.filename, self.filename + ".fai", self.filename + ".gzi", self._basepath]
+        files = [
+            self.filename,
+            self.filename + ".fai",
+            self.filename + ".gzi",
+            self._basepath,
+        ]
         if any(os.path.exists(fn) for fn in files):
-            raise RuntimeError("One or more target files already exists ({})".format(", ".join(files)))
+            raise RuntimeError(
+                "One or more target files already exists ({})".format(", ".join(files))
+            )
 
         self._fh = io.open(self._basepath, encoding="ascii", mode="w")
         _logger.debug("opened " + self.filename + " for writing")
@@ -104,7 +127,7 @@ class FabgzWriter(object):
     def store(self, seq_id, seq):
         def wrap_lines(seq, line_width):
             for i in range(0, len(seq), line_width):
-                yield seq[i:i + line_width]
+                yield seq[i : i + line_width]
 
         if seq_id not in self._added:
             self._fh.write(">" + seq_id + "\n")
@@ -128,9 +151,15 @@ class FabgzWriter(object):
             os.chmod(self.filename + ".fai", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
             os.chmod(self.filename + ".gzi", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
-            _logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
+            _logger.info(
+                "{} written; added {} sequences".format(self.filename, len(self._added))
+            )
 
     def __del__(self):
         if self._fh is not None:
-            _logger.error("FabgzWriter({}) was not explicitly closed; data may be lost".format(self.filename))
+            _logger.error(
+                "FabgzWriter({}) was not explicitly closed; data may be lost".format(
+                    self.filename
+                )
+            )
             self.close()

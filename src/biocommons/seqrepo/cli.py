@@ -24,36 +24,46 @@ import pprint
 import re
 import shutil
 import stat
-import sys
 import subprocess
+import sys
 import tempfile
-
 
 import bioutils.assemblies
 import bioutils.seqfetcher
 import six
 import tqdm
 
-from . import __version__, SeqRepo
+from . import SeqRepo, __version__
 from .fastaiter import FastaIter
 from .utils import parse_defline, validate_aliases
-
 
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 DEFAULT_INSTANCE_NAME_RW = "master"
 DEFAULT_INSTANCE_NAME_RO = "latest"
 
-instance_name_new_re = re.compile(r"^20[12]\d-\d\d-\d\d$")  # smells like a new datestamp, 2017-01-17
-instance_name_old_re = re.compile(r"^20[12]1\d\d\d\d\d$")   # smells like an old datestamp, 20170117
-instance_name_re = re.compile(r"^20[12]\d-?\d\d-?\d\d$")    # smells like a datestamp, 20170117 or 2017-01-17
+instance_name_new_re = re.compile(
+    r"^20[12]\d-\d\d-\d\d$"
+)  # smells like a new datestamp, 2017-01-17
+instance_name_old_re = re.compile(
+    r"^20[12]1\d\d\d\d\d$"
+)  # smells like an old datestamp, 20170117
+instance_name_re = re.compile(
+    r"^20[12]\d-?\d\d-?\d\d$"
+)  # smells like a datestamp, 20170117 or 2017-01-17
 
 _logger = logging.getLogger(__name__)
 
 
 def _get_remote_instances(opts):
-    line_re = re.compile(r"d[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)")
-    rsync_cmd = [opts.rsync_exe, "--no-motd", "--copy-dirlinks",
-                 opts.remote_host + "::seqrepo"]
+    line_re = re.compile(
+        r"d[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)"
+    )
+    rsync_cmd = [
+        opts.rsync_exe,
+        "--no-motd",
+        "--copy-dirlinks",
+        opts.remote_host + "::seqrepo",
+    ]
     _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
     lines = subprocess.check_output(rsync_cmd).decode().splitlines()[1:]
     dirs = (m.group(1) for m in (line_re.match(l) for l in lines) if m)
@@ -78,12 +88,30 @@ def parse_arguments():
     top_p = argparse.ArgumentParser(
         description=__doc__.split("\n\n")[0],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        epilog="seqrepo " + __version__ + ". See https://github.com/biocommons/biocommons.seqrepo for more information")
+        epilog="seqrepo "
+        + __version__
+        + ". See https://github.com/biocommons/biocommons.seqrepo for more information",
+    )
     top_p.add_argument("--dry-run", "-n", default=False, action="store_true")
-    top_p.add_argument("--remote-host", default="dl.biocommons.org", help="rsync server host")
-    top_p.add_argument("--root-directory", "-r", default=SEQREPO_ROOT_DIR, help="seqrepo root directory (SEQREPO_ROOT_DIR)")
-    top_p.add_argument("--rsync-exe", default="/usr/bin/rsync", help="path to rsync executable")
-    top_p.add_argument("--verbose", "-v", action="count", default=0, help="be verbose; multiple accepted")
+    top_p.add_argument(
+        "--remote-host", default="dl.biocommons.org", help="rsync server host"
+    )
+    top_p.add_argument(
+        "--root-directory",
+        "-r",
+        default=SEQREPO_ROOT_DIR,
+        help="seqrepo root directory (SEQREPO_ROOT_DIR)",
+    )
+    top_p.add_argument(
+        "--rsync-exe", default="/usr/bin/rsync", help="path to rsync executable"
+    )
+    top_p.add_argument(
+        "--verbose",
+        "-v",
+        action="count",
+        default=0,
+        help="be verbose; multiple accepted",
+    )
     top_p.add_argument("--version", action="version", version=__version__)
 
     # dest and required bits are to work around a bug in the Python 3 version of argparse
@@ -95,119 +123,197 @@ def parse_arguments():
 
     # add-assembly-names
     ap = subparsers.add_parser(
-        "add-assembly-names", help="add assembly aliases (from bioutils.assemblies) to existing sequences")
+        "add-assembly-names",
+        help="add assembly aliases (from bioutils.assemblies) to existing sequences",
+    )
     ap.set_defaults(func=add_assembly_names)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RW, help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name",
+        "-i",
+        default=DEFAULT_INSTANCE_NAME_RW,
+        help="instance name; must be writeable (i.e., not a snapshot)",
+    )
     ap.add_argument(
-        "--partial-load", "-p", default=False, action="store_true", help="assign assembly aliases even if some sequences are missing")
+        "--partial-load",
+        "-p",
+        default=False,
+        action="store_true",
+        help="assign assembly aliases even if some sequences are missing",
+    )
     ap.add_argument(
-        "--reload-all", "-r", default=False, action="store_true", help="reload all assemblies, not just missing ones")
+        "--reload-all",
+        "-r",
+        default=False,
+        action="store_true",
+        help="reload all assemblies, not just missing ones",
+    )
 
     # export
     ap = subparsers.add_parser("export", help="export sequences")
     ap.set_defaults(func=export)
-    ap.add_argument("ALIASES",
-                    nargs="*",
-                    help="specific aliases to export")
-    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
+    ap.add_argument("ALIASES", nargs="*", help="specific aliases to export")
+    ap.add_argument(
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name"
+    )
     ap.add_argument(
         "--namespace",
         "-n",
-        help="namespace name (e.g., refseq, NCBI, Ensembl, LRG)", )
+        help="namespace name (e.g., refseq, NCBI, Ensembl, LRG)",
+    )
 
     # export aliases
     ap = subparsers.add_parser("export-aliases", help="export aliases")
     ap.set_defaults(func=export_aliases)
-    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
+    ap.add_argument(
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name"
+    )
     ap.add_argument(
         "--namespace",
         "-n",
-        help="namespace name (e.g., refseq, NCBI, Ensembl, LRG)", )
+        help="namespace name (e.g., refseq, NCBI, Ensembl, LRG)",
+    )
 
     # fetch-load
-    ap = subparsers.add_parser("fetch-load", help="fetch remote sequences by accession and load them (low-throughput!)")
+    ap = subparsers.add_parser(
+        "fetch-load",
+        help="fetch remote sequences by accession and load them (low-throughput!)",
+    )
     ap.set_defaults(func=fetch_load)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RW, help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name",
+        "-i",
+        default=DEFAULT_INSTANCE_NAME_RW,
+        help="instance name; must be writeable (i.e., not a snapshot)",
+    )
     ap.add_argument(
         "accessions",
         nargs="+",
-        help="accessions (NCBI or Ensembl)", )
+        help="accessions (NCBI or Ensembl)",
+    )
     ap.add_argument(
         "--namespace",
         "-n",
         required=True,
-        help="namespace name (e.g., NCBI, Ensembl, LRG)", )
+        help="namespace name (e.g., NCBI, Ensembl, LRG)",
+    )
 
     # init
     ap = subparsers.add_parser("init", help="initialize seqrepo directory")
     ap.set_defaults(func=init)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RW, help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name",
+        "-i",
+        default=DEFAULT_INSTANCE_NAME_RW,
+        help="instance name; must be writeable (i.e., not a snapshot)",
+    )
 
     # list-local-instances
-    ap = subparsers.add_parser("list-local-instances", help="list local seqrepo instances")
+    ap = subparsers.add_parser(
+        "list-local-instances", help="list local seqrepo instances"
+    )
     ap.set_defaults(func=list_local_instances)
 
     # list-remote-instances
-    ap = subparsers.add_parser("list-remote-instances", help="list remote seqrepo instances")
+    ap = subparsers.add_parser(
+        "list-remote-instances", help="list remote seqrepo instances"
+    )
     ap.set_defaults(func=list_remote_instances)
 
     # load
     ap = subparsers.add_parser("load", help="load a single fasta file")
     ap.set_defaults(func=load)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RW, help="instance name; must be writeable (i.e., not a snapshot)")
+        "--instance-name",
+        "-i",
+        default=DEFAULT_INSTANCE_NAME_RW,
+        help="instance name; must be writeable (i.e., not a snapshot)",
+    )
     ap.add_argument(
         "fasta_files",
         nargs="+",
-        help="fasta files to load (compressed okay)", )
+        help="fasta files to load (compressed okay)",
+    )
     ap.add_argument(
         "--namespace",
         "-n",
         required=True,
-        help="namespace name (e.g., NCBI, Ensembl, LRG)", )
+        help="namespace name (e.g., NCBI, Ensembl, LRG)",
+    )
 
     # pull
-    ap = subparsers.add_parser("pull", help="pull incremental update from seqrepo mirror")
+    ap = subparsers.add_parser(
+        "pull", help="pull incremental update from seqrepo mirror"
+    )
     ap.set_defaults(func=pull)
     ap.add_argument("--instance-name", "-i", default=None, help="instance name")
-    ap.add_argument("--update-latest", "-l", default=False, action="store_true", help="set latest symlink to point to this instance")
+    ap.add_argument(
+        "--update-latest",
+        "-l",
+        default=False,
+        action="store_true",
+        help="set latest symlink to point to this instance",
+    )
 
     # show-status
     ap = subparsers.add_parser("show-status", help="show seqrepo status")
     ap.set_defaults(func=show_status)
-    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
+    ap.add_argument(
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name"
+    )
 
     # snapshot
-    ap = subparsers.add_parser("snapshot", help="create a new read-only seqrepo snapshot")
+    ap = subparsers.add_parser(
+        "snapshot", help="create a new read-only seqrepo snapshot"
+    )
     ap.set_defaults(func=snapshot)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RW, help="instance name; must be writeable")
-    ap.add_argument("--destination-name", "-d",
-                    default=datetime.datetime.utcnow().strftime("%F"),
-                    help="destination directory name (must not already exist)")
+        "--instance-name",
+        "-i",
+        default=DEFAULT_INSTANCE_NAME_RW,
+        help="instance name; must be writeable",
+    )
+    ap.add_argument(
+        "--destination-name",
+        "-d",
+        default=datetime.datetime.utcnow().strftime("%F"),
+        help="destination directory name (must not already exist)",
+    )
 
     # start-shell
-    ap = subparsers.add_parser("start-shell", help="start interactive shell with initialized seqrepo")
+    ap = subparsers.add_parser(
+        "start-shell", help="start interactive shell with initialized seqrepo"
+    )
     ap.set_defaults(func=start_shell)
-    ap.add_argument("--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name")
+    ap.add_argument(
+        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RO, help="instance name"
+    )
 
     # upgrade
     ap = subparsers.add_parser("upgrade", help="upgrade seqrepo database and directory")
     ap.set_defaults(func=upgrade)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RW, help="instance name; must be writeable")
+        "--instance-name",
+        "-i",
+        default=DEFAULT_INSTANCE_NAME_RW,
+        help="instance name; must be writeable",
+    )
 
     # update digests
-    ap = subparsers.add_parser("update-digests", help="update computed digests in place")
+    ap = subparsers.add_parser(
+        "update-digests", help="update computed digests in place"
+    )
     ap.set_defaults(func=update_digests)
     ap.add_argument(
-        "--instance-name", "-i", default=DEFAULT_INSTANCE_NAME_RW, help="instance name; must be writeable")
+        "--instance-name",
+        "-i",
+        default=DEFAULT_INSTANCE_NAME_RW,
+        help="instance name; must be writeable",
+    )
 
     # update latest (symlink)
-    ap = subparsers.add_parser("update-latest", help="create symlink `latest` to newest seqrepo instance")
+    ap = subparsers.add_parser(
+        "update-latest", help="create symlink `latest` to newest seqrepo instance"
+    )
     ap.set_defaults(func=update_latest)
 
     opts = top_p.parse_args()
@@ -215,6 +321,7 @@ def parse_arguments():
 
 
 ############################################################################
+
 
 def add_assembly_names(opts):
     """add assembly names as aliases to existing sequences
@@ -245,38 +352,67 @@ def add_assembly_names(opts):
     if opts.reload_all:
         assemblies_to_load = sorted(assemblies)
     else:
-        namespaces = [r["namespace"] for r in sr.aliases._db.execute("select distinct namespace from seqalias")]
+        namespaces = [
+            r["namespace"]
+            for r in sr.aliases._db.execute("select distinct namespace from seqalias")
+        ]
         assemblies_to_load = sorted(k for k in assemblies if k not in namespaces)
     _logger.info("{} assemblies to load".format(len(assemblies_to_load)))
 
-    ncbi_alias_map = {r["alias"]: r["seq_id"] for r in sr.aliases.find_aliases(namespace="NCBI", current_only=False)}
+    ncbi_alias_map = {
+        r["alias"]: r["seq_id"]
+        for r in sr.aliases.find_aliases(namespace="NCBI", current_only=False)
+    }
 
     for assy_name in tqdm.tqdm(assemblies_to_load, unit="assembly"):
         _logger.debug("loading " + assy_name)
         sequences = assemblies[assy_name]["sequences"]
         eq_sequences = [s for s in sequences if s["relationship"] in ("=", "<>")]
         if not eq_sequences:
-            _logger.info("No '=' sequences to load for {an}; skipping".format(an=assy_name))
+            _logger.info(
+                "No '=' sequences to load for {an}; skipping".format(an=assy_name)
+            )
             continue
 
         # all assembled-molecules (1..22, X, Y, MT) have ncbi aliases in seqrepo
-        not_in_seqrepo = [s["refseq_ac"] for s in eq_sequences if s["refseq_ac"] not in ncbi_alias_map]
+        not_in_seqrepo = [
+            s["refseq_ac"] for s in eq_sequences if s["refseq_ac"] not in ncbi_alias_map
+        ]
         if not_in_seqrepo:
-            _logger.warning("Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
-                an=assy_name, n=len(not_in_seqrepo), opts=opts, acs=", ".join(not_in_seqrepo[:5]+["..."]), seqrepo_dir=seqrepo_dir))
+            _logger.warning(
+                "Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
+                    an=assy_name,
+                    n=len(not_in_seqrepo),
+                    opts=opts,
+                    acs=", ".join(not_in_seqrepo[:5] + ["..."]),
+                    seqrepo_dir=seqrepo_dir,
+                )
+            )
             if not opts.partial_load:
-                _logger.warning("Skipping {an} (-p to enable partial loading)".format(an=assy_name))
+                _logger.warning(
+                    "Skipping {an} (-p to enable partial loading)".format(an=assy_name)
+                )
                 continue
-            
+
         eq_sequences = [es for es in eq_sequences if es["refseq_ac"] in ncbi_alias_map]
-        _logger.info("Loading {n} new accessions for assembly {an}".format(an=assy_name, n=len(eq_sequences)))
+        _logger.info(
+            "Loading {n} new accessions for assembly {an}".format(
+                an=assy_name, n=len(eq_sequences)
+            )
+        )
 
         for s in eq_sequences:
             seq_id = ncbi_alias_map[s["refseq_ac"]]
-            aliases = [{"namespace": assy_name, "alias": a} for a in [s["name"]] + s["aliases"]]
+            aliases = [
+                {"namespace": assy_name, "alias": a} for a in [s["name"]] + s["aliases"]
+            ]
             for alias in aliases:
                 sr.aliases.store_alias(seq_id=seq_id, **alias)
-                _logger.debug("Added assembly alias {a[namespace]}:{a[alias]} for {seq_id}".format(a=alias, seq_id=seq_id))
+                _logger.debug(
+                    "Added assembly alias {a[namespace]}:{a[alias]} for {seq_id}".format(
+                        a=alias, seq_id=seq_id
+                    )
+                )
         sr.commit()
 
 
@@ -285,50 +421,64 @@ def export(opts):
     sr = SeqRepo(seqrepo_dir)
 
     if opts.ALIASES:
+
         def alias_generator():
             for alias in set(opts.ALIASES):
-                yield from sr.aliases.find_aliases(namespace=opts.namespace,  # None okay
-                                                   alias=alias,
-                                                   translate_ncbi_namespace=True)
+                yield from sr.aliases.find_aliases(
+                    namespace=opts.namespace,  # None okay
+                    alias=alias,
+                    translate_ncbi_namespace=True,
+                )
+
         def _rec_iterator():
             """yield (srec, [arec]) tuples to export"""
-            grouped_alias_iterator = itertools.groupby(alias_generator(),
-                                                       key=lambda arec: (arec["seq_id"]))
+            grouped_alias_iterator = itertools.groupby(
+                alias_generator(), key=lambda arec: (arec["seq_id"])
+            )
             for seq_id, arecs in grouped_alias_iterator:
                 srec = sr.sequences.fetch_seqinfo(seq_id)
                 srec["seq"] = sr.sequences.fetch(seq_id)
                 yield srec, arecs
-        
+
     elif opts.namespace:
+
         def _rec_iterator():
             """yield (srec, [arec]) tuples to export"""
-            alias_iterator = sr.aliases.find_aliases(namespace=opts.namespace,
-                                                     translate_ncbi_namespace=True)
-            grouped_alias_iterator = itertools.groupby(alias_iterator,
-                                                       key=lambda arec: (arec["seq_id"]))
+            alias_iterator = sr.aliases.find_aliases(
+                namespace=opts.namespace, translate_ncbi_namespace=True
+            )
+            grouped_alias_iterator = itertools.groupby(
+                alias_iterator, key=lambda arec: (arec["seq_id"])
+            )
             for seq_id, arecs in grouped_alias_iterator:
                 srec = sr.sequences.fetch_seqinfo(seq_id)
                 srec["seq"] = sr.sequences.fetch(seq_id)
                 yield srec, arecs
+
     else:
+
         def _rec_iterator():
             yield from sr
 
     for srec, arecs in _rec_iterator():
         nsad = _convert_alias_records_to_ns_dict(arecs)
-        aliases = ["{ns}:{a}".format(ns=ns, a=a) for ns, aliases in sorted(nsad.items()) for a in aliases]
+        aliases = [
+            "{ns}:{a}".format(ns=ns, a=a)
+            for ns, aliases in sorted(nsad.items())
+            for a in aliases
+        ]
         print(">" + " ".join(aliases))
         for l in _wrap_lines(srec["seq"], 100):
             print(l)
-
-
 
 
 def export_aliases(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
     alias_iterator = sr.aliases.find_aliases(translate_ncbi_namespace=True)
-    grouped_alias_iterator = itertools.groupby(alias_iterator, key=lambda  arec: (arec["seq_id"]))
+    grouped_alias_iterator = itertools.groupby(
+        alias_iterator, key=lambda arec: (arec["seq_id"])
+    )
     for _, arecs in grouped_alias_iterator:
         if opts.namespace:
             if not any(arec for arec in arecs if arec["namespace"] == opts.namespace):
@@ -339,7 +489,7 @@ def export_aliases(opts):
         nsaliases.sort(key=lambda a: (not a.startswith("VMC:"), a))  # VMC first
         nsaliases[0] = nsaliases[0].replace("VMC:GS_", "GA4GH:SQ.")
         print("\t".join(nsaliases))
-        
+
 
 def fetch_load(opts):
     disable_bar = _logger.getEffectiveLevel() < logging.WARNING
@@ -364,8 +514,10 @@ def fetch_load(opts):
 def init(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     if os.path.exists(seqrepo_dir) and len(os.listdir(seqrepo_dir)) > 0:
-        raise IOError("{seqrepo_dir} exists and is not empty".format(seqrepo_dir=seqrepo_dir))
-    sr = SeqRepo(seqrepo_dir, writeable=True)    # flake8: noqa
+        raise IOError(
+            "{seqrepo_dir} exists and is not empty".format(seqrepo_dir=seqrepo_dir)
+        )
+    sr = SeqRepo(seqrepo_dir, writeable=True)  # flake8: noqa
 
 
 def list_local_instances(opts):
@@ -381,6 +533,7 @@ def list_remote_instances(opts):
     for i in instances:
         print("  " + i)
 
+
 def load(opts):
     # TODO: drop this test
     if opts.namespace == "-":
@@ -390,7 +543,9 @@ def load(opts):
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     if not os.path.isdir(seqrepo_dir):
-        raise RuntimeError(f"{seqrepo_dir}: You must manually initialize the repo first (with `seqrepo init`)")
+        raise RuntimeError(
+            f"{seqrepo_dir}: You must manually initialize the repo first (with `seqrepo init`)"
+        )
     sr = SeqRepo(seqrepo_dir, writeable=True)
 
     n_seqs_seen = n_seqs_added = n_aliases_added = 0
@@ -404,11 +559,16 @@ def load(opts):
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
         _logger.info("Opened " + fn)
-        seq_bar = tqdm.tqdm(FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False)
+        seq_bar = tqdm.tqdm(
+            FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False
+        )
         for defline, seq in seq_bar:
             n_seqs_seen += 1
-            seq_bar.set_description("sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
-                nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added))
+            seq_bar.set_description(
+                "sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
+                    nss=n_seqs_seen, nsa=n_seqs_added, naa=n_aliases_added
+                )
+            )
             aliases = parse_defline(defline, opts.namespace)
             validate_aliases(aliases)
             n_sa, n_aa = sr.store(seq, aliases)
@@ -422,7 +582,9 @@ def pull(opts):
     if opts.instance_name:
         instance_name = opts.instance_name
         if instance_name not in remote_instances:
-            raise KeyError("{}: not in list of remote instance names".format(instance_name))
+            raise KeyError(
+                "{}: not in list of remote instance names".format(instance_name)
+            )
     else:
         instance_name = remote_instances[-1]
         _logger.info("most recent seqrepo instance is " + instance_name)
@@ -433,12 +595,16 @@ def pull(opts):
         return
 
     tmp_dir = tempfile.mkdtemp(dir=opts.root_directory, prefix=instance_name + ".")
-    os.rmdir(tmp_dir)    # let rsync create it the directory
+    os.rmdir(tmp_dir)  # let rsync create it the directory
 
     cmd = [opts.rsync_exe, "-aHP", "--no-motd"]
     if local_instances:
         latest_local_instance = local_instances[-1]
-        cmd += ["--link-dest=" + os.path.join(opts.root_directory, latest_local_instance) + "/"]
+        cmd += [
+            "--link-dest="
+            + os.path.join(opts.root_directory, latest_local_instance)
+            + "/"
+        ]
     cmd += ["{h}::seqrepo/{i}/".format(h=opts.remote_host, i=instance_name), tmp_dir]
 
     _logger.debug("Executing: " + " ".join(cmd))
@@ -455,18 +621,32 @@ def show_status(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     tot_size = sum(
         os.path.getsize(os.path.join(dirpath, filename))
-        for dirpath, dirnames, filenames in os.walk(seqrepo_dir) for filename in filenames)
+        for dirpath, dirnames, filenames in os.walk(seqrepo_dir)
+        for filename in filenames
+    )
 
     sr = SeqRepo(seqrepo_dir)
     print("seqrepo {version}".format(version=__version__))
-    print("instance directory: {sr._root_dir}, {ts:.1f} GB".format(sr=sr, ts=tot_size / 1e9))
-    print("backends: fastadir (schema {fd_v}), seqaliasdb (schema {sa_v}) ".format(
-        fd_v=sr.sequences.schema_version(), sa_v=sr.aliases.schema_version()))
-    print("sequences: {ss[n_sequences]} sequences, {ss[tot_length]} residues, {ss[n_files]} files".format(
-        ss=sr.sequences.stats()))
     print(
-        "aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, {sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".
-        format(sa=sr.aliases.stats()))
+        "instance directory: {sr._root_dir}, {ts:.1f} GB".format(
+            sr=sr, ts=tot_size / 1e9
+        )
+    )
+    print(
+        "backends: fastadir (schema {fd_v}), seqaliasdb (schema {sa_v}) ".format(
+            fd_v=sr.sequences.schema_version(), sa_v=sr.aliases.schema_version()
+        )
+    )
+    print(
+        "sequences: {ss[n_sequences]} sequences, {ss[tot_length]} residues, {ss[n_files]} files".format(
+            ss=sr.sequences.stats()
+        )
+    )
+    print(
+        "aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, {sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(
+            sa=sr.aliases.stats()
+        )
+    )
     return sr
 
 
@@ -486,7 +666,10 @@ def snapshot(opts):
     dst_dir = os.path.realpath(dst_dir)
 
     if os.path.commonpath([src_dir, dst_dir]).startswith(src_dir):
-        raise RuntimeError("Cannot nest seqrepo directories " "({} is within {})".format(dst_dir, src_dir))
+        raise RuntimeError(
+            "Cannot nest seqrepo directories "
+            "({} is within {})".format(dst_dir, src_dir)
+        )
 
     if os.path.exists(dst_dir):
         raise IOError(dst_dir + ": File exists")
@@ -503,13 +686,21 @@ def snapshot(opts):
     os.chdir(src_dir)
 
     # make destination directories (walk is top-down)
-    for rp in (os.path.join(dirpath, dirname) for dirpath, dirnames, _ in os.walk(".") for dirname in dirnames):
+    for rp in (
+        os.path.join(dirpath, dirname)
+        for dirpath, dirnames, _ in os.walk(".")
+        for dirname in dirnames
+    ):
         dp = os.path.join(tmp_dir, rp)
         os.mkdir(dp)
 
     # hard link sequence files
-    for rp in (os.path.join(dirpath, filename) for dirpath, _, filenames in os.walk(".") for filename in filenames
-               if ".bgz" in filename):
+    for rp in (
+        os.path.join(dirpath, filename)
+        for dirpath, _, filenames in os.walk(".")
+        for filename in filenames
+        if ".bgz" in filename
+    ):
         dp = os.path.join(tmp_dir, rp)
         os.link(rp, dp)
 
@@ -526,8 +717,11 @@ def snapshot(opts):
         new_mode = mode & ~mode_aw
         os.chmod(p, new_mode)
 
-    for dp in (os.path.join(dirpath, dirent)
-               for dirpath, dirnames, filenames in os.walk(tmp_dir) for dirent in dirnames + filenames):
+    for dp in (
+        os.path.join(dirpath, dirent)
+        for dirpath, dirnames, filenames in os.walk(tmp_dir)
+        for dirent in dirnames + filenames
+    ):
         _drop_write(dp)
     _drop_write(tmp_dir)
     os.rename(tmp_dir, dst_dir)
@@ -540,10 +734,16 @@ def start_shell(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
     import IPython
-    IPython.embed(header="\n".join([
-        "seqrepo (https://github.com/biocommons/biocommons.seqrepo/)", "version: " + __version__,
-        "instance path: " + seqrepo_dir
-    ]))
+
+    IPython.embed(
+        header="\n".join(
+            [
+                "seqrepo (https://github.com/biocommons/biocommons.seqrepo/)",
+                "version: " + __version__,
+                "instance path: " + seqrepo_dir,
+            ]
+        )
+    )
 
 
 def upgrade(opts):
@@ -563,7 +763,9 @@ def update_latest(opts, mri=None):
     if not mri:
         instances = _get_local_instances(opts)
         if not instances:
-            _logger.error("No seqrepo instances in {opts.root_directory}".format(opts=opts))
+            _logger.error(
+                "No seqrepo instances in {opts.root_directory}".format(opts=opts)
+            )
             return
         mri = instances[-1]
     dst = os.path.join(opts.root_directory, "latest")
@@ -578,30 +780,35 @@ def update_latest(opts, mri=None):
 def main():
     opts = parse_arguments()
 
-    verbose_log_level = (logging.WARN if opts.verbose == 0 else
-                         logging.INFO if opts.verbose == 1 else
-                         logging.DEBUG)
+    verbose_log_level = (
+        logging.WARN
+        if opts.verbose == 0
+        else logging.INFO
+        if opts.verbose == 1
+        else logging.DEBUG
+    )
     logging.basicConfig(level=verbose_log_level)
     opts.func(opts)
 
 
-
-
 ############################################################################
 # INTERNAL
+
 
 def _convert_alias_records_to_ns_dict(records):
     """converts a set of alias db records to a dict like {ns: [aliases], ...}
     aliases are lexicographicaly sorted
     """
     records = sorted(records, key=lambda r: (r["namespace"], r["alias"]))
-    return {g: [r["alias"] for r in gi] for g, gi in itertools.groupby(records, key=lambda r: r["namespace"])}
+    return {
+        g: [r["alias"] for r in gi]
+        for g, gi in itertools.groupby(records, key=lambda r: r["namespace"])
+    }
+
 
 def _wrap_lines(seq, line_width):
     for i in range(0, len(seq), line_width):
-        yield seq[i:i + line_width]
-
-
+        yield seq[i : i + line_width]
 
 
 if __name__ == "__main__":

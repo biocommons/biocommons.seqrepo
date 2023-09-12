@@ -1,6 +1,5 @@
 import re
 
-
 ncbi_defline_re = re.compile(r"(?P<namespace>ref)\|(?P<alias>[^|]+)")
 invalid_alias_chars_re = re.compile(r"[^-+./_\w]")
 
@@ -35,7 +34,9 @@ def validate_aliases(aliases):
         namespace, alias = alias_rec["namespace"], alias_rec["alias"]
 
         if invalid_alias_chars_re.search(alias):
-            raise RuntimeError(f"alias {alias} contains invalid char (one of {invalid_alias_chars_re})")
+            raise RuntimeError(
+                f"alias {alias} contains invalid char (one of {invalid_alias_chars_re})"
+            )
 
         if namespace.startswith("Ensembl"):
             if alias.startswith("ENS") and "." not in alias:

@@ -17,7 +17,6 @@ import copy
 import datetime
 
 
-
 def translate_db2api(namespace, alias):
     """
     >>> translate_db2api("VMC", "GS_1234")
@@ -63,11 +62,10 @@ def translate_api2db(namespace, alias):
     return []
 
 
-
 def translate_alias_records(aliases_itr):
     """given an iterator of find_aliases results, return a stream with
     translated records"""
-    
+
     for arec in aliases_itr:
         yield arec
 
@@ -78,56 +76,70 @@ def translate_alias_records(aliases_itr):
             yield arec2
 
 
-
-
 if __name__ == "__main__":
     aliases = [
-        {'seqalias_id': 16,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': 'ncbiac/e',
-         'added': datetime.datetime(2020, 7, 6, 5, 27, 23),
-         'is_current': 1,
-         'namespace': 'Ensembl'},
-        {'seqalias_id': 16,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': 'ncbiac/e',
-         'added': datetime.datetime(2020, 7, 6, 5, 27, 23),
-         'is_current': 1,
-         'namespace': 'ensembl'},
-        {'seqalias_id': 3,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': 'be8a4c35767bb783a7b8b6dc04ba3718',
-         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
-         'is_current': 1,
-         'namespace': 'MD5'},
-        {'seqalias_id': 5,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': 'ncbiac',
-         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
-         'is_current': 1,
-         'namespace': 'NCBI'},
-        {'seqalias_id': 5,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': 'ncbiac',
-         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
-         'is_current': 1,
-         'namespace': 'refseq'},
-        {'seqalias_id': 4,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': '5W5mCzikufDcezdNTGKLa9zricw',
-         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
-         'is_current': 1,
-         'namespace': 'SEGUID'},
-        {'seqalias_id': 2,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': 'e56e660b38a4b9f0dc7b374d4c628b6bdceb89cc',
-         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
-         'is_current': 1,
-         'namespace': 'SHA1'},
-        {'seqalias_id': 1,
-         'seq_id': '9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'alias': 'GS_9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6',
-         'added': datetime.datetime(2020, 7, 6, 5, 10, 57),
-         'is_current': 1,
-         'namespace': 'VMC'}
+        {
+            "seqalias_id": 16,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "ncbiac/e",
+            "added": datetime.datetime(2020, 7, 6, 5, 27, 23),
+            "is_current": 1,
+            "namespace": "Ensembl",
+        },
+        {
+            "seqalias_id": 16,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "ncbiac/e",
+            "added": datetime.datetime(2020, 7, 6, 5, 27, 23),
+            "is_current": 1,
+            "namespace": "ensembl",
+        },
+        {
+            "seqalias_id": 3,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "be8a4c35767bb783a7b8b6dc04ba3718",
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "is_current": 1,
+            "namespace": "MD5",
+        },
+        {
+            "seqalias_id": 5,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "ncbiac",
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "is_current": 1,
+            "namespace": "NCBI",
+        },
+        {
+            "seqalias_id": 5,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "ncbiac",
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "is_current": 1,
+            "namespace": "refseq",
+        },
+        {
+            "seqalias_id": 4,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "5W5mCzikufDcezdNTGKLa9zricw",
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "is_current": 1,
+            "namespace": "SEGUID",
+        },
+        {
+            "seqalias_id": 2,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "e56e660b38a4b9f0dc7b374d4c628b6bdceb89cc",
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "is_current": 1,
+            "namespace": "SHA1",
+        },
+        {
+            "seqalias_id": 1,
+            "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "alias": "GS_9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "is_current": 1,
+            "namespace": "VMC",
+        },
     ]

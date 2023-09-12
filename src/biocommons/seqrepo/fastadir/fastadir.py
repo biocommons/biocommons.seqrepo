@@ -8,8 +8,6 @@ import time
 import pkg_resources
 import yoyo
 
-
-
 from ..config import SEQREPO_LRU_CACHE_MAXSIZE
 from .bases import BaseReader, BaseWriter
 from .fabgz import FabgzReader, FabgzWriter
@@ -65,23 +63,31 @@ class FastaDir(BaseReader, BaseWriter):
             os.makedirs(self._root_dir, exist_ok=True)
             self._upgrade_db()
 
-        self._db = sqlite3.connect(self._db_path,
-                                   check_same_thread=check_same_thread,
-                                   detect_types=sqlite3.PARSE_DECLTYPES)
+        self._db = sqlite3.connect(
+            self._db_path,
+            check_same_thread=check_same_thread,
+            detect_types=sqlite3.PARSE_DECLTYPES,
+        )
         schema_version = self.schema_version()
         self._db.row_factory = sqlite3.Row
 
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:
-            raise RuntimeError("""Upgrade required: Database schema
-            version is {} and code expects {}""".format(schema_version, expected_schema_version))
+            raise RuntimeError(
+                """Upgrade required: Database schema
+            version is {} and code expects {}""".format(
+                    schema_version, expected_schema_version
+                )
+            )
 
     # ############################################################################
     # Special methods
 
     def __contains__(self, seq_id):
-        c = self._fetch_one("select exists(select 1 from seqinfo where seq_id = ? limit 1) as ex",
-                             (seq_id, ))
+        c = self._fetch_one(
+            "select exists(select 1 from seqinfo where seq_id = ? limit 1) as ex",
+            (seq_id,),
+        )
 
         return True if c["ex"] else False
 
@@ -107,14 +113,16 @@ class FastaDir(BaseReader, BaseWriter):
             self._writing = None
 
     def fetch(self, seq_id, start=None, end=None):
-        """fetch sequence by seq_id, optionally with start, end bounds
-
-        """
+        """fetch sequence by seq_id, optionally with start, end bounds"""
         rec = self.fetch_seqinfo(seq_id)
 
         if self._writing and self._writing["relpath"] == rec["relpath"]:
-            _logger.warning("""Fetching from file opened for writing;
-            closing first ({})""".format(rec["relpath"]))
+            _logger.warning(
+                """Fetching from file opened for writing;
+            closing first ({})""".format(
+                    rec["relpath"]
+                )
+            )
             self.commit()
 
         path = os.path.join(self._root_dir, rec["relpath"])
@@ -123,10 +131,10 @@ class FastaDir(BaseReader, BaseWriter):
 
     @functools.lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def fetch_seqinfo(self, seq_id):
-        """fetch sequence info by seq_id
-
-        """
-        rec = self._fetch_one("""select * from seqinfo where seq_id = ? order by added desc""", [seq_id])
+        """fetch sequence info by seq_id"""
+        rec = self._fetch_one(
+            """select * from seqinfo where seq_id = ? order by added desc""", [seq_id]
+        )
 
         if rec is None:
             raise KeyError(seq_id)
@@ -175,8 +183,11 @@ class FastaDir(BaseReader, BaseWriter):
         self._writing["fabgz"].store(seq_id, seq)
         alpha = "".join(sorted(set(seq)))
         cursor = self._db.cursor()
-        cursor.execute("""insert into seqinfo (seq_id, len, alpha, relpath)
-                         values (?, ?, ?,?)""", (seq_id, len(seq), alpha, self._writing["relpath"]))
+        cursor.execute(
+            """insert into seqinfo (seq_id, len, alpha, relpath)
+                         values (?, ?, ?,?)""",
+            (seq_id, len(seq), alpha, self._writing["relpath"]),
+        )
         return seq_id
 
     # ############################################################################
@@ -190,7 +201,7 @@ class FastaDir(BaseReader, BaseWriter):
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""
         migration_path = "_data/migrations"
-        sqlite3.connect(self._db_path).close()    # ensure that it exists
+        sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
         migration_dir = pkg_resources.resource_filename(__package__, migration_path)
@@ -205,6 +216,7 @@ class FastaDir(BaseReader, BaseWriter):
 
     def _dump_aliases(self):
         import prettytable
+
         fields = "seq_id len alpha added relpath".split()
         pt = prettytable.PrettyTable(field_names=fields)
         cursor = self._db.cursor()
