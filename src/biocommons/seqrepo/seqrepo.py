@@ -100,6 +100,7 @@ class SeqRepo(object):
         translate_ncbi_namespace=None,
         check_same_thread=False,
         use_sequenceproxy=True,
+        fd_cache_size=0
     ):
         self._root_dir = root_dir
         self._upcase = upcase
@@ -122,6 +123,7 @@ class SeqRepo(object):
             self._seq_path,
             writeable=self._writeable,
             check_same_thread=self._check_same_thread,
+            fd_cache_size=fd_cache_size
         )
         self.aliases = SeqAliasDB(
             self._db_path,

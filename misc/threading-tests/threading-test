@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""test seqrepo for fd-exhaustion in threading context
+"""test seqrepo for file descriptor exhaustion, especially in threading context
 
 https://github.com/biocommons/biocommons.seqrepo/issues/112
 
@@ -11,8 +11,11 @@ import argparse
 import logging
 import queue
 import pathlib
+import random
 import threading
 import time
+
+from smart_open import open
 
 from biocommons.seqrepo import SeqRepo
 
@@ -42,9 +45,8 @@ def parse_args():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("-n", "--n-threads", type=int, default=1)
     ap.add_argument("-s", "--seqrepo-path", type=pathlib.Path, required=True)
-    ap.add_argument("-a", "--accessions-path", type=pathlib.Path, required=True)
     ap.add_argument("-m", "--max-accessions", type=int)
-    ap.add_argument("-l", "--lru-cache-size", type=int, default=0)
+    ap.add_argument("-f", "--fd-cache-size", type=int, default=0)
     opts = ap.parse_args()
     return opts
 
@@ -56,20 +58,15 @@ if __name__ == "__main__":
 
     opts = parse_args()    
  
-    sr = SeqRepo(opts.seqrepo_path)
-    sr.sequences._lru_cache_size = opts.lru_cache_size
-    sr.sequences._define_ofrc(opts.lru_cache_size)
-    _logger.info(f"{sr.sequences._lru_cache_size=}")
+    sr = SeqRepo(opts.seqrepo_path, fd_cache_size=opts.fd_cache_size)
     
-    acs = [ac.strip() for ac in opts.accessions_path.open()]
-    if opts.max_accessions is not None:
-        acs = acs[:opts.max_accessions]
+    acs = set(a["alias"] for a in sr.aliases.find_aliases(namespace="RefSeq", alias="NM_%"))
+    acs = random.sample(sorted(acs), opts.max_accessions or len(acs))
     q = queue.Queue()
     for ac in acs:
         q.put(ac)
     qs = q.qsize()
-        
-    _logger.info(f"Queued {qs} accessions from {opts.accessions_path}")
+    _logger.info(f"Queued {qs} accessions")
     
     _logger.info(f"Starting run with {opts.n_threads} threads")
     t0 = time.process_time()
@@ -81,4 +78,6 @@ if __name__ == "__main__":
     rate = float(qs) / td
     _logger.info(f"Fetched {qs} sequences in {td} s with {opts.n_threads} threads; {rate:.0f} seq/sec")
     
-    print(sr.sequences._open_for_reading_cached.cache_info())
+    if hasattr(sr.sequences._open_for_reading, "cache_info"):
+        print(sr.sequences._open_for_reading.cache_info())
+    
