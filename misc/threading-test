@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""test seqrepo for fd-exhaustion in threading context
+
+https://github.com/biocommons/biocommons.seqrepo/issues/112
+
+The idea: read a bunch of NMs on stdin. Fetch the sequence for each in a threading context.
+
+"""
+
+import argparse
+import logging
+import queue
+import pathlib
+import threading
+import time
+
+from biocommons.seqrepo import SeqRepo
+
+_logger = logging.getLogger()
+
+
+class Worker(threading.Thread):
+    def __init__(self, q: queue.Queue, sr: SeqRepo):
+        self.q = q
+        self.sr = sr
+        self.n = 0
+        super().__init__()
+
+    def run(self):
+        try:
+            while True:
+                ac = self.q.get(False)
+                sr.fetch(ac, 0, 5)
+                self.q.task_done()
+                self.n += 1
+        except queue.Empty:
+            _logger.info(f"{self}: Done; processed {self.n} accessions")
+            return
+
+
+def parse_args():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("-n", "--n-threads", type=int, default=1)
+    ap.add_argument("-s", "--seqrepo-path", type=pathlib.Path, required=True)
+    ap.add_argument("-a", "--accessions-path", type=pathlib.Path, required=True)
+    ap.add_argument("-m", "--max-accessions", type=int)
+    ap.add_argument("-l", "--lru-cache-size", type=int, default=0)
+    opts = ap.parse_args()
+    return opts
+
+if __name__ == "__main__":
+    import coloredlogs
+    import sys
+
+    coloredlogs.install(level="INFO")
+
+    opts = parse_args()    
+ 
+    sr = SeqRepo(opts.seqrepo_path)
+    sr.sequences._lru_cache_size = opts.lru_cache_size
+    sr.sequences._define_ofrc(opts.lru_cache_size)
+    _logger.info(f"{sr.sequences._lru_cache_size=}")
+    
+    acs = [ac.strip() for ac in opts.accessions_path.open()]
+    if opts.max_accessions is not None:
+        acs = acs[:opts.max_accessions]
+    q = queue.Queue()
+    for ac in acs:
+        q.put(ac)
+    qs = q.qsize()
+        
+    _logger.info(f"Queued {qs} accessions from {opts.accessions_path}")
+    
+    _logger.info(f"Starting run with {opts.n_threads} threads")
+    t0 = time.process_time()
+    for _ in range(opts.n_threads):
+        Worker(q=q, sr=sr).start()
+    q.join()
+    t1 = time.process_time()
+    td = t1 - t0
+    rate = float(qs) / td
+    _logger.info(f"Fetched {qs} sequences in {td} s with {opts.n_threads} threads; {rate:.0f} seq/sec")
+    
+    print(sr.sequences._open_for_reading_cached.cache_info())

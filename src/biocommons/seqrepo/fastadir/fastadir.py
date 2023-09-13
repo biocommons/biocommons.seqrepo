@@ -58,6 +58,7 @@ class FastaDir(BaseReader, BaseWriter):
         self._writing = None
         self._db = None
         self._writeable = writeable
+        self._lru_cache_size = 0
 
         if self._writeable:
             os.makedirs(self._root_dir, exist_ok=True)
@@ -209,10 +210,31 @@ class FastaDir(BaseReader, BaseWriter):
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
 
-    @functools.lru_cache()
+
+    ## =========
+    ## ↓↓ UNDER CONSTRUCTION ↓↓
+ 
     def _open_for_reading(self, path):
+        if self._lru_cache_size:
+            return self._open_for_reading_cached(path)
+        return self._open_for_reading_uncached(path)
+
+    # enable run-time setting of cache size
+    def _define_ofrc(self, cache_size):
+        @functools.lru_cache(maxsize=cache_size)
+        def ofrc(path):
+            return self._open_for_reading_uncached(path)
+        self._open_for_reading_cached = ofrc
+
+    @functools.lru_cache()
+    def _open_for_reading_cached_orig(self, path):
+        return self._open_for_reading_uncached(path)
+    
+    def _open_for_reading_uncached(self, path):
         _logger.debug("Opening for reading: " + path)
         return FabgzReader(path)
+ 
+    ## ==== END   
 
     def _dump_aliases(self):
         import prettytable
