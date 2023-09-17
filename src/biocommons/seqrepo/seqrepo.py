@@ -162,9 +162,7 @@ class SeqRepo(object):
             yield (srec, arecs)
 
     def __str__(self):
-        return "SeqRepo(root_dir={self._root_dir}, writeable={self._writeable})".format(
-            self=self
-        )
+        return "SeqRepo(root_dir={self._root_dir}, writeable={self._writeable})".format(self=self)
 
     def commit(self):
         self.sequences.commit()
@@ -219,16 +217,12 @@ class SeqRepo(object):
 
         # add sequence if not present
         n_seqs_added = n_aliases_added = 0
-        msg = (
-            "sh{nsa_sep}{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
-                seq_id=seq_id,
-                l=len(seq),
-                na=len(nsaliases),
-                nsa_sep=nsa_sep,
-                aliases=", ".join(
-                    "{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases
-                ),
-            )
+        msg = "sh{nsa_sep}{seq_id:.10s}... ({l} residues; {na} aliases {aliases})".format(
+            seq_id=seq_id,
+            l=len(seq),
+            na=len(nsaliases),
+            nsa_sep=nsa_sep,
+            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases),
         )
         if seq_id not in self.sequences:
             _logger.info("Storing " + msg)
@@ -246,17 +240,13 @@ class SeqRepo(object):
         # add/update external aliases for new and existing sequences
         # updating is optimized to load only new <seq_id,ns,alias> tuples
         existing_aliases = self.aliases.find_aliases(seq_id=seq_id)
-        ea_tuples = [
-            (r["seq_id"], r["namespace"], r["alias"]) for r in existing_aliases
-        ]
+        ea_tuples = [(r["seq_id"], r["namespace"], r["alias"]) for r in existing_aliases]
         new_tuples = [(seq_id, r["namespace"], r["alias"]) for r in nsaliases]
         upd_tuples = set(new_tuples) - set(ea_tuples)
         if upd_tuples:
             _logger.info("{} new aliases for {}".format(len(upd_tuples), msg))
             for _, namespace, alias in upd_tuples:
-                self.aliases.store_alias(
-                    seq_id=seq_id, namespace=namespace, alias=alias
-                )
+                self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
             n_aliases_added += len(upd_tuples)
         if (
@@ -332,9 +322,7 @@ class SeqRepo(object):
             raise KeyError("Alias {} (namespace: {})".format(alias, namespace))
         if len(seq_ids) > 1:
             # This should only happen when namespace is None
-            raise KeyError(
-                "Alias {} (namespace: {}): not unique".format(alias, namespace)
-            )
+            raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
         return seq_ids.pop()
 
     def _update_digest_aliases(self, seq_id, seq):
