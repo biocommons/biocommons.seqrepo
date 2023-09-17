@@ -36,9 +36,7 @@ def _get_bgzip_version(exe):
     )
     output = p.communicate()
     version_line = output[0].splitlines()[1]
-    version = re.match(
-        r"(?:Version:|bgzip \(htslib\))\s+(\d+\.\d+(\.\d+)?)", version_line
-    ).group(1)
+    version = re.match(r"(?:Version:|bgzip \(htslib\))\s+(\d+\.\d+(\.\d+)?)", version_line).group(1)
     return version
 
 
@@ -46,16 +44,12 @@ def _find_bgzip():
     """return path to bgzip if found and meets version requirements, else exception"""
     missing_file_exception = OSError if six.PY2 else FileNotFoundError
     min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
-    exe = os.environ.get(
-        "SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip"
-    )
+    exe = os.environ.get("SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip")
 
     try:
         bgzip_version = _get_bgzip_version(exe)
     except AttributeError:
-        raise RuntimeError(
-            "Didn't find version string in bgzip executable ({exe})".format(exe=exe)
-        )
+        raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
     except missing_file_exception:
         raise RuntimeError(
             "{exe} doesn't exist; you need to install htslib and tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(
@@ -151,15 +145,11 @@ class FabgzWriter(object):
             os.chmod(self.filename + ".fai", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
             os.chmod(self.filename + ".gzi", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
-            _logger.info(
-                "{} written; added {} sequences".format(self.filename, len(self._added))
-            )
+            _logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
 
     def __del__(self):
         if self._fh is not None:
             _logger.error(
-                "FabgzWriter({}) was not explicitly closed; data may be lost".format(
-                    self.filename
-                )
+                "FabgzWriter({}) was not explicitly closed; data may be lost".format(self.filename)
             )
             self.close()

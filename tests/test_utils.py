@@ -19,15 +19,13 @@ def test_parse_defline():
 
     """
 
-    defline = ">NG_007107.2 Homo sapiens methyl-CpG binding protein 2 (MECP2), RefSeqGene on chromosome X"
-    assert parse_defline(defline, "refseq") == [
-        {"namespace": "refseq", "alias": "NG_007107.2"}
-    ]
+    defline = (
+        ">NG_007107.2 Homo sapiens methyl-CpG binding protein 2 (MECP2), RefSeqGene on chromosome X"
+    )
+    assert parse_defline(defline, "refseq") == [{"namespace": "refseq", "alias": "NG_007107.2"}]
 
     defline = ">gi|568815364|ref|NT_077402.3| Homo sapiens chromosome 1 genomic scaffold, GRCh38.p7 Primary Assembly HSCHR1_CTG1"
-    assert parse_defline(defline, "refseq") == [
-        {"namespace": "refseq", "alias": "NT_077402.3"}
-    ]
+    assert parse_defline(defline, "refseq") == [{"namespace": "refseq", "alias": "NT_077402.3"}]
 
 
 def test_validate_aliases():

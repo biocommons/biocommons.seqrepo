@@ -1,11 +1,11 @@
 import datetime
 import functools
+import importlib.resources
 import logging
 import os
 import sqlite3
 import time
 
-import pkg_resources
 import yoyo
 
 from ..config import SEQREPO_LRU_CACHE_MAXSIZE
@@ -204,8 +204,8 @@ class FastaDir(BaseReader, BaseWriter):
         sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
-        migration_dir = pkg_resources.resource_filename(__package__, migration_path)
-        migrations = yoyo.read_migrations(migration_dir)
+        migration_dir = importlib.resources.files(__package__) / migration_path
+        migrations = yoyo.read_migrations(str(migration_dir))
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
 

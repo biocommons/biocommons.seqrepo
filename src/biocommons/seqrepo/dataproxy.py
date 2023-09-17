@@ -214,9 +214,7 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
     scheme = parsed_uri.scheme
 
     if "+" not in scheme:
-        raise ValueError(
-            "create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)"
-        )
+        raise ValueError("create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)")
 
     provider, proto = scheme.split("+")
 

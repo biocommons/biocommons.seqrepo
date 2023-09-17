@@ -55,9 +55,7 @@ class SeqAliasDB(object):
         if schema_version != expected_schema_version:  # pragma: no cover
             raise RuntimeError(
                 "Upgrade required: Database schema"
-                "version is {} and code expects {}".format(
-                    schema_version, expected_schema_version
-                )
+                "version is {} and code expects {}".format(schema_version, expected_schema_version)
             )
 
     # ############################################################################
@@ -88,9 +86,7 @@ class SeqAliasDB(object):
             _logger.warning(
                 "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
             )
-        return [
-            dict(r) for r in self.find_aliases(seq_id=seq_id, current_only=current_only)
-        ]
+        return [dict(r) for r in self.find_aliases(seq_id=seq_id, current_only=current_only)]
 
     def find_aliases(
         self,
@@ -207,9 +203,7 @@ class SeqAliasDB(object):
             return current_rec["seqalias_id"]
 
         # otherwise, we're reassigning; deprecate old record, then retry
-        _logger.debug(
-            log_pfx + ": collision; deprecating {s1}".format(s1=current_rec["seq_id"])
-        )
+        _logger.debug(log_pfx + ": collision; deprecating {s1}".format(s1=current_rec["seq_id"]))
         cursor.execute(
             "update seqalias set is_current = 0 where seqalias_id = ?",
             [current_rec["seqalias_id"]],

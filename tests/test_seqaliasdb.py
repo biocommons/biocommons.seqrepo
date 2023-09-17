@@ -33,14 +33,10 @@ def test_seqinfo():
 
     # A:1 -> q2 (reassign)
     aid = db.store_alias("q2", "A", "1")
-    assert (
-        aid == 4
-    ), "should have created a new alias_id on reassignment of new sequence"
+    assert aid == 4, "should have created a new alias_id on reassignment of new sequence"
 
     alias_keys = "seqalias_id seq_id namespace alias is_current".split()
-    aliases = [
-        {k: r[k] for k in alias_keys} for r in db.find_aliases(current_only=False)
-    ]
+    aliases = [{k: r[k] for k in alias_keys} for r in db.find_aliases(current_only=False)]
     aliases.sort(
         key=lambda r: (
             r["seqalias_id"],
