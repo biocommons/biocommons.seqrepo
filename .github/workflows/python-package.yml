@@ -8,10 +8,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install packages
-      run: |
-        sudo apt install libhts-dev libhts3 libhtscodecs-dev libhtscodecs2 tabix
-
     - uses: actions/checkout@v3
 
     - name: Set up Python
@@ -54,6 +50,10 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
+    - name: Install packages
+      run: |
+        sudo apt install libhts-dev libhts3 libhtscodecs-dev libhtscodecs2 tabix
+
     - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
