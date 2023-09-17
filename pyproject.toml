@@ -46,6 +46,7 @@ doctest_optionflags = [
 markers = [
 	"network: tests that require network connectivity",
 	"slow: slow tests that should be run infrequently",
+	"vcr: tests with cached data",
 ]
 
 
