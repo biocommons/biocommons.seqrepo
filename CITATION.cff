@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: SeqRepo
+type: software
+authors:
+  - given-names: Reece K.
+    family-names: Hart
+  - given-names: Andreas
+    family-names: Prlić
+repository-code: 'https://github.com/biocommons/biocommons.seqrepo'
+license: Apache-2.0
+
+preferred-citation:
+  type: article
+  title: "SeqRepo: A system for managing local collections of biological sequences"
+  authors:
+  - family-names: "Hart"
+    given-names: "Reece K."
+  - family-names: "Prlić"
+    given-names: "Andreas"
+  doi: "10.1371/journal.pone.0239883"
+  journal: "PLoS One"
+  year: 2020
+  month: 12
+  volume: 15
+  issue: 12
+  start: "e0239883"
