@@ -1,47 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
 type: article
-title: 'SeqRepo: A system for managing local collections of biological sequences'
+title: "SeqRepo: A system for managing local collections of biological sequences"
 authors:
-- family-names: Hart
-  given-names: Reece K.
-- family-names: Prli<U+0107>
-  given-names: Andreas
-doi: 10.1371/journal.pone.0239883
-journal: PLOS ONE
-publisher:
-  name: Public Library of Science
-year: '2020'
-month: '12'
-volume: '15'
-url: https://doi.org/10.1371/journal.pone.0239883
-abstract: Motivation Access to biological sequence data, such as genome, transcript,
-  or protein sequence, is at the core of many bioinformatics analysis workflows. The
-  National Center for Biotechnology Information (NCBI), Ensembl, and other sequence
-  database maintainers provide methods to access sequences through network connections.
-  For many users, the convenience and currency of remotely managed data are compelling,
-  and the network latency is non-consequential. However, for high-throughput and clinical
-  applications, local sequence collections are essential for performance, stability,
-  privacy, and reproducibility. Results Here we describe SeqRepo, a novel system for
-  building a local, high-performance, non-redundant collection of biological sequences.
-  SeqRepo enables clients to use primary database identifiers and several digests
-  to identify sequences and sequence alises. SeqRepo provides a native Python interface
-  and a REST interface, which can run locally and enables access from other programming
-  languages. SeqRepo also provides an alternative REST interface based on the GA4GH
-  refget protocol. SeqRepo provides fast random access to sequence slices. We provide
-  results that demonstrate that a local SeqRepo sequence collection yields significant
-  performance benefits of up to 1300-fold over remote sequence collections. In our
-  use case for a variant validation and normalization pipeline, SeqRepo improved throughput
-  50-fold relative to use with remote sequences. SeqRepo may be used with any species
-  or sequence type. Regular snapshots of Human sequence collections are available.
-  It is often convenient or necessary to use a computed digest as a sequence identifier.
-  For example, a digest-based identifier may be used to refer to proprietary reference
-  genomes or segments of a graph genome, for which conventional identifiers will not
-  be available. Here we also introduce a convention for the application of the SHA-512
-  hashing algorithm with Base64 encoding to generate URL-safe identifiers. This convention,
-  sha512t24u, combines a fast digest mechanism with a space-efficient representation
-  that can be used for any object. Our report includes an analysis of timing and collision
-  probabilities for sha512t24u. SeqRepo enables clients to use sha512t24u as identifiers,
-  thereby seamlessly integrating public and private sequence sets. Availability SeqRepo
-  is released under the Apache License 2.0 and is available on github and PyPi. Docker
-  images and database snapshots are also available. See https://github.com/biocommons/biocommons.seqrepo.
-issue: '12'
-start: 1-8
+- family-names: "Hart"
+  given-names: "Reece K."
+- family-names: "Prlić"
+  given-names: "Andreas"
+doi: "10.1371/journal.pone.0239883"
+journal: "PLoS One"
+year: 2020
+month: 12
+volume: 15
+issue: 12
+start: "e0239883"
