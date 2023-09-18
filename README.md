@@ -108,8 +108,9 @@ answer](https://apple.stackexchange.com/questions/254380/why-am-i-getting-an-inv
 On Ubuntu 16.04:
 
     $ sudo apt install -y python3-dev gcc zlib1g-dev tabix
+    (OSX: $ brew install python libpq)
     $ pip install seqrepo
-    $ sudo mkdir /usr/local/share/seqrepo
+    $ sudo mkdir -p /usr/local/share/seqrepo
     $ sudo chown $USER /usr/local/share/seqrepo
     $ seqrepo pull -i 2018-11-26 
     $ seqrepo show-status -i 2018-11-26 
