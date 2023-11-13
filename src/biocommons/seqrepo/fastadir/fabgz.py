@@ -15,6 +15,7 @@ import re
 import shutil
 import stat
 import subprocess
+import threading
 
 import six
 from pysam import FastaFile
@@ -70,11 +71,23 @@ def _find_bgzip():
 
 
 class FabgzReader(object):
+    """
+    Class that implements ContextManager and wraps a FabgzReader.
+    The FabgzReader is returned when acquired in a contextmanager with statement.
+    """ 
     def __init__(self, filename):
+        self.lock = threading.Lock()
         self._fh = FastaFile(filename)
 
     def __del__(self):
         self._fh.close()
+
+    def __enter__(self):
+        self.lock.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.lock.release()
 
     def fetch(self, seq_id, start=None, end=None):
         return self._fh.fetch(seq_id.encode("ascii"), start, end)

@@ -29,24 +29,6 @@ _logger = logging.getLogger(__name__)
 expected_schema_version = 1
 
 
-class LockableFabgzReader(contextlib.AbstractContextManager):
-    """
-    Class that implements ContextManager and wraps a FabgzReader.
-    The FabgzReader is returned when acquired in a contextmanager with statement.
-    """
-
-    def __init__(self, path):
-        self.lock = threading.Lock()
-        self.fabgz_reader = FabgzReader(path)
-
-    def __enter__(self):
-        self.lock.acquire()
-        return self.fabgz_reader
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.lock.release()
-
-
 class FastaDir(BaseReader, BaseWriter):
     """This class provides simple a simple key-value interface to a
     directory of compressed fasta files.
@@ -70,7 +52,7 @@ class FastaDir(BaseReader, BaseWriter):
 
     """
 
-    def __init__(self, root_dir, writeable=False, check_same_thread=True):
+    def __init__(self, root_dir, writeable=False, check_same_thread=True, fd_cache_size=0):
         """Creates a new sequence repository if necessary, and then opens it"""
 
         self._root_dir = root_dir
@@ -99,6 +81,18 @@ class FastaDir(BaseReader, BaseWriter):
                     schema_version, expected_schema_version
                 )
             )
+            
+        if fd_cache_size == 0:
+            _logger.info(f"File descriptor caching disabled")
+            def _open_for_reading(path):
+                _logger.debug("Opening for reading uncached: " + path)
+                return FabgzReader(path)
+        else:
+            _logger.warning(f"File descriptor caching enabled (size={fd_cache_size})")
+            @functools.lru_cache(maxsize=fd_cache_size)
+            def _open_for_reading(path):
+                return FabgzReader(path)
+        self._open_for_reading = _open_for_reading
 
     def __del__(self):
         self._db.close()
@@ -237,19 +231,6 @@ class FastaDir(BaseReader, BaseWriter):
         migrations = yoyo.read_migrations(str(migration_dir))
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
-
-    @functools.lru_cache()
-    def _open_for_reading(self, path):
-        """
-        Opens a FabgzReader to path, wraps in a LockableFabgzReader for use in context managers.
-        Places it in an LRU cache so file is only opened once per FastaDir object. Caller must
-        lock the LockableFabgzReader or otherwise handle concurrent access if sharing between
-        in-process concurrent execution threads, such as asyncio (e.g. WSGI/ASGI web servers)
-        """
-        _logger.debug("Opening for reading: %s", path)
-        if not os.path.exists(path):
-            _logger.error("_open_for_reading path does not exist: %s", path)
-        return LockableFabgzReader(path)
 
     def _dump_aliases(self):
         import prettytable
