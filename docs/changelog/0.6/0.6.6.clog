@@ -1,0 +1,23 @@
+clog format: 1; -*-outline-*-
+* HEAD (2023-11-13)
+Changes since 0.6.5 (2021-12-10).
+** Special Attention
+** Deprecations and Removals
+** Bug Fixes
+*** Close #112: make-fastadir-thread-safe [fc76b79] (Kyle Ferriter)
+*** Investigate balancing threading with fd exhaustion [8e94914] (Reece Hart)
+*** updated threading test code and added README [00d8cda] (Reece Hart)
+*** Add explicit close to FastaFiles and sqlite3 cursors. Add contextmanager locking around cached open FabgzReaders [7a85d24] (Kyle Ferriter)
+*** Make tests pass. Don't assume /tmp is the OS tmpfile path. [701f0b3] (Kyle Ferriter)
+** New Features
+** Other Changes
+*** Update README.md [e12bb24] (Manuel Holtgrewe)
+*** README.md: install necessary packages with apt [69fc309] (Reece Hart)
+*** add CITATION.cff [fbf3b29] (Alan Rubin)
+** Internal and Developer Changes
+*** migrated setup.cfg to pyproject.toml [ee80d92] (Reece Hart)
+*** migrated from deprecated pkg_resources to importlib.resources [0eda8b2] (Reece Hart)
+*** add markers to pytest.ini [9a2f3ae] (Reece Hart)
+*** update .github from biocommons.example [e7555ea] (Reece Hart)
+*** Add GitHub Actions for testing, linting, and code formatting
+*** Update to work for OSX users [fcfbcfe] (Dylan Reinhardt)
