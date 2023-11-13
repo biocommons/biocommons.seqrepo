@@ -1,0 +1,91 @@
+[project]
+name = "biocommons.seqrepo"
+authors = [
+  { name="biocommons contributors", email="biocommons-dev@googlegroups.com" },
+]
+description = "Non-redundant, compressed, journalled, file-based storage for biological sequences"
+readme = "README.md"
+license = { file="LICENSE.txt" }
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["version"]
+
+[project.urls]
+"Homepage" = "https://github.com/biocommons/biocommons.seqrepo"
+"Bug Tracker" = "https://github.com/biocommons/biocommons.seqrepo/issues"
+
+
+[build-system]
+requires = [
+	 "setuptools >= 65.3",
+   	 "setuptools_scm[toml] ~= 7.0"
+	 ]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools_scm]
+
+
+# https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
+[tool.pytest.ini_options]
+addopts = "-s -v -x --strict-markers -m 'not extra' --doctest-modules --cov=src"
+doctest_optionflags = [
+    "ALLOW_BYTES",
+    "ALLOW_UNICODE",
+    "ELLIPSIS",
+    "IGNORE_EXCEPTION_DETAIL",
+    "NORMALIZE_WHITESPACE",
+]
+markers = [
+	"network: tests that require network connectivity",
+	"slow: slow tests that should be run infrequently",
+	"vcr: tests with cached data",
+]
+
+
+[tool.coverage.run]
+branch = true
+source = ["biocommons.seqrepo"]
+omit = ["*_test.py", "*/test/*", "*/tests/*"]
+
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+]
+
+[tool.black]
+line-length = 100
+
+
+# [tool.flake8]
+# flake8 does not support configuration in pyproject.toml
+# https://github.com/PyCQA/flake8/issues/234#issuecomment-812800832
+# The config in setup.cfg
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "R0913"
+
+
+[tool.pylint.format]
+max-line-length = 100

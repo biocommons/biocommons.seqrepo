@@ -1,11 +1,13 @@
+import contextlib
+import threading
 import datetime
 import functools
+import importlib.resources
 import logging
 import os
 import sqlite3
 import time
 
-import pkg_resources
 import yoyo
 
 from ..config import SEQREPO_LRU_CACHE_MAXSIZE
@@ -82,14 +84,18 @@ class FastaDir(BaseReader, BaseWriter):
             
         if fd_cache_size == 0:
             _logger.info(f"File descriptor caching disabled")
-            self._open_for_reading = self._open_for_reading_uncached
+            def _open_for_reading(path):
+                _logger.debug("Opening for reading uncached: " + path)
+                return FabgzReader(path)
         else:
             _logger.warning(f"File descriptor caching enabled (size={fd_cache_size})")
             @functools.lru_cache(maxsize=fd_cache_size)
-            def _open_for_reading_cached(path):
-                return self._open_for_reading_uncached(path)
-            self._open_for_reading = _open_for_reading_cached
+            def _open_for_reading(path):
+                return FabgzReader(path)
+        self._open_for_reading = _open_for_reading
 
+    def __del__(self):
+        self._db.close()
 
     # ############################################################################
     # Special methods
@@ -110,6 +116,7 @@ class FastaDir(BaseReader, BaseWriter):
             recd = dict(rec)
             recd["seq"] = self.fetch(rec["seq_id"])
             yield recd
+        cursor.close()
 
     def __len__(self):
         return self.stats()["n_sequences"]
@@ -137,8 +144,10 @@ class FastaDir(BaseReader, BaseWriter):
             self.commit()
 
         path = os.path.join(self._root_dir, rec["relpath"])
-        fabgz = self._open_for_reading(path)
-        return fabgz.fetch(seq_id, start, end)
+
+        with self._open_for_reading(path) as fabgz:
+            seq = fabgz.fetch(seq_id, start, end)
+        return seq
 
     @functools.lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def fetch_seqinfo(self, seq_id):
@@ -189,7 +198,7 @@ class FastaDir(BaseReader, BaseWriter):
             os.makedirs(dir_, exist_ok=True)
             fabgz = FabgzWriter(path)
             self._writing = {"relpath": relpath, "fabgz": fabgz}
-            _logger.debug("Opened for writing: " + path)
+            _logger.debug("Opened for writing: %s", path)
 
         self._writing["fabgz"].store(seq_id, seq)
         alpha = "".join(sorted(set(seq)))
@@ -199,6 +208,7 @@ class FastaDir(BaseReader, BaseWriter):
                          values (?, ?, ?,?)""",
             (seq_id, len(seq), alpha, self._writing["relpath"]),
         )
+        cursor.close()
         return seq_id
 
     # ############################################################################
@@ -207,7 +217,9 @@ class FastaDir(BaseReader, BaseWriter):
     def _fetch_one(self, sql, params=()):
         cursor = self._db.cursor()
         cursor.execute(sql, params)
-        return cursor.fetchone()
+        val = cursor.fetchone()
+        cursor.close()
+        return val
 
     def _upgrade_db(self):
         """upgrade db using scripts for specified (current) schema version"""
@@ -215,14 +227,10 @@ class FastaDir(BaseReader, BaseWriter):
         sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
-        migration_dir = pkg_resources.resource_filename(__package__, migration_path)
-        migrations = yoyo.read_migrations(migration_dir)
+        migration_dir = importlib.resources.files(__package__) / migration_path
+        migrations = yoyo.read_migrations(str(migration_dir))
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
-
-    def _open_for_reading_uncached(self, path):
-        _logger.debug("Opening for reading: " + path)
-        return FabgzReader(path)
 
     def _dump_aliases(self):
         import prettytable
@@ -234,3 +242,4 @@ class FastaDir(BaseReader, BaseWriter):
         for r in cursor:
             pt.add_row([r[f] for f in fields])
             print(pt)
+        cursor.close()
