@@ -28,7 +28,7 @@ def test_write_reread():
 
     # now read them back
     far = FabgzReader(fabgz_fn)
-    assert far.filename.startswith("/tmp/".encode())
+    assert far.filename.startswith(tmpdir.encode())
     assert set(far.keys()) == set(sequences.keys())
     assert 5 == len(far), "expected 5 sequences"
     assert "l10" in far.keys()
