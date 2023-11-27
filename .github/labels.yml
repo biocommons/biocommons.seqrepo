@@ -26,10 +26,30 @@
   color: "e4e669"
   description: "This doesn't seem right"
 
+- name: "keep alive"
+  color: "666666"
+  description: "exempt issue from staleness checks"
+  from_name: "keep alive"
+
 - name: "question"
   color: "d876e3"
   description: "Further information is requested"
 
-- name: "wontfix"
+- name: "rfc"
+  color: "d876e3"
+  description: "Request for comments"
+
+- name: "stale"
+  color: "777777"
+  description: "Issue is stale and subject to automatic closing"
+  from_name: "Stale"
+
+- name: "stale closed"
+  color: "444444"
+  description: "Issue was closed automatically due to inactivity"
+  from_name: "stale-closed"
+
+- name: "won't fix"
   color: "ffffff"
   description: "This will not be worked on"
+  from_name: wontfix
