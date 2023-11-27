@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: actions/stale@v8
         with:
+          exempt-all-milestones: true
           exempt-draft-pr: true
           exempt-issue-labels: bug,keep-alive
           exempt-pr-labels: bug,keep-alive
