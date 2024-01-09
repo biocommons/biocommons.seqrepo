@@ -151,9 +151,9 @@ SEQREPO_LRU_CACHE_MAXSIZE sets the lru_cache maxsize for the sqlite
 query response caching. It defaults to 1 million but can also be set to
 "none" to be unlimited.
 
-SEQREPO_FD_CACHE_SIZE sets the lru_cache size for file handler caching during FASTA sequence retrievals. 
+SEQREPO_FD_CACHE_MAXSIZE sets the lru_cache size for file handler caching during FASTA sequence retrievals. 
 It defaults to 0 to disable any caching, but can be set to a specific value or "none" to be unlimited. Using 
-a moderate value will greatly increase performance of sequence retrieval.
+a moderate value (>10) will greatly increase performance of sequence retrieval.
 
 ## Developing
 

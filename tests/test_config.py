@@ -5,6 +5,12 @@ import pytest
 from biocommons.seqrepo import config
 
 
+def test_SEQREPO_FD_CACHE_MAXSIZE_default(monkeypatch):
+    monkeypatch.delenv("SEQREPO_FD_CACHE_MAXSIZE", raising=False)
+    reload(config)
+    assert config.SEQREPO_FD_CACHE_MAXSIZE == -1
+
+
 def test_SEQREPO_LRU_CACHE_MAXSIZE_default(monkeypatch):
     monkeypatch.delenv("SEQREPO_LRU_CACHE_MAXSIZE", raising=False)
     reload(config)

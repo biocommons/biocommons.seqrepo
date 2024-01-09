@@ -1,35 +1,6 @@
-import os
-
 import pytest
 
-from biocommons.seqrepo.config import SEQREPO_FD_CACHE_SIZE_ENV_NAME
-from biocommons.seqrepo.utils import parse_defline, validate_aliases, resolve_fd_cache_size
-
-
-def test_resolve_fd_cache_size():
-    # Preserve any data for this env var before we try different values
-    orig_env = os.environ.get(SEQREPO_FD_CACHE_SIZE_ENV_NAME)
-    if orig_env:
-        del os.environ[SEQREPO_FD_CACHE_SIZE_ENV_NAME]
-
-    instance_fd_cache_size = 10
-    # With no env var set, resolve_fd_cache_size should pass through its input value
-    assert resolve_fd_cache_size(instance_fd_cache_size) == instance_fd_cache_size
-    # Otherwise any env var will override the instance value
-    os.environ[SEQREPO_FD_CACHE_SIZE_ENV_NAME] = "none"
-    assert resolve_fd_cache_size(instance_fd_cache_size) is None
-    os.environ[SEQREPO_FD_CACHE_SIZE_ENV_NAME] = "100"
-    assert resolve_fd_cache_size(instance_fd_cache_size) == 100
-    os.environ[SEQREPO_FD_CACHE_SIZE_ENV_NAME] = "0"
-    assert resolve_fd_cache_size(instance_fd_cache_size) == 0
-
-    os.environ[SEQREPO_FD_CACHE_SIZE_ENV_NAME] = "foo"
-    with pytest.raises(ValueError):
-        assert resolve_fd_cache_size(instance_fd_cache_size)
-
-    # Restore original env var
-    if orig_env:
-        os.environ[SEQREPO_FD_CACHE_SIZE_ENV_NAME] = orig_env
+from biocommons.seqrepo.utils import parse_defline, validate_aliases
 
 
 def test_parse_defline():
