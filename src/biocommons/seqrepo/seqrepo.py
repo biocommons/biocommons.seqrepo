@@ -10,6 +10,7 @@ from bioutils.digests import seq_seqhash as sha512t24u
 from .config import SEQREPO_LRU_CACHE_MAXSIZE
 from .fastadir import FastaDir
 from .seqaliasdb import SeqAliasDB
+from .utils import resolve_fd_cache_size
 
 _logger = logging.getLogger(__name__)
 
@@ -123,7 +124,7 @@ class SeqRepo(object):
             self._seq_path,
             writeable=self._writeable,
             check_same_thread=self._check_same_thread,
-            fd_cache_size=fd_cache_size
+            fd_cache_size=resolve_fd_cache_size(fd_cache_size)
         )
         self.aliases = SeqAliasDB(
             self._db_path,

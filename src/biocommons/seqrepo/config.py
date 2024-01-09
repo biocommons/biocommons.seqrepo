@@ -1,5 +1,7 @@
 import os
 
+SEQREPO_FD_CACHE_SIZE_ENV_NAME = "SEQREPO_FD_CACHE_SIZE"
+
 try:
     seqrepo_env_var = os.environ.get("SEQREPO_LRU_CACHE_MAXSIZE", "1000000")
     SEQREPO_LRU_CACHE_MAXSIZE = int(seqrepo_env_var)

@@ -1,7 +1,40 @@
+import os
 import re
+from typing import Optional
+
+from biocommons.seqrepo.config import SEQREPO_FD_CACHE_SIZE_ENV_NAME
 
 ncbi_defline_re = re.compile(r"(?P<namespace>ref)\|(?P<alias>[^|]+)")
 invalid_alias_chars_re = re.compile(r"[^-+./_\w]")
+
+
+def resolve_fd_cache_size(internal_fd_cache_size: Optional[int]) -> Optional[int]:
+    """
+    Determines what the fd_cache_size should be set to. If the SEQREPO_FD_CACHE_SIZE env var
+    is set, that value takes priority, otherwise whatever passed into the SeqRepo init is used. If
+    nothing is set, it'll end up being 0. Setting this value helps performance of reading the
+    fasta files, but one must be careful of resource exhaustion.
+    Details:
+        0 - No cache at all
+        None - Unbounded caching
+        >=1 - Specific cache size
+    """
+    env_fd_cache_size = os.environ.get(SEQREPO_FD_CACHE_SIZE_ENV_NAME)
+    # If the env var is not set, use what is defined in the code
+    if env_fd_cache_size is None:
+        return internal_fd_cache_size
+
+    # Else parse out what is in the env var
+    if env_fd_cache_size.lower() == "none":
+        return None
+    try:
+        env_fd_cache_size_i = int(env_fd_cache_size)
+    except ValueError:
+        raise ValueError(
+            f"{SEQREPO_FD_CACHE_SIZE_ENV_NAME} must be a valid int, none, or not set, "
+            "currently it is " + env_fd_cache_size
+        )
+    return env_fd_cache_size_i
 
 
 def parse_defline(defline, namespace):
