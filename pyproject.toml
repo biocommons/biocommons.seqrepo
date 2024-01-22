@@ -15,18 +15,28 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dynamic = ["version"]
+dynamic = ["version", "optional-dependencies"]
+dependencies = [
+    "bioutils > 0.4",
+    "coloredlogs",
+    "ipython",
+    "pysam",
+    "requests",
+    "requests_html",
+    "six",
+    "tqdm",
+    "yoyo-migrations"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/biocommons/biocommons.seqrepo"
 "Bug Tracker" = "https://github.com/biocommons/biocommons.seqrepo/issues"
 
-
 [build-system]
 requires = [
-	 "setuptools >= 65.3",
-   	 "setuptools_scm[toml] ~= 7.0"
-	 ]
+    "setuptools >= 69.0.2",
+    "setuptools_scm[toml] >= 8.0"
+]
 build-backend = "setuptools.build_meta"
 
 
