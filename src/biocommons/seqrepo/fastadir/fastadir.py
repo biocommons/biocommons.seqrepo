@@ -81,17 +81,18 @@ class FastaDir(BaseReader, BaseWriter):
                     schema_version, expected_schema_version
                 )
             )
-            
+
         if fd_cache_size == 0:
             _logger.info(f"File descriptor caching disabled")
-            def _open_for_reading(path):
-                _logger.debug("Opening for reading uncached: " + path)
-                return FabgzReader(path)
         else:
             _logger.warning(f"File descriptor caching enabled (size={fd_cache_size})")
-            @functools.lru_cache(maxsize=fd_cache_size)
-            def _open_for_reading(path):
-                return FabgzReader(path)
+
+        @functools.lru_cache(maxsize=fd_cache_size)
+        def _open_for_reading(path):
+            if fd_cache_size == 0:
+                _logger.debug("Opening for reading uncached: " + path)
+            return FabgzReader(path)
+
         self._open_for_reading = _open_for_reading
 
     def __del__(self):
