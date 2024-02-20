@@ -41,11 +41,12 @@ dev = [
     "pytest-optional-tests",
     "pytest ~= 7.1",
     "pyright~=1.1",
+    "tqdm ~= 4.66",
     "tox ~= 3.25",
     "vcrpy",
 ]
 docs = ["mkdocs"]
-loading = ["tqdm ~= 4.66", "requests_html ~= 0.10"]
+loading = ["requests_html ~= 0.10"]
 
 [project.scripts]
 seqrepo = "biocommons.seqrepo.cli:main"

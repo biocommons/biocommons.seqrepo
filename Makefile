@@ -5,7 +5,9 @@
 .PRECIOUS:
 .SUFFIXES:
 
-SHELL:=/bin/bash -e -o pipefail -O globstar
+
+SHELL:=bash -e -o pipefail -O globstar
+
 SELF:=$(firstword $(MAKEFILE_LIST))
 
 VE_DIR=venv
