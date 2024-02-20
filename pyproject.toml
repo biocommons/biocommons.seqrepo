@@ -23,6 +23,7 @@ dependencies = [
     "pysam ~= 0.22",
     "requests ~= 2.31",
     "six ~= 1.16",
+    "tqdm ~= 4.66",
     "yoyo-migrations ~= 8.2",
 ]
 
@@ -42,7 +43,6 @@ dev = [
     "pytest ~= 7.1",
     "pyright~=1.1",
     "requests_html ~= 0.10",
-    "tqdm ~= 4.66",
     "tox ~= 3.25",
     "vcrpy",
 ]
