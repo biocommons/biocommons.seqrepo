@@ -105,10 +105,18 @@ answer](https://apple.stackexchange.com/questions/254380/why-am-i-getting-an-inv
 
 ## Quick Start
 
-On Ubuntu 16.04:
+### OSX
+
+    $ brew install python libpq
+
+### On Ubuntu 16.04
 
     $ sudo apt install -y python3-dev gcc zlib1g-dev tabix
-    (OSX: $ brew install python libpq)
+
+### All platforms
+ 
+    $ python -m venv venv
+    $ source venv/bin/activate
     $ pip install seqrepo
     $ sudo mkdir -p /usr/local/share/seqrepo
     $ sudo chown $USER /usr/local/share/seqrepo
@@ -156,6 +164,14 @@ It defaults to 0 to disable any caching, but can be set to a specific value or "
 a moderate value (>10) will greatly increase performance of sequence retrieval.
 
 ## Developing
+
+### OSX
+
+    brew install python libpq bash
+
+### Ubuntu
+
+    sudo apt install -y python3-dev gcc zlib1g-dev tabix
 
 Here's how to get started developing:
 

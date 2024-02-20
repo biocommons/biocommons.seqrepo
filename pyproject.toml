@@ -1,11 +1,11 @@
 [project]
 name = "biocommons.seqrepo"
 authors = [
-  { name="biocommons contributors", email="biocommons-dev@googlegroups.com" },
+    { name = "biocommons contributors", email = "biocommons-dev@googlegroups.com" },
 ]
 description = "Non-redundant, compressed, journalled, file-based storage for biological sequences"
 readme = "README.md"
-license = { file="LICENSE.txt" }
+license = { file = "LICENSE.txt" }
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -15,29 +15,62 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dynamic = ["version", "optional-dependencies"]
+dynamic = ["version"]
 dependencies = [
     "bioutils > 0.4",
-    "coloredlogs",
-    "ipython",
-    "pysam",
-    "requests",
-    "requests_html",
-    "six",
-    "tqdm",
-    "yoyo-migrations"
+    "coloredlogs ~= 15.0",
+    "ipython ~= 8.4",
+    "pysam ~= 0.22",
+    "requests ~= 2.31",
+    "six ~= 1.16",
+    "yoyo-migrations ~= 8.2",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "bandit ~= 1.7",
+    "black ~= 22.3",
+    "build ~= 0.8",
+    "flake8 ~= 4.0",
+    "ipython ~= 8.4",
+    "isort ~= 5.10",
+    "mypy-extensions ~= 1.0",
+    "pre-commit ~= 3.4",
+    "pylint ~= 2.14",
+    "pytest-cov ~= 4.1",
+    "pytest-optional-tests",
+    "pytest ~= 7.1",
+    "pyright~=1.1",
+    "requests_html ~= 0.10",
+    "tqdm ~= 4.66",
+    "tox ~= 3.25",
+    "vcrpy",
+]
+docs = ["mkdocs"]
+
+[project.scripts]
+seqrepo = "biocommons.seqrepo.cli:main"
 
 [project.urls]
 "Homepage" = "https://github.com/biocommons/biocommons.seqrepo"
 "Bug Tracker" = "https://github.com/biocommons/biocommons.seqrepo/issues"
 
 [build-system]
-requires = [
-    "setuptools >= 69.0.2",
-    "setuptools_scm[toml] >= 8.0"
-]
+requires = ["setuptools ~= 69.0", "setuptools_scm[toml] ~= 8.0"]
 build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["__pycache__", "*.pyc"]
+namespaces = true
+
+[tool.setuptools.package-data]
+"biocommons.seqrepo.fastadir" = ["_data/migrations/*"]
+"biocommons.seqrepo.seqaliasdb" = ["_data/migrations/*"]
 
 
 [tool.setuptools_scm]
@@ -54,9 +87,9 @@ doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
 ]
 markers = [
-	"network: tests that require network connectivity",
-	"slow: slow tests that should be run infrequently",
-	"vcr: tests with cached data",
+    "network: tests that require network connectivity",
+    "slow: slow tests that should be run infrequently",
+    "vcr: tests with cached data",
 ]
 
 
@@ -87,11 +120,18 @@ exclude_lines = [
 [tool.black]
 line-length = 100
 
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests"]
 
 # [tool.flake8]
 # flake8 does not support configuration in pyproject.toml
 # https://github.com/PyCQA/flake8/issues/234#issuecomment-812800832
 # The config in setup.cfg
+
+[tool.pyright]
+include = ["src", "tests"]
+
 
 [tool.pylint.'MESSAGES CONTROL']
 disable = "R0913"
