@@ -124,11 +124,11 @@ tested. Patches to get other systems working would be welcomed.
     $ pip install seqrepo
     $ sudo mkdir -p /usr/local/share/seqrepo
     $ sudo chown $USER /usr/local/share/seqrepo
-    $ seqrepo pull -i 2018-11-26 
-    $ seqrepo show-status -i 2018-11-26 
+    $ seqrepo pull -i 2018-11-26
+    $ seqrepo show-status -i 2018-11-26
     seqrepo 0.2.3.post3.dev8+nb8298bd62283
     root directory: /usr/local/share/seqrepo/2018-11-26, 7.9 GB
-    backends: fastadir (schema 1), seqaliasdb (schema 1) 
+    backends: fastadir (schema 1), seqaliasdb (schema 1)
     sequences: 773587 sequences, 93051609959 residues, 192 files
     aliases: 5579572 aliases, 5480085 current, 26 namespaces, 773587 sequences
 
@@ -186,6 +186,15 @@ Here's how to get started developing:
     make devready
     source venv/bin/activate
     seqrepo --version
+
+Code reformatting:
+
+    make reformat
+
+Install pre-commit hook:
+
+    # included in `make devready`, not necessary for new installations
+    pre-commit install
 
 ## Building a docker image
 

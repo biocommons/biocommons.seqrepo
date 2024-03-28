@@ -124,11 +124,6 @@ line-length = 100
 profile = "black"
 src_paths = ["src", "tests"]
 
-# [tool.flake8]
-# flake8 does not support configuration in pyproject.toml
-# https://github.com/PyCQA/flake8/issues/234#issuecomment-812800832
-# The config in setup.cfg
-
 [tool.pyright]
 include = ["src", "tests"]
 

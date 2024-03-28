@@ -1,5 +1,3 @@
-import contextlib
-import threading
 import datetime
 import functools
 import importlib.resources
@@ -83,7 +81,7 @@ class FastaDir(BaseReader, BaseWriter):
             )
 
         if fd_cache_size == 0:
-            _logger.info(f"File descriptor caching disabled")
+            _logger.info("File descriptor caching disabled")
         else:
             _logger.warning(f"File descriptor caching enabled (size={fd_cache_size})")
 

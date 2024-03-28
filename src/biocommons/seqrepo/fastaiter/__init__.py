@@ -1,1 +1,1 @@
-from .fastaiter import FastaIter
+from .fastaiter import FastaIter  # noqa: F401

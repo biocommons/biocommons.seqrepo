@@ -53,9 +53,8 @@ def _find_bgzip():
         raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
     except missing_file_exception:
         raise RuntimeError(
-            "{exe} doesn't exist; you need to install htslib and tabix (See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(
-                exe=exe
-            )
+            "{exe} doesn't exist; you need to install htslib and tabix "
+            "(See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe)
         )
     except Exception:
         raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
@@ -74,7 +73,8 @@ class FabgzReader(object):
     """
     Class that implements ContextManager and wraps a FabgzReader.
     The FabgzReader is returned when acquired in a contextmanager with statement.
-    """ 
+    """
+
     def __init__(self, filename):
         self.lock = threading.Lock()
         self._fh = FastaFile(filename)
@@ -141,8 +141,8 @@ class FabgzWriter(object):
 
         if seq_id not in self._added:
             self._fh.write(">" + seq_id + "\n")
-            for l in wrap_lines(seq, line_width):
-                self._fh.write(l + "\n")
+            for line in wrap_lines(seq, line_width):
+                self._fh.write(line + "\n")
             self._added.add(seq_id)
             _logger.debug("added seq_id {i}; length {l}".format(i=seq_id, l=len(seq)))
         return seq_id

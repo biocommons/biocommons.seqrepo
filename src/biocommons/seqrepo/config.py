@@ -18,5 +18,6 @@ def parse_caching_env_var(env_name: str, env_default: str) -> Optional[int]:
 
 
 SEQREPO_LRU_CACHE_MAXSIZE = parse_caching_env_var("SEQREPO_LRU_CACHE_MAXSIZE", "1000000")
-# Using a default value here of -1 to differentiate not setting this env var and an explicit None (unbounded cache)
+# Using a default value here of -1 to differentiate not setting this env var and an
+# explicit None (unbounded cache)
 SEQREPO_FD_CACHE_MAXSIZE = parse_caching_env_var("SEQREPO_FD_CACHE_MAXSIZE", "-1")

@@ -1,1 +1,1 @@
-from .fastadir import FastaDir
+from .fastadir import FastaDir  # noqa: F401

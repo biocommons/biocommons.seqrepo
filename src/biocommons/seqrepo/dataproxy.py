@@ -10,7 +10,6 @@ import functools
 import logging
 import os
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from urllib.parse import urlparse
 
 import requests
@@ -149,7 +148,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         url = self.base_url + f"sequence/{identifier}"
         params = {"start": start, "end": end}
         _logger.info(f"Fetching {url} {params if (start or end) else ''}")
-        resp = requests.get(url, params=params)
+        resp = requests.get(url, params=params, timeout=60)
         if resp.status_code == 404:
             raise KeyError(identifier)
         resp.raise_for_status()
@@ -158,7 +157,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
     def _get_metadata(self, identifier):
         url = self.base_url + f"metadata/{identifier}"
         _logger.info("Fetching %s", url)
-        resp = requests.get(url)
+        resp = requests.get(url, timeout=60)
         if resp.status_code == 404:
             raise KeyError(identifier)
         resp.raise_for_status()
