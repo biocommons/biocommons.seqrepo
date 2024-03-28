@@ -1,0 +1,13 @@
+[flake8]
+ignore = E129,E133,E203,E221,E241,E251,E303,E266,H106,H904,W291
+max-line-length = 100
+max-complexity = 15
+hang-closing = true
+exclude =
+    .eggs
+    .tox
+    build
+    dist
+    docs/conf.py
+    tests/*
+    **/_data/migrations/*
