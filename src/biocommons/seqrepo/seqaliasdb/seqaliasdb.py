@@ -1,11 +1,9 @@
-import itertools
 import logging
 import sqlite3
 
 import pkg_resources
 import yoyo
 
-from .._internal.logging_support import DuplicateFilter
 from .._internal.translate import translate_alias_records, translate_api2db
 
 _logger = logging.getLogger(__name__)
@@ -39,7 +37,8 @@ class SeqAliasDB(object):
 
         if translate_ncbi_namespace is not None:
             _logger.warning(
-                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+                "translate_ncbi_namespace is obsolete; translation is now automatic; "
+                "this flag will be removed"
             )
 
         if self._writeable:
@@ -87,7 +86,8 @@ class SeqAliasDB(object):
         )
         if translate_ncbi_namespace is not None:
             _logger.warning(
-                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+                "translate_ncbi_namespace is obsolete; translation is now automatic; "
+                "this flag will be removed"
             )
         return [dict(r) for r in self.find_aliases(seq_id=seq_id, current_only=current_only)]
 
@@ -119,7 +119,8 @@ class SeqAliasDB(object):
 
         if translate_ncbi_namespace is not None:
             _logger.warning(
-                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+                "translate_ncbi_namespace is obsolete; translation is now automatic; "
+                "this flag will be removed"
             )
 
         if namespace is not None:

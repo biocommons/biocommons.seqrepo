@@ -10,7 +10,6 @@ import functools
 import logging
 import os
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from urllib.parse import urlparse
 
 import requests

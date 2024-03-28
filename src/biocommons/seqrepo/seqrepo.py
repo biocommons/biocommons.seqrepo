@@ -7,7 +7,7 @@ from functools import lru_cache
 import bioutils.digests
 from bioutils.digests import seq_seqhash as sha512t24u
 
-from .config import SEQREPO_LRU_CACHE_MAXSIZE, SEQREPO_FD_CACHE_MAXSIZE
+from .config import SEQREPO_FD_CACHE_MAXSIZE, SEQREPO_LRU_CACHE_MAXSIZE
 from .fastadir import FastaDir
 from .seqaliasdb import SeqAliasDB
 
@@ -100,7 +100,7 @@ class SeqRepo(object):
         translate_ncbi_namespace=None,
         check_same_thread=False,
         use_sequenceproxy=True,
-        fd_cache_size=0
+        fd_cache_size=0,
     ):
         self._root_dir = root_dir
         self._upcase = upcase
@@ -123,7 +123,9 @@ class SeqRepo(object):
             self._seq_path,
             writeable=self._writeable,
             check_same_thread=self._check_same_thread,
-            fd_cache_size=SEQREPO_FD_CACHE_MAXSIZE if SEQREPO_FD_CACHE_MAXSIZE != -1 else fd_cache_size
+            fd_cache_size=(
+                SEQREPO_FD_CACHE_MAXSIZE if SEQREPO_FD_CACHE_MAXSIZE != -1 else fd_cache_size
+            ),
         )
         self.aliases = SeqAliasDB(
             self._db_path,
@@ -133,7 +135,8 @@ class SeqRepo(object):
 
         if translate_ncbi_namespace is not None:
             _logger.warn(
-                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+                "translate_ncbi_namespace is obsolete; translation is now automatic; "
+                "this flag will be removed"
             )
 
     def __contains__(self, nsa):
@@ -210,7 +213,7 @@ class SeqRepo(object):
 
         try:
             seqhash = sha512t24u(seq)
-        except Exception as e:
+        except Exception:
             import pprint
 
             _logger.critical("Exception raised for " + pprint.pformat(nsaliases))
@@ -253,8 +256,8 @@ class SeqRepo(object):
             n_aliases_added += len(upd_tuples)
         if (
             self._pending_sequences > ct_n_seqs
-            or self._pending_aliases > ct_n_aliases
-            or self._pending_sequences_len > ct_n_residues
+            or self._pending_aliases > ct_n_aliases  # noqa: W503
+            or self._pending_sequences_len > ct_n_residues  # noqa: W503
         ):  # pragma: no cover
             _logger.info(
                 "Hit commit thresholds ({self._pending_sequences} sequences, "
@@ -279,7 +282,8 @@ class SeqRepo(object):
 
         if translate_ncbi_namespace is not None:
             _logger.warn(
-                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+                "translate_ncbi_namespace is obsolete; translation is now automatic; "
+                "this flag will be removed"
             )
         seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
         aliases = self.aliases.find_aliases(seq_id=seq_id)
@@ -297,7 +301,8 @@ class SeqRepo(object):
         """
         if translate_ncbi_namespace is not None:
             _logger.warn(
-                "translate_ncbi_namespace is obsolete; translation is now automatic; this flag will be removed"
+                "translate_ncbi_namespace is obsolete; translation is now automatic; "
+                "this flag will be removed"
             )
 
         namespace, alias = (

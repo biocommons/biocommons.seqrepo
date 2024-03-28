@@ -1,1 +1,1 @@
-from .seqaliasdb import SeqAliasDB
+from .seqaliasdb import SeqAliasDB  # noqa: F401

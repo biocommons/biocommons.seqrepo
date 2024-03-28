@@ -20,7 +20,6 @@ import io
 import itertools
 import logging
 import os
-import pprint
 import re
 import shutil
 import stat
@@ -30,7 +29,6 @@ import tempfile
 
 import bioutils.assemblies
 import bioutils.seqfetcher
-import six
 import tqdm
 
 from . import SeqRepo, __version__
@@ -62,7 +60,7 @@ def _get_remote_instances(opts):
     ]
     _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
     lines = subprocess.check_output(rsync_cmd).decode().splitlines()[1:]
-    dirs = (m.group(1) for m in (line_re.match(l) for l in lines) if m)
+    dirs = (m.group(1) for m in (line_re.match(line) for line in lines) if m)
     return sorted(list(filter(instance_name_new_re.match, dirs)))
 
 
@@ -81,12 +79,14 @@ def _latest_instance_path(opts):
 
 
 def parse_arguments():
+    epilog = (
+        f"seqrepo {__version__}"
+        "See https://github.com/biocommons/biocommons.seqrepo for more information"
+    )
     top_p = argparse.ArgumentParser(
         description=__doc__.split("\n\n")[0],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        epilog="seqrepo "
-        + __version__
-        + ". See https://github.com/biocommons/biocommons.seqrepo for more information",
+        epilog=epilog
     )
     top_p.add_argument("--dry-run", "-n", default=False, action="store_true")
     top_p.add_argument("--remote-host", default="dl.biocommons.org", help="rsync server host")
@@ -352,12 +352,12 @@ def add_assembly_names(opts):
         ]
         if not_in_seqrepo:
             _logger.warning(
-                "Assembly {an} references {n} accessions not in SeqRepo instance {opts.instance_name} (e.g., {acs})".format(
+                "Assembly {an} references {n} accessions not in SeqRepo instance "
+                "{opts.instance_name} (e.g., {acs})".format(
                     an=assy_name,
                     n=len(not_in_seqrepo),
                     opts=opts,
                     acs=", ".join(not_in_seqrepo[:5] + ["..."]),
-                    seqrepo_dir=seqrepo_dir,
                 )
             )
             if not opts.partial_load:
@@ -432,8 +432,8 @@ def export(opts):
             "{ns}:{a}".format(ns=ns, a=a) for ns, aliases in sorted(nsad.items()) for a in aliases
         ]
         print(">" + " ".join(aliases))
-        for l in _wrap_lines(srec["seq"], 100):
-            print(l)
+        for line in _wrap_lines(srec["seq"], 100):
+            print(line)
 
 
 def export_aliases(opts):
@@ -477,7 +477,7 @@ def init(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     if os.path.exists(seqrepo_dir) and len(os.listdir(seqrepo_dir)) > 0:
         raise IOError("{seqrepo_dir} exists and is not empty".format(seqrepo_dir=seqrepo_dir))
-    sr = SeqRepo(seqrepo_dir, writeable=True)  # flake8: noqa
+    sr = SeqRepo(seqrepo_dir, writeable=True)  # noqa: F841
 
 
 def list_local_instances(opts):
@@ -586,12 +586,14 @@ def show_status(opts):
         )
     )
     print(
-        "sequences: {ss[n_sequences]} sequences, {ss[tot_length]} residues, {ss[n_files]} files".format(
+        "sequences: {ss[n_sequences]} sequences, {ss[tot_length]} residues, "
+        "{ss[n_files]} files".format(
             ss=sr.sequences.stats()
         )
     )
     print(
-        "aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, {sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(
+        "aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, "
+        "{sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(
             sa=sr.aliases.stats()
         )
     )
@@ -679,7 +681,7 @@ def snapshot(opts):
 
 def start_shell(opts):
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
-    sr = SeqRepo(seqrepo_dir)
+    sr = SeqRepo(seqrepo_dir)  # noqa: 682
     import IPython
 
     IPython.embed(
