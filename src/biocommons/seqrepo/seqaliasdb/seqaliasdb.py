@@ -140,7 +140,7 @@ class SeqAliasDB(object):
 
         cols = ["seqalias_id", "seq_id", "alias", "added", "is_current"]
         cols += ["namespace"]
-        sql = "select {cols} from seqalias".format(cols=", ".join(cols))
+        sql = "select {cols} from seqalias".format(cols=", ".join(cols))  # nosec
         if clauses:
             sql += " where " + " and ".join("(" + c + ")" for c in clauses)
         sql += " order by seq_id, namespace, alias"
