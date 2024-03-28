@@ -86,7 +86,7 @@ def parse_arguments():
     top_p = argparse.ArgumentParser(
         description=__doc__.split("\n\n")[0],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        epilog=epilog
+        epilog=epilog,
     )
     top_p.add_argument("--dry-run", "-n", default=False, action="store_true")
     top_p.add_argument("--remote-host", default="dl.biocommons.org", help="rsync server host")
@@ -587,15 +587,11 @@ def show_status(opts):
     )
     print(
         "sequences: {ss[n_sequences]} sequences, {ss[tot_length]} residues, "
-        "{ss[n_files]} files".format(
-            ss=sr.sequences.stats()
-        )
+        "{ss[n_files]} files".format(ss=sr.sequences.stats())
     )
     print(
         "aliases: {sa[n_aliases]} aliases, {sa[n_current]} current, "
-        "{sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(
-            sa=sr.aliases.stats()
-        )
+        "{sa[n_namespaces]} namespaces, {sa[n_sequences]} sequences".format(sa=sr.aliases.stats())
     )
     return sr
 

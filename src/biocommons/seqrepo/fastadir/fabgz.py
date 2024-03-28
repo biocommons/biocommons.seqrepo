@@ -54,9 +54,7 @@ def _find_bgzip():
     except missing_file_exception:
         raise RuntimeError(
             "{exe} doesn't exist; you need to install htslib and tabix "
-            "(See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(
-                exe=exe
-            )
+            "(See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe)
         )
     except Exception:
         raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
