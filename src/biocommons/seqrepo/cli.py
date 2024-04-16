@@ -553,7 +553,7 @@ def pull(opts):
     tmp_dir = tempfile.mkdtemp(dir=opts.root_directory, prefix=instance_name + ".")
     os.rmdir(tmp_dir)  # let rsync create it the directory
 
-    cmd = [opts.rsync_exe, "-aHP", "--no-motd"]
+    cmd = [opts.rsync_exe, "-rtHP", "--no-motd"]
     if local_instances:
         latest_local_instance = local_instances[-1]
         cmd += ["--link-dest=" + os.path.join(opts.root_directory, latest_local_instance) + "/"]
