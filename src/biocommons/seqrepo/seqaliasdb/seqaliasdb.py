@@ -53,8 +53,9 @@ class SeqAliasDB(object):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:  # pragma: no cover
             raise RuntimeError(
-                "Upgrade required: Database schema"
-                "version is {} and code expects {}".format(schema_version, expected_schema_version)
+                "Upgrade required: Database schema" "version is {} and code expects {}".format(
+                    schema_version, expected_schema_version
+                )
             )
 
     # ############################################################################
