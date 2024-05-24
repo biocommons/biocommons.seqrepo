@@ -1,7 +1,7 @@
 import logging
 import sqlite3
+from importlib import resources
 
-import pkg_resources
 import yoyo
 
 from .._internal.translate import translate_alias_records, translate_api2db
@@ -32,7 +32,6 @@ class SeqAliasDB(object):
         check_same_thread=True,
     ):
         self._db_path = db_path
-        self._db = None
         self._writeable = writeable
 
         if translate_ncbi_namespace is not None:
@@ -234,10 +233,16 @@ class SeqAliasDB(object):
         sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
-        migration_dir = pkg_resources.resource_filename(__package__, migration_path)
+        if __package__ is None:
+            msg = (
+                "__package__ is None. This module must be part of a package to "
+                "resolve the migration files path."
+            )
+            raise ImportError(msg)
+        migration_dir = str(resources.files(__package__) / migration_path)
         migrations = yoyo.read_migrations(migration_dir)
-        assert len(migrations) > 0, (
-            "no migration scripts found -- wrong migraion path for " + __package__
-        )
+        assert (
+            len(migrations) > 0
+        ), f"no migration scripts found -- wrong migraion path for {__package__}"
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
