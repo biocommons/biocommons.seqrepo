@@ -243,6 +243,6 @@ class SeqAliasDB(object):
         migrations = yoyo.read_migrations(migration_dir)
         assert (
             len(migrations) > 0
-        ), f"no migration scripts found -- wrong migraion path for {__package__}"
+        ), f"no migration scripts found -- wrong migration path for {__package__}"
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
