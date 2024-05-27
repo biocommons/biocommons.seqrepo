@@ -1,14 +1,18 @@
+import logging
+from typing import Optional
+
+
 class DuplicateFilter:
     """
     Filters away duplicate log messages.
     Modified from https://stackoverflow.com/a/60462619/342839
     """
 
-    def __init__(self, logger=None):
+    def __init__(self, logger: Optional[logging.Logger] = None) -> None:
         self.log_keys = set()
         self.logger = logger
 
-    def filter(self, record):
+    def filter(self, record: logging.LogRecord) -> bool:
         log_key = (record.name, record.lineno, str(record.msg))
         is_duplicate = log_key in self.log_keys
         if not is_duplicate:
@@ -23,4 +27,5 @@ class DuplicateFilter:
         self.logger.addFilter(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.logger.removeFilter(self)
+        if self.logger is not None:
+            self.logger.removeFilter(self)

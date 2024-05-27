@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
 from collections.abc import Sequence
 from functools import lru_cache
+from typing import Iterator, Optional, Union
 
 import bioutils.digests
 from bioutils.digests import seq_seqhash as sha512t24u
@@ -31,45 +34,45 @@ class SequenceProxy(Sequence):
 
     """
 
-    def __init__(self, sr, namespace, alias):
+    def __init__(self, sr: SeqRepo, namespace: Optional[str], alias: str) -> None:
         self._sr = sr
         self.seq_id = sr._get_unique_seqid(alias=alias, namespace=namespace)
         self._md = sr.sequences.fetch_seqinfo(self.seq_id)
 
-    def _fetch(self, start=None, end=None):
+    def _fetch(self, start: Optional[int] = None, end: Optional[int] = None) -> str:
         seq_id = self.seq_id
         return self._sr.sequences.fetch(seq_id, start, end)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return str(self) != ""
 
-    def __eq__(self, s: str):
+    def __eq__(self, s: str) -> bool:  # type: ignore
         return str(self).__eq__(s)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, slice]) -> str:
         if isinstance(key, int):
             key = slice(key, key + 1)
         if key.step is not None:
             raise ValueError("Only contiguous sequence slices are supported")
         return self._fetch(key.start, key.stop)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self._md["len"]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"SequenceProxy(seq_id={self.seq_id}, len={len(self)})"
 
-    def __reversed__(self):
+    def __reversed__(self) -> str:  # type: ignore
         return self._fetch()[::-1]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._fetch()
 
     @property
-    def aliases(self):
+    def aliases(self) -> list[str]:
         aliases = self._sr.aliases.find_aliases(seq_id=self.seq_id)
         aliases = [":".join([a["namespace"], a["alias"]]) for a in aliases]
         return aliases
@@ -94,14 +97,14 @@ class SeqRepo(object):
 
     def __init__(
         self,
-        root_dir,
-        writeable=False,
-        upcase=True,
-        translate_ncbi_namespace=None,
-        check_same_thread=False,
-        use_sequenceproxy=True,
-        fd_cache_size=0,
-    ):
+        root_dir: str,
+        writeable: bool = False,
+        upcase: bool = True,
+        translate_ncbi_namespace: Optional[str] = None,
+        check_same_thread: bool = False,
+        use_sequenceproxy: bool = True,
+        fd_cache_size: Optional[int] = 0,
+    ) -> None:
         self._root_dir = root_dir
         self._upcase = upcase
         self._db_path = os.path.join(self._root_dir, "aliases.sqlite3")
@@ -139,11 +142,11 @@ class SeqRepo(object):
                 "this flag will be removed"
             )
 
-    def __contains__(self, nsa):
+    def __contains__(self, nsa: str) -> bool:
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
         return any(self.aliases.find_aliases(alias=a, namespace=ns))
 
-    def __getitem__(self, nsa):
+    def __getitem__(self, nsa: str) -> Union[SequenceProxy, str]:
         """lookup aliases, optionally namespaced, like NM_01234.5 or NCBI:NM_01234.5
 
         If SeqRepo was instantiated with use_sequenceproxy=True (the
@@ -157,7 +160,7 @@ class SeqRepo(object):
         else:
             return self.fetch(alias=a, namespace=ns)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         """iterate over all sequences, yielding tuples of (sequence_record, [alias_records])
 
         Both records are dicts.
@@ -166,10 +169,10 @@ class SeqRepo(object):
             arecs = self.aliases.find_aliases(seq_id=srec["seq_id"])
             yield (srec, arecs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "SeqRepo(root_dir={self._root_dir}, writeable={self._writeable})".format(self=self)
 
-    def commit(self):
+    def commit(self) -> None:
         self.sequences.commit()
         self.aliases.commit()
         if self._pending_sequences + self._pending_aliases > 0:
@@ -184,20 +187,30 @@ class SeqRepo(object):
         self._pending_sequences_len = 0
         self._pending_aliases = 0
 
-    def fetch(self, alias, start=None, end=None, namespace=None):
+    def fetch(
+        self,
+        alias: str,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        namespace: Optional[str] = None,
+    ) -> str:
         seq_id = self._get_unique_seqid(alias=alias, namespace=namespace)
         return self.sequences.fetch(seq_id, start, end)
 
-    def fetch_uri(self, uri, start=None, end=None):
+    def fetch_uri(self, uri: str, start: Optional[int] = None, end: Optional[int] = None) -> str:
         """fetch sequence for URI/CURIE of the form namespace:alias, such as
         NCBI:NM_000059.3.
 
         """
+        match = uri_re.match(uri)
+        if match is None:
+            msg = f"Unable to parse {uri} as URI."
+            raise ValueError(msg)
 
-        namespace, alias = uri_re.match(uri).groups()
+        namespace, alias = match.groups()
         return self.fetch(alias=alias, namespace=namespace, start=start, end=end)
 
-    def store(self, seq, nsaliases):
+    def store(self, seq: str, nsaliases: list[dict[str, str]]) -> tuple[int, int]:
         """nsaliases is a list of dicts, like:
 
         [{"namespace": "en", "alias": "rose"},
@@ -270,11 +283,11 @@ class SeqRepo(object):
 
     def translate_alias(
         self,
-        alias,
-        namespace=None,
-        target_namespaces=None,
-        translate_ncbi_namespace=None,
-    ):
+        alias: str,
+        namespace: Optional[str] = None,
+        target_namespaces: Optional[list[str]] = None,
+        translate_ncbi_namespace: Optional[str] = None,
+    ) -> list[str]:
         """given an alias and optional namespace, return a list of all other
         aliases for same sequence
 
@@ -293,8 +306,11 @@ class SeqRepo(object):
         return aliases
 
     def translate_identifier(
-        self, identifier, target_namespaces=None, translate_ncbi_namespace=None
-    ):
+        self,
+        identifier: str,
+        target_namespaces: Optional[list[str]] = None,
+        translate_ncbi_namespace: Optional[str] = None,
+    ) -> list[str]:
         """Given a string identifier, return a list of aliases (as
         identifiers) that refer to the same sequence.
 
@@ -316,7 +332,7 @@ class SeqRepo(object):
     # Internal Methods
 
     @lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
-    def _get_unique_seqid(self, alias, namespace):
+    def _get_unique_seqid(self, alias: str, namespace: str) -> str:
         """given alias and namespace, return seq_id if exactly one distinct
         sequence id is found, raise KeyError if there's no match, or
         raise ValueError if there's more than one match.
@@ -332,7 +348,7 @@ class SeqRepo(object):
             raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
         return seq_ids.pop()
 
-    def _update_digest_aliases(self, seq_id, seq):
+    def _update_digest_aliases(self, seq_id: str, seq: str) -> int:
         """compute digest aliases for seq and update; returns number of digest
         aliases (some of which may have already existed)
 
