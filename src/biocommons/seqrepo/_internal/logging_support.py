@@ -1,5 +1,6 @@
 import logging
-from typing import Optional
+from types import TracebackType
+from typing import Optional, Type
 
 
 class DuplicateFilter:
@@ -26,6 +27,6 @@ class DuplicateFilter:
             )
         self.logger.addFilter(self)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Type[Exception], exc_value: Exception, traceback: TracebackType):
         if self.logger is not None:
             self.logger.removeFilter(self)
