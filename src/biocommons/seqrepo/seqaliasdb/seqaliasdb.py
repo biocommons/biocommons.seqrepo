@@ -167,9 +167,7 @@ class SeqAliasDB(object):
         cursor.execute(sql)
         return dict(cursor.fetchone())
 
-    def store_alias(
-        self, seq_id: str, namespace: str, alias: Optional[str]
-    ) -> Union[None, str, int]:
+    def store_alias(self, seq_id: str, namespace: str, alias: str) -> Union[None, str, int]:
         """associate a namespaced alias with a sequence
 
         Alias association with sequences is idempotent: duplicate
@@ -182,7 +180,9 @@ class SeqAliasDB(object):
 
         ns_api2db = translate_api2db(namespace, alias)
         if ns_api2db:
-            namespace, alias = ns_api2db[0]
+            namespace, new_alias = ns_api2db[0]
+            if new_alias is not None:
+                alias = new_alias
 
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         cursor = self._db.cursor()
