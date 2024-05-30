@@ -56,9 +56,9 @@ def translate_api2db(namespace: str, alias: Optional[str]) -> list[tuple[str, Op
         return [
             ("VMC", "GS_" + alias if alias else None),
         ]
-    if namespace == "ga4gh" and alias is not None:
+    if namespace == "ga4gh":
         return [
-            ("VMC", "GS_" + alias[3:]),
+            ("VMC", "GS_" + alias[3:] if alias else None),
         ]
     return []
 
