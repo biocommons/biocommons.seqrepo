@@ -26,6 +26,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+from typing import Iterable, Iterator, Optional
 
 import bioutils.assemblies
 import bioutils.seqfetcher
@@ -50,7 +51,7 @@ instance_name_re = re.compile(
 _logger = logging.getLogger(__name__)
 
 
-def _get_remote_instances(opts):
+def _get_remote_instances(opts: argparse.Namespace) -> list[str]:
     line_re = re.compile(r"d[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)")
     rsync_cmd = [
         opts.rsync_exe,
@@ -64,21 +65,21 @@ def _get_remote_instances(opts):
     return sorted(list(filter(instance_name_new_re.match, dirs)))
 
 
-def _get_local_instances(opts):
+def _get_local_instances(opts: argparse.Namespace) -> list[str]:
     return sorted(list(filter(instance_name_re.match, os.listdir(opts.root_directory))))
 
 
-def _latest_instance(opts):
+def _latest_instance(opts: argparse.Namespace) -> Optional[str]:
     instances = _get_local_instances(opts)
     return instances[-1] if instances else None
 
 
-def _latest_instance_path(opts):
+def _latest_instance_path(opts: argparse.Namespace) -> Optional[str]:
     li = _latest_instance(opts)
     return os.path.join(opts.root_directory, li) if li else None
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     epilog = (
         f"seqrepo {__version__}"
         "See https://github.com/biocommons/biocommons.seqrepo for more information"
@@ -297,7 +298,7 @@ def parse_arguments():
 ############################################################################
 
 
-def add_assembly_names(opts):
+def add_assembly_names(opts: argparse.Namespace) -> None:
     """add assembly names as aliases to existing sequences
 
     Specifically, associate aliases like GRCh37.p9:1 with existing
@@ -382,7 +383,7 @@ def add_assembly_names(opts):
         sr.commit()
 
 
-def export(opts):
+def export(opts: argparse.Namespace) -> None:
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
 
@@ -396,7 +397,7 @@ def export(opts):
                     translate_ncbi_namespace=True,
                 )
 
-        def _rec_iterator():
+        def _rec_iterator_aliases():
             """yield (srec, [arec]) tuples to export"""
             grouped_alias_iterator = itertools.groupby(
                 alias_generator(), key=lambda arec: (arec["seq_id"])
@@ -406,9 +407,11 @@ def export(opts):
                 srec["seq"] = sr.sequences.fetch(seq_id)
                 yield srec, arecs
 
+        _rec_iterator = _rec_iterator_aliases
+
     elif opts.namespace:
 
-        def _rec_iterator():
+        def _rec_iterator_namespace():
             """yield (srec, [arec]) tuples to export"""
             alias_iterator = sr.aliases.find_aliases(
                 namespace=opts.namespace, translate_ncbi_namespace=True
@@ -421,10 +424,14 @@ def export(opts):
                 srec["seq"] = sr.sequences.fetch(seq_id)
                 yield srec, arecs
 
+        _rec_iterator = _rec_iterator_namespace
+
     else:
 
-        def _rec_iterator():
+        def _rec_iterator_sr():
             yield from sr
+
+        _rec_iterator = _rec_iterator_sr
 
     for srec, arecs in _rec_iterator():
         nsad = _convert_alias_records_to_ns_dict(arecs)
@@ -453,7 +460,7 @@ def export_aliases(opts):
         print("\t".join(nsaliases))
 
 
-def fetch_load(opts):
+def fetch_load(opts: argparse.Namespace) -> None:
     disable_bar = _logger.getEffectiveLevel() < logging.WARNING
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
@@ -463,7 +470,7 @@ def fetch_load(opts):
     for ac in ac_bar:
         ac_bar.set_description(ac)
         aliases_cur = sr.aliases.find_aliases(namespace=opts.namespace, alias=ac)
-        if aliases_cur.fetchone() is not None:
+        if aliases_cur:
             _logger.info("{ac} already in {sr}".format(ac=ac, sr=sr))
             continue
         seq = bioutils.seqfetcher.fetch_seq(ac)
@@ -473,28 +480,28 @@ def fetch_load(opts):
     sr.commit()
 
 
-def init(opts):
+def init(opts: argparse.Namespace) -> None:
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     if os.path.exists(seqrepo_dir) and len(os.listdir(seqrepo_dir)) > 0:
         raise IOError("{seqrepo_dir} exists and is not empty".format(seqrepo_dir=seqrepo_dir))
     sr = SeqRepo(seqrepo_dir, writeable=True)  # noqa: F841
 
 
-def list_local_instances(opts):
+def list_local_instances(opts: argparse.Namespace) -> None:
     instances = _get_local_instances(opts)
     print("Local instances ({})".format(opts.root_directory))
     for i in instances:
         print("  " + i)
 
 
-def list_remote_instances(opts):
+def list_remote_instances(opts: argparse.Namespace) -> None:
     instances = _get_remote_instances(opts)
     print("Remote instances ({})".format(opts.remote_host))
     for i in instances:
         print("  " + i)
 
 
-def load(opts):
+def load(opts: argparse.Namespace) -> None:
     # TODO: drop this test
     if opts.namespace == "-":
         raise RuntimeError("namespace == '-' is no longer supported")
@@ -519,8 +526,10 @@ def load(opts):
         else:
             fh = io.open(fn, mode="rt", encoding="ascii")
         _logger.info("Opened " + fn)
-        seq_bar = tqdm.tqdm(FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False)
-        for defline, seq in seq_bar:
+        seq_bar = tqdm.tqdm(
+            FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False  # type: ignore noqa: E501
+        )
+        for defline, seq in seq_bar:  # type: ignore
             n_seqs_seen += 1
             seq_bar.set_description(
                 "sequences: {nsa}/{nss} added/seen; aliases: {naa} added".format(
@@ -535,7 +544,7 @@ def load(opts):
     sr.commit()
 
 
-def pull(opts):
+def pull(opts: argparse.Namespace) -> None:
     remote_instances = _get_remote_instances(opts)
     if opts.instance_name:
         instance_name = opts.instance_name
@@ -569,7 +578,7 @@ def pull(opts):
             update_latest(opts, instance_name)
 
 
-def show_status(opts):
+def show_status(opts: argparse.Namespace) -> SeqRepo:
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     tot_size = sum(
         os.path.getsize(os.path.join(dirpath, filename))
@@ -596,7 +605,7 @@ def show_status(opts):
     return sr
 
 
-def snapshot(opts):
+def snapshot(opts: argparse.Namespace) -> None:
     """snapshot a seqrepo data directory by hardlinking sequence files,
     copying sqlite databases, and remove write permissions from directories
 
@@ -675,7 +684,7 @@ def snapshot(opts):
     os.chdir(wd)
 
 
-def start_shell(opts):
+def start_shell(opts: argparse.Namespace) -> None:
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)  # noqa: 682
     import IPython
@@ -691,20 +700,20 @@ def start_shell(opts):
     )
 
 
-def upgrade(opts):
+def upgrade(opts: argparse.Namespace) -> None:
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
-    sr = SeqRepo(seqrepo_dir, writeable=True)
-    print("upgraded to schema version {}".format(sr.seqinfo.schema_version()))
+    sr = SeqRepo(seqrepo_dir, writeable=False)
+    print("upgraded to schema version {}".format(sr.sequences.schema_version()))
 
 
-def update_digests(opts):
+def update_digests(opts: argparse.Namespace) -> None:
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir, writeable=True)
     for srec in tqdm.tqdm(sr.sequences):
         sr._update_digest_aliases(srec["seq_id"], srec["seq"])
 
 
-def update_latest(opts, mri=None):
+def update_latest(opts: argparse.Namespace, mri: Optional[str] = None) -> None:
     if not mri:
         instances = _get_local_instances(opts)
         if not instances:
@@ -720,7 +729,7 @@ def update_latest(opts, mri=None):
     _logger.info("Linked `latest` -> `{}`".format(mri))
 
 
-def main():
+def main() -> None:
     opts = parse_arguments()
 
     verbose_log_level = (
@@ -734,7 +743,7 @@ def main():
 # INTERNAL
 
 
-def _convert_alias_records_to_ns_dict(records):
+def _convert_alias_records_to_ns_dict(records: Iterable[dict]) -> dict:
     """converts a set of alias db records to a dict like {ns: [aliases], ...}
     aliases are lexicographicaly sorted
     """
@@ -745,7 +754,7 @@ def _convert_alias_records_to_ns_dict(records):
     }
 
 
-def _wrap_lines(seq, line_width):
+def _wrap_lines(seq: str, line_width: int) -> Iterator[str]:
     for i in range(0, len(seq), line_width):
         yield seq[i : i + line_width]
 

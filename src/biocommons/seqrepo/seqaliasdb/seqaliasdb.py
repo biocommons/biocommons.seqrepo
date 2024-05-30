@@ -1,5 +1,6 @@
 import logging
 import sqlite3
+from typing import Iterator, Optional, Union
 
 import pkg_resources
 import yoyo
@@ -26,13 +27,12 @@ class SeqAliasDB(object):
 
     def __init__(
         self,
-        db_path,
-        writeable=False,
-        translate_ncbi_namespace=None,
-        check_same_thread=True,
-    ):
+        db_path: str,
+        writeable: bool = False,
+        translate_ncbi_namespace: Optional[str] = None,
+        check_same_thread: bool = True,
+    ) -> None:
         self._db_path = db_path
-        self._db = None
         self._writeable = writeable
 
         if translate_ncbi_namespace is not None:
@@ -60,10 +60,10 @@ class SeqAliasDB(object):
     # ############################################################################
     # Special methods
 
-    def __del__(self):
+    def __del__(self) -> None:
         self._db.close()
 
-    def __contains__(self, seq_id):
+    def __contains__(self, seq_id: str) -> bool:
         cursor = self._db.cursor()
         cursor.execute(
             "select exists(select 1 from seqalias where seq_id = ? limit 1) as ex",
@@ -75,11 +75,13 @@ class SeqAliasDB(object):
     # ############################################################################
     # Public methods
 
-    def commit(self):
+    def commit(self) -> None:
         if self._writeable:
             self._db.commit()
 
-    def fetch_aliases(self, seq_id, current_only=True, translate_ncbi_namespace=None):
+    def fetch_aliases(
+        self, seq_id: str, current_only: bool = True, translate_ncbi_namespace: Optional[str] = None
+    ) -> list[dict]:
         """return list of alias annotation records (dicts) for a given seq_id"""
         _logger.warning(
             "SeqAliasDB::fetch_aliases() is deprecated; use find_aliases(seq_id=...) instead"
@@ -93,12 +95,12 @@ class SeqAliasDB(object):
 
     def find_aliases(
         self,
-        seq_id=None,
-        namespace=None,
-        alias=None,
-        current_only=True,
-        translate_ncbi_namespace=None,
-    ):
+        seq_id: Optional[str] = None,
+        namespace: Optional[str] = None,
+        alias: Optional[str] = None,
+        current_only: bool = True,
+        translate_ncbi_namespace: Optional[bool] = None,
+    ) -> Iterator[dict]:
         """returns iterator over alias annotation dicts that match criteria
 
         The arguments, all optional, restrict the records that are
@@ -150,13 +152,13 @@ class SeqAliasDB(object):
         cursor.execute(sql, params)
         return translate_alias_records(dict(r) for r in cursor)
 
-    def schema_version(self):
+    def schema_version(self) -> int:
         """return schema version as integer"""
         cursor = self._db.cursor()
         cursor.execute("select value from meta where key = 'schema version'")
         return int(cursor.fetchone()[0])
 
-    def stats(self):
+    def stats(self) -> dict:
         sql = """select count(*) as n_aliases, sum(is_current) as n_current,
         count(distinct seq_id) as n_sequences, count(distinct namespace) as
         n_namespaces, min(added) as min_ts, max(added) as max_ts from
@@ -165,7 +167,7 @@ class SeqAliasDB(object):
         cursor.execute(sql)
         return dict(cursor.fetchone())
 
-    def store_alias(self, seq_id, namespace, alias):
+    def store_alias(self, seq_id: str, namespace: str, alias: str) -> Union[None, str, int]:
         """associate a namespaced alias with a sequence
 
         Alias association with sequences is idempotent: duplicate
@@ -178,7 +180,9 @@ class SeqAliasDB(object):
 
         ns_api2db = translate_api2db(namespace, alias)
         if ns_api2db:
-            namespace, alias = ns_api2db[0]
+            namespace, new_alias = ns_api2db[0]
+            if new_alias is not None:
+                alias = new_alias
 
         log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
         cursor = self._db.cursor()
@@ -217,7 +221,7 @@ class SeqAliasDB(object):
     # ############################################################################
     # Internal methods
 
-    def _dump_aliases(self):  # pragma: no cover
+    def _dump_aliases(self) -> None:  # pragma: no cover
         import prettytable
 
         cursor = self._db.cursor()
@@ -228,16 +232,18 @@ class SeqAliasDB(object):
             pt.add_row([r[f] for f in fields])
         print(pt)
 
-    def _upgrade_db(self):
+    def _upgrade_db(self) -> None:
         """upgrade db using scripts for specified (current) schema version"""
         migration_path = "_data/migrations"
         sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
+        if __package__ is None:
+            raise ValueError("__package__ must be accessible to retrieve migration files")
         migration_dir = pkg_resources.resource_filename(__package__, migration_path)
         migrations = yoyo.read_migrations(migration_dir)
-        assert len(migrations) > 0, (
-            "no migration scripts found -- wrong migraion path for " + __package__
-        )
+        assert (
+            len(migrations) > 0
+        ), f"no migration scripts found -- wrong migraion path for {__package__}"
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)

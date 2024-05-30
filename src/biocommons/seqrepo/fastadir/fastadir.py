@@ -5,6 +5,7 @@ import logging
 import os
 import sqlite3
 import time
+from typing import Any, Iterator, Optional
 
 import yoyo
 
@@ -50,13 +51,18 @@ class FastaDir(BaseReader, BaseWriter):
 
     """
 
-    def __init__(self, root_dir, writeable=False, check_same_thread=True, fd_cache_size=0):
+    def __init__(
+        self,
+        root_dir: str,
+        writeable: bool = False,
+        check_same_thread: bool = True,
+        fd_cache_size: Optional[int] = 0,
+    ) -> None:
         """Creates a new sequence repository if necessary, and then opens it"""
 
         self._root_dir = root_dir
         self._db_path = os.path.join(self._root_dir, "db.sqlite3")
         self._writing = None
-        self._db = None
         self._writeable = writeable
 
         if self._writeable:
@@ -93,13 +99,13 @@ class FastaDir(BaseReader, BaseWriter):
 
         self._open_for_reading = _open_for_reading
 
-    def __del__(self):
+    def __del__(self) -> None:
         self._db.close()
 
     # ############################################################################
     # Special methods
 
-    def __contains__(self, seq_id):
+    def __contains__(self, seq_id: str) -> bool:
         c = self._fetch_one(
             "select exists(select 1 from seqinfo where seq_id = ? limit 1) as ex",
             (seq_id,),
@@ -107,7 +113,7 @@ class FastaDir(BaseReader, BaseWriter):
 
         return True if c["ex"] else False
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[dict]:
         sql = "select * from seqinfo order by seq_id"
         cursor = self._db.cursor()
         cursor.execute(sql)
@@ -117,19 +123,19 @@ class FastaDir(BaseReader, BaseWriter):
             yield recd
         cursor.close()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.stats()["n_sequences"]
 
     # ############################################################################
     # Public methods
 
-    def commit(self):
+    def commit(self) -> None:
         if self._writing is not None:
             self._writing["fabgz"].close()
             self._db.commit()
             self._writing = None
 
-    def fetch(self, seq_id, start=None, end=None):
+    def fetch(self, seq_id: str, start: Optional[int] = None, end: Optional[int] = None) -> str:
         """fetch sequence by seq_id, optionally with start, end bounds"""
         rec = self.fetch_seqinfo(seq_id)
 
@@ -149,17 +155,17 @@ class FastaDir(BaseReader, BaseWriter):
         return seq
 
     @functools.lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
-    def fetch_seqinfo(self, seq_id):
+    def fetch_seqinfo(self, seq_id: str) -> dict:
         """fetch sequence info by seq_id"""
         rec = self._fetch_one(
-            """select * from seqinfo where seq_id = ? order by added desc""", [seq_id]
+            """select * from seqinfo where seq_id = ? order by added desc""", (seq_id,)
         )
 
         if rec is None:
             raise KeyError(seq_id)
         return dict(rec)
 
-    def schema_version(self):
+    def schema_version(self) -> Optional[int]:
         """return schema version as integer"""
         try:
             rec = self._fetch_one("select value from meta where key = 'schema version'")
@@ -167,13 +173,13 @@ class FastaDir(BaseReader, BaseWriter):
         except sqlite3.OperationalError:
             return None
 
-    def stats(self):
+    def stats(self) -> dict:
         sql = """select count(distinct seq_id) n_sequences, sum(len) tot_length,
               min(added) min_ts, max(added) as max_ts, count(distinct relpath) as
               n_files from seqinfo"""
         return dict(self._fetch_one(sql))
 
-    def store(self, seq_id, seq):
+    def store(self, seq_id: str, seq: str) -> str:
         """store a sequence with key seq_id.  The sequence itself is stored in
         a fasta file and a reference to it in the sqlite3 database.
 
@@ -213,25 +219,27 @@ class FastaDir(BaseReader, BaseWriter):
     # ############################################################################
     # Internal methods
 
-    def _fetch_one(self, sql, params=()):
+    def _fetch_one(self, sql: str, params: tuple[str, ...] = ()) -> Any:
         cursor = self._db.cursor()
         cursor.execute(sql, params)
         val = cursor.fetchone()
         cursor.close()
         return val
 
-    def _upgrade_db(self):
+    def _upgrade_db(self) -> None:
         """upgrade db using scripts for specified (current) schema version"""
         migration_path = "_data/migrations"
         sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
         backend = yoyo.get_backend(db_url)
+        if __package__ is None:
+            raise ValueError("__package__ must be accessible to retrieve migration files")
         migration_dir = importlib.resources.files(__package__) / migration_path
         migrations = yoyo.read_migrations(str(migration_dir))
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
 
-    def _dump_aliases(self):
+    def _dump_aliases(self) -> None:
         import prettytable
 
         fields = "seq_id len alpha added relpath".split()
