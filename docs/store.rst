@@ -9,7 +9,7 @@ SeqRepo can store user-provided sequences and sequence aliases alongside biocomm
 
    * In UNIX environments, use commands like ``ls -al`` to check file and directory permissions, and ``chown`` and ``chmod`` to change file/directory ownership and permissions, respectively (see e.g. `here <https://www.redhat.com/sysadmin/linux-file-permissions-explained>`_ for more information). In recent SeqRepo releases, files downloaded by the ``pull`` command should inherit permissions from their parent directory, so if a SeqRepo database needs to be writeable, it's often easiest to download it to a location within user space.
 
-   * For a sqlite database to be writeable, **both the file and its parent directory must be writeable by the user.** Additionally, no other process may currently be using the sqlite database file. Ensure that this is the case for both `aliases.sqlite3` and the `db.sqlite3` file within ``$SEQREPO_ROOT_DIR/sequences``.
+   * For a sqlite database to be writeable, **both the database file and its parent directory must be writeable by the user.** Additionally, no other process may currently be using the sqlite database file. Ensure that this is the case for both `aliases.sqlite3` and the `db.sqlite3` file within ``$SEQREPO_ROOT_DIR/sequences``.
 
 To add a new sequence and/or aliases in a Python environment, construct a ``SeqRepo`` instance with the ``writeable`` parameter set to ``True``, and pass the sequence and a list of namespaced aliases (i.e. a ``dict`` with ``namespace`` and ``alias`` keys) to the ``store()`` method.
 
