@@ -15,9 +15,10 @@ All translations occur in seqaliasdb.
 
 import copy
 import datetime
+from typing import Iterable, Iterator, Optional
 
 
-def translate_db2api(namespace, alias):
+def translate_db2api(namespace: str, alias: str) -> list[tuple[str, Optional[str]]]:
     """
     >>> translate_db2api("VMC", "GS_1234")
     [('sha512t24u', '1234'), ('ga4gh', 'SQ.1234')]
@@ -38,7 +39,7 @@ def translate_db2api(namespace, alias):
     return []
 
 
-def translate_api2db(namespace, alias):
+def translate_api2db(namespace: str, alias: Optional[str]) -> list[tuple[str, Optional[str]]]:
     """
     >>> translate_api2db("ga4gh", "SQ.1234")
     [('VMC', 'GS_1234')]
@@ -57,12 +58,12 @@ def translate_api2db(namespace, alias):
         ]
     if namespace == "ga4gh":
         return [
-            ("VMC", "GS_" + alias[3:]),
+            ("VMC", "GS_" + alias[3:] if alias else None),
         ]
     return []
 
 
-def translate_alias_records(aliases_itr):
+def translate_alias_records(aliases_itr: Iterable[dict]) -> Iterator[dict]:
     """given an iterator of find_aliases results, return a stream with
     translated records"""
 
