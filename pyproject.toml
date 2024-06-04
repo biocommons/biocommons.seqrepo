@@ -25,6 +25,7 @@ dependencies = [
     "six ~= 1.16",
     "tqdm ~= 4.66",
     "yoyo-migrations ~= 8.2",
+    "setuptools",  # pin until yoyo-migrations doesn't use pkg_resources
 ]
 
 [project.optional-dependencies]
