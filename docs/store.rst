@@ -24,8 +24,11 @@ To add a new sequence and/or aliases in a Python environment, construct a ``SeqR
    n_seqs_added, n_aliases_added = sr.store(sequence, nsaliases)
    print(n_seqs_added, n_aliases_added)
    # (1, 1)
+   sr.commit()
 
 ``store()`` returns a tuple containing the number of new sequences and aliases that were successfully added (the sha512t24u sequence hash is not counted as a new alias, because it is automatically added with a new sequence as the main sequence identifier).
+
+Note that the ``commit()`` method MUST be called before the end of an interpreter session for data to be durably committed to the database. ``store()`` only stages pending database additions, but only makes calls to ``commit()`` when the number of staged changes exceeds a (relatively large) threshold, for performance reasons.
 
 .. and this should be a "tip" admonition or something of that nature
 
