@@ -10,9 +10,6 @@ Try::
   $ seqrepo --help
 
 """
-
-from __future__ import division, print_function
-
 import argparse
 import datetime
 import gzip
