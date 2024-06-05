@@ -528,7 +528,7 @@ def load(opts: argparse.Namespace) -> None:
             FastaIter(fh),  # type: ignore
             unit=" seqs",
             disable=disable_bar,
-            leave=False,  # type: ignore noqa: E501
+            leave=False,
         )
         for defline, seq in seq_bar:  # type: ignore
             n_seqs_seen += 1
