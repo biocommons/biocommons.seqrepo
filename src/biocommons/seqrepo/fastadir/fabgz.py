@@ -5,9 +5,6 @@ A file may not currently be opened for reading and writing at the same time
 Files must be named as .fa.bgz to be recognized as blocked gzip compressed
 
 """
-
-from __future__ import unicode_literals
-
 import io
 import logging
 import os
