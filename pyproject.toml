@@ -29,20 +29,16 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "bandit ~= 1.7",
-    "black ~= 22.3",
     "build ~= 0.8",
-    "flake8 ~= 4.0",
     "ipython ~= 8.4",
-    "isort ~= 5.10",
     "mypy-extensions ~= 1.0",
     "pre-commit ~= 3.4",
-    "pylint ~= 2.14",
     "pytest-cov ~= 4.1",
     "pytest-optional-tests",
     "pytest ~= 7.1",
     "pyright~=1.1",
     "requests_html ~= 0.10",
+    "ruff ~= 0.4.4",
     "tox ~= 3.25",
     "vcrpy",
 ]
@@ -117,20 +113,68 @@ exclude_lines = [
     "if __name__ == .__main__.:",
 ]
 
-[tool.black]
-line-length = 100
-
-[tool.isort]
-profile = "black"
-src_paths = ["src", "tests"]
-
 [tool.pyright]
 include = ["src", "tests"]
 
+[tool.ruff]
+src = ["src", "test"]
+line-length = 100
 
-[tool.pylint.'MESSAGES CONTROL']
-disable = "R0913"
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "W",
+    "I",
+    "N",
+    "UP",
+    "YTT",
+    "S",
+    "B",
+    "A",
+    "C4",
+    "DTZ",
+    "EM",
+    "LOG",
+    "G",
+    "PIE",
+    "PT",
+    "RSE",
+    "RET",
+    "SIM",
+    "ARG",
+    "PTH",
+    "PL",
+    "TRY",
+    "PERF",
+    "FURB",
+    "RUF",
+]
+fixable = [
+    "F401",
+    "F541",
+    "I",
+    "D",
+    "UP",
+    "B",
+    "C4",
+    "EM",
+    "PIE",
+    "PT",
+    "RSE",
+    "RET",
+    "SIM",
+    "PERF",
+    "FURB",
+    "RUF",
+]
+ignore = [
+    # ignore for compatibility with formatter
+    "W191", "E111", "E114", "E117", "S321",
+    # other
+    "PLR0913",
+]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
 
-[tool.pylint.format]
-max-line-length = 100
