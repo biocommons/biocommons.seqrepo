@@ -116,7 +116,7 @@ class FabgzWriter(object):
         super(FabgzWriter, self).__init__()
 
         self.filename = filename
-        self.fh = None
+        self._fh = None
         self._basepath, suffix = os.path.splitext(self.filename)
         if suffix != ".bgz":
             raise RuntimeError("Path must end with .bgz")
