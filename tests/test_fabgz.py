@@ -3,7 +3,6 @@ import shutil
 import tempfile
 
 import pytest
-import six
 
 from biocommons.seqrepo.fastadir.fabgz import FabgzReader, FabgzWriter
 
@@ -19,18 +18,18 @@ def test_write_reread():
 
     # write sequences
     faw = FabgzWriter(fabgz_fn)
-    for seq_id, seq in six.iteritems(sequences):
+    for seq_id, seq in sequences.items():
         faw.store(seq_id, seq)
     # add twice to demonstrate non-redundancy
-    for seq_id, seq in six.iteritems(sequences):
+    for seq_id, seq in sequences.items():
         faw.store(seq_id, seq)
     faw.close()
 
     # now read them back
     far = FabgzReader(fabgz_fn)
-    assert far.filename.startswith(tmpdir.encode())
+    assert far.filename.startswith(tmpdir.encode())  # type: ignore
     assert set(far.keys()) == set(sequences.keys())
-    assert 5 == len(far), "expected 5 sequences"
+    assert 5 == len(far), "expected 5 sequences"  # type: ignore
     assert "l10" in far.keys()
     assert far["l10"] == seed * 10
     for seq_id in far.keys():
