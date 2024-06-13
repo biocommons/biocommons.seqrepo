@@ -27,9 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-shell = [
-    "ipython ~= 8.4",
-]
+shell = ["ipython ~= 8.4"]
 dev = [
     "bandit ~= 1.7",
     "black ~= 22.3",
