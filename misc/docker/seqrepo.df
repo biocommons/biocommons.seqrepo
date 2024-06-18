@@ -37,7 +37,6 @@ RUN pip3 install --upgrade \
     pygments \
     pysam \
     simplegeneric \
-    six \
     tqdm \
     traitlets \
     wcwidth \

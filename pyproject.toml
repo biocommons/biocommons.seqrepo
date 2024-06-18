@@ -22,7 +22,6 @@ dependencies = [
     "ipython ~= 8.4",
     "pysam ~= 0.22",
     "requests ~= 2.31",
-    "six ~= 1.16",
     "tqdm ~= 4.66",
     "yoyo-migrations ~= 8.2",
 ]
