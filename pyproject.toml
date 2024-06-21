@@ -29,7 +29,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "bandit ~= 1.7",
-    "black ~= 22.3",
     "build ~= 0.8",
     "flake8 ~= 4.0",
     "ipython ~= 8.4",
@@ -42,6 +41,7 @@ dev = [
     "pytest ~= 7.1",
     "pyright~=1.1",
     "requests_html ~= 0.10",
+    "ruff == 0.4.4",
     "tox ~= 3.25",
     "vcrpy",
 ]
@@ -116,9 +116,6 @@ exclude_lines = [
     "if __name__ == .__main__.:",
 ]
 
-[tool.black]
-line-length = 100
-
 [tool.isort]
 profile = "black"
 src_paths = ["src", "tests"]
@@ -133,3 +130,7 @@ disable = "R0913"
 
 [tool.pylint.format]
 max-line-length = 100
+
+[tool.ruff]
+src = ["src", "tests"]
+line-length = 100

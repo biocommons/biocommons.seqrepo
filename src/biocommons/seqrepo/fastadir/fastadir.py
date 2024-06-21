@@ -81,9 +81,7 @@ class FastaDir(BaseReader, BaseWriter):
         if schema_version != expected_schema_version:
             raise RuntimeError(
                 """Upgrade required: Database schema
-            version is {} and code expects {}""".format(
-                    schema_version, expected_schema_version
-                )
+            version is {} and code expects {}""".format(schema_version, expected_schema_version)
             )
 
         if fd_cache_size == 0:
@@ -142,9 +140,7 @@ class FastaDir(BaseReader, BaseWriter):
         if self._writing and self._writing["relpath"] == rec["relpath"]:
             _logger.warning(
                 """Fetching from file opened for writing;
-            closing first ({})""".format(
-                    rec["relpath"]
-                )
+            closing first ({})""".format(rec["relpath"])
             )
             self.commit()
 
