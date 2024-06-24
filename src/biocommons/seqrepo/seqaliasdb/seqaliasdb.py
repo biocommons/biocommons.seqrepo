@@ -1,3 +1,4 @@
+import datetime
 import logging
 import sqlite3
 from importlib import resources
@@ -20,6 +21,9 @@ if sqlite3.sqlite_version_info < min_sqlite_version_info:  # pragma: no cover
         __package__, min_sqlite_version, sqlite3.sqlite_version
     )
     raise ImportError(msg)
+
+
+sqlite3.register_converter("timestamp", lambda val: datetime.datetime.fromisoformat(val.decode()))
 
 
 class SeqAliasDB(object):
