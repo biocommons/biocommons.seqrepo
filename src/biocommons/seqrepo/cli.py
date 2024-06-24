@@ -688,7 +688,11 @@ def snapshot(opts: argparse.Namespace) -> None:
 def start_shell(opts: argparse.Namespace) -> None:
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)  # noqa: 682
-    import IPython
+    try:
+        import IPython
+    except ImportError as e:
+        msg = "Unable to import IPython to start SeqRepo shell. Is the `shell` dependency group installed?"  # noqa: E501
+        raise ImportError(msg) from e
 
     IPython.embed(
         header="\n".join(
