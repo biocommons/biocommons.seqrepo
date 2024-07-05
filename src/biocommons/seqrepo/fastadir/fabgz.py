@@ -6,8 +6,6 @@ Files must be named as .fa.bgz to be recognized as blocked gzip compressed
 
 """
 
-from __future__ import unicode_literals
-
 import io
 import logging
 import os
@@ -19,7 +17,6 @@ import threading
 from types import TracebackType
 from typing import Optional, Type
 
-import six
 from pysam import FastaFile
 from typing_extensions import Self
 
@@ -48,7 +45,6 @@ def _get_bgzip_version(exe: str) -> str:
 
 def _find_bgzip() -> str:
     """return path to bgzip if found and meets version requirements, else exception"""
-    missing_file_exception = OSError if six.PY2 else FileNotFoundError
     min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
     exe = os.environ.get("SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip")
 
@@ -56,7 +52,7 @@ def _find_bgzip() -> str:
         bgzip_version = _get_bgzip_version(exe)
     except AttributeError:
         raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
-    except missing_file_exception:
+    except FileNotFoundError:
         raise RuntimeError(
             "{exe} doesn't exist; you need to install htslib and tabix "
             "(See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe)
@@ -119,7 +115,7 @@ class FabgzWriter(object):
         super(FabgzWriter, self).__init__()
 
         self.filename = filename
-        self.fh = None
+        self._fh = None
         self._basepath, suffix = os.path.splitext(self.filename)
         if suffix != ".bgz":
             raise RuntimeError("Path must end with .bgz")

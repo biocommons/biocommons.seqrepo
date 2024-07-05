@@ -11,8 +11,6 @@ Try::
 
 """
 
-from __future__ import division, print_function
-
 import argparse
 import datetime
 import gzip
@@ -527,7 +525,10 @@ def load(opts: argparse.Namespace) -> None:
             fh = io.open(fn, mode="rt", encoding="ascii")
         _logger.info("Opened " + fn)
         seq_bar = tqdm.tqdm(
-            FastaIter(fh), unit=" seqs", disable=disable_bar, leave=False  # type: ignore noqa: E501
+            FastaIter(fh),  # type: ignore
+            unit=" seqs",
+            disable=disable_bar,
+            leave=False,
         )
         for defline, seq in seq_bar:  # type: ignore
             n_seqs_seen += 1

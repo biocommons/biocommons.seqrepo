@@ -12,7 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
 dynamic = ["version"]
@@ -22,7 +22,6 @@ dependencies = [
     "ipython ~= 8.4",
     "pysam ~= 0.22",
     "requests ~= 2.31",
-    "six ~= 1.16",
     "tqdm ~= 4.66",
     "yoyo-migrations ~= 8.2",
     "setuptools",  # pin until yoyo-migrations doesn't use pkg_resources
@@ -31,7 +30,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "bandit ~= 1.7",
-    "black ~= 22.3",
     "build ~= 0.8",
     "flake8 ~= 4.0",
     "ipython ~= 8.4",
@@ -44,6 +42,7 @@ dev = [
     "pytest ~= 7.1",
     "pyright~=1.1",
     "requests_html ~= 0.10",
+    "ruff == 0.4.4",
     "tox ~= 3.25",
     "vcrpy",
 ]
@@ -118,9 +117,6 @@ exclude_lines = [
     "if __name__ == .__main__.:",
 ]
 
-[tool.black]
-line-length = 100
-
 [tool.isort]
 profile = "black"
 src_paths = ["src", "tests"]
@@ -135,3 +131,7 @@ disable = "R0913"
 
 [tool.pylint.format]
 max-line-length = 100
+
+[tool.ruff]
+src = ["src", "tests"]
+line-length = 100
