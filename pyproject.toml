@@ -6,12 +6,12 @@ authors = [
 description = "Non-redundant, compressed, journalled, file-based storage for biological sequences"
 readme = "README.md"
 license = { file = "LICENSE.txt" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
@@ -24,6 +24,7 @@ dependencies = [
     "requests ~= 2.31",
     "tqdm ~= 4.66",
     "yoyo-migrations ~= 8.2",
+    "setuptools",  # pin until yoyo-migrations doesn't use pkg_resources
 ]
 
 [project.optional-dependencies]
