@@ -100,7 +100,7 @@ Reading a sequence repository requires several Python packages, all of which are
 available from pypi. Installation should be as simple as `pip install
 biocommons.seqrepo`.
 
-Acquiring SeqRepo snapshots using the CLI requires an [rsync](https://github.com/RsyncProject/rsync) binary to be available on the system $PATH. Note that [openrsync](https://www.openrsync.org/), which now ships with new MacOS installs, does not support all required functions. Mac users should install rsync from [HomeBrew](https://formulae.brew.sh/formula/rsync) and ensure that it's available on the $PATH.
+Acquiring SeqRepo snapshots using the CLI requires an [rsync](https://github.com/RsyncProject/rsync) binary to be available on the system $PATH. Note that [openrsync](https://www.openrsync.org/), which now ships with new MacOS installs, does not support all required functions. Mac users should install rsync from [HomeBrew](https://formulae.brew.sh/formula/rsync) and ensure that it's available on the $PATH, or use the `--rsync-exe` option to declare its exact location.
 
 *Writing* sequence files also requires `bgzip`, which provided in the
 [htslib](https://github.com/samtools/htslib) repo. Ubuntu users should install
