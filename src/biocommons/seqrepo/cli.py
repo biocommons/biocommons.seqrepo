@@ -53,22 +53,12 @@ class RsyncExeError(Exception):
     """Raise for issues relating to rsync executable."""
 
 
-def _raise_for_rsync_binary_error(e: subprocess.CalledProcessError, opts: argparse.Namespace):
-    """Check if error appears to be rooted in a known problem with recent (as of 2024)
-    MacOS distributions, which ship with an incompatible rsync clone.
-
-    Raise a custom error type if so. Do nothing otherwise. Calling contexts should
-    presumably raise the original error in that case.
-
-    :param e: originating subprocess error
-    :param opts: CLI args given
-    :raise RsyncExeError: if issue appears to be related to openrsync
-    """
-    if e.returncode == 1:
-        result = subprocess.check_output([opts.rsync_exe, "--version"])
-        if result is not None and ("openrsync" in result.decode()):
-            msg = f"Binary located at {opts.rsync_exe} appears to be an `openrsync` instance, but the SeqRepo CLI requires `rsync` (NOT `openrsync`). Please install `rsync` and either make it available on the $PATH variable or manually provide its location with the `--rsync-exe` option. See README for more information."  # noqa: E501
-            raise RsyncExeError(msg)
+def _check_rsync_binary(opts: argparse.Namespace) -> None:
+    """TODO"""
+    result = subprocess.check_output([opts.rsync_exe, "--version"])
+    if result is not None and ("openrsync" in result.decode()):
+        msg = f"Binary located at {opts.rsync_exe} appears to be an `openrsync` instance, but the SeqRepo CLI requires `rsync` (NOT `openrsync`). Please install `rsync` and either make it available on the $PATH variable or manually provide its location with the `--rsync-exe` option. See README for more information."  # noqa: E501
+        raise RsyncExeError(msg)
 
 
 def _get_remote_instances(opts: argparse.Namespace) -> list[str]:
@@ -80,11 +70,7 @@ def _get_remote_instances(opts: argparse.Namespace) -> list[str]:
         opts.remote_host + "::seqrepo",
     ]
     _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
-    try:
-        result = subprocess.check_output(rsync_cmd)
-    except subprocess.CalledProcessError as e:
-        _raise_for_rsync_binary_error(e, opts)
-        raise
+    result = subprocess.check_output(rsync_cmd)
     lines = result.decode().splitlines()[1:]
     dirs = (m.group(1) for m in (line_re.match(line) for line in lines) if m)
     return sorted(list(filter(instance_name_new_re.match, dirs)))
@@ -598,11 +584,7 @@ def pull(opts: argparse.Namespace) -> None:
 
     _logger.debug("Executing: " + " ".join(cmd))
     if not opts.dry_run:
-        try:
-            subprocess.check_call(cmd)
-        except subprocess.CalledProcessError as e:
-            _raise_for_rsync_binary_error(e, opts)
-            raise
+        subprocess.check_call(cmd)
         dst_dir = os.path.join(opts.root_directory, instance_name)
         os.rename(tmp_dir, dst_dir)
         _logger.info("{}: successfully updated ({})".format(instance_name, dst_dir))
@@ -763,6 +745,7 @@ def update_latest(opts: argparse.Namespace, mri: Optional[str] = None) -> None:
 
 def main() -> None:
     opts = parse_arguments()
+    _check_rsync_binary(opts)
 
     verbose_log_level = (
         logging.WARN if opts.verbose == 0 else logging.INFO if opts.verbose == 1 else logging.DEBUG
