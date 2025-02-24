@@ -54,7 +54,14 @@ class RsyncExeError(Exception):
 
 
 def _check_rsync_binary(opts: argparse.Namespace) -> None:
-    """TODO"""
+    """Check for rsync vs openrsync binary issue
+
+    Macs now ship with openrsync, but it's limited in function and not compatible with
+    SeqRepo.
+
+    :param opts: CLI args
+    :raise RsyncExeError: if provided binary appears to be openrsync not rsync
+    """
     result = subprocess.check_output([opts.rsync_exe, "--version"])
     if result is not None and ("openrsync" in result.decode()):
         msg = f"Binary located at {opts.rsync_exe} appears to be an `openrsync` instance, but the SeqRepo CLI requires `rsync` (NOT `openrsync`). Please install `rsync` and either make it available on the $PATH variable or manually provide its location with the `--rsync-exe` option. See README for more information."  # noqa: E501
