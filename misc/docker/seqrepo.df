@@ -10,38 +10,19 @@
 # docker run -it --name myapp --volumes-from seqrepo ubuntu  do-something
 
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 RUN apt update && apt install -y \
     curl \
+    python3-full \
     python3-pip \
     rsync \
     zlib1g-dev \
     libbz2-dev \
     liblzma-dev
 
-RUN pip3 install --upgrade setuptools pip
-
-RUN pip3 install --upgrade numpy pandas scipy
-
-RUN pip3 install --upgrade \
-    biopython \
-    bioutils \
-    decorator \
-    ipython \
-    ipython-genutils \
-    pexpect \
-    pickleshare \
-    prompt-toolkit \
-    ptyprocess \
-    pygments \
-    pysam \
-    simplegeneric \
-    tqdm \
-    traitlets \
-    wcwidth \
-    yoyo-migrations
-
+RUN python3 -m venv venv
+RUN venv/bin/pip3 install --upgrade setuptools pip
 
 MAINTAINER reecehart@gmail.com
 ARG SEQREPO_VERSION
@@ -58,6 +39,6 @@ LABEL description="seqrepo data volume container ${SEQREPO_VERSION}/${SEQREPO_DA
 
 VOLUME ${SEQREPO_DATA_DIR}
 
-RUN pip3 install --upgrade biocommons.seqrepo==${SEQREPO_VERSION}
+RUN venv/bin/pip3 install --upgrade biocommons.seqrepo==${SEQREPO_VERSION}
 
-CMD seqrepo -r ${SEQREPO_DATA_DIR} pull -i ${SEQREPO_DATA_RELEASE}
+CMD venv/bin/seqrepo -r ${SEQREPO_DATA_DIR} pull -i ${SEQREPO_DATA_RELEASE}
