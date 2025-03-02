@@ -23,8 +23,7 @@ dependencies = [
     "pysam ~= 0.22",
     "requests ~= 2.31",
     "tqdm ~= 4.66",
-    "yoyo-migrations ~= 8.2",
-    "setuptools",  # pin until yoyo-migrations doesn't use pkg_resources
+    "yoyo-migrations ~= 9.0",
 ]
 
 [project.optional-dependencies]
