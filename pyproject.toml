@@ -24,7 +24,6 @@ dependencies = [
     "requests ~= 2.31",
     "tqdm ~= 4.66",
     "yoyo-migrations ~= 9.0",
-    "setuptools",  # pin until yoyo-migrations doesn't use pkg_resources
 ]
 
 [project.optional-dependencies]
