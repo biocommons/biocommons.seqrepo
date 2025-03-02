@@ -49,6 +49,25 @@ instance_name_re = re.compile(
 _logger = logging.getLogger(__name__)
 
 
+class RsyncExeError(Exception):
+    """Raise for issues relating to rsync executable."""
+
+
+def _check_rsync_binary(opts: argparse.Namespace) -> None:
+    """Check for rsync vs openrsync binary issue
+
+    Macs now ship with openrsync, but it's limited in function and not compatible with
+    SeqRepo.
+
+    :param opts: CLI args
+    :raise RsyncExeError: if provided binary appears to be openrsync not rsync
+    """
+    result = subprocess.check_output([opts.rsync_exe, "--version"])
+    if result is not None and ("openrsync" in result.decode()):
+        msg = f"Binary located at {opts.rsync_exe} appears to be an `openrsync` instance, but the SeqRepo CLI requires `rsync` (NOT `openrsync`). Please install `rsync` and manually provide its location with the `--rsync-exe` option. See README for more information."  # noqa: E501
+        raise RsyncExeError(msg)
+
+
 def _get_remote_instances(opts: argparse.Namespace) -> list[str]:
     line_re = re.compile(r"d[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)")
     rsync_cmd = [
@@ -58,7 +77,8 @@ def _get_remote_instances(opts: argparse.Namespace) -> list[str]:
         opts.remote_host + "::seqrepo",
     ]
     _logger.debug("Executing `" + " ".join(rsync_cmd) + "`")
-    lines = subprocess.check_output(rsync_cmd).decode().splitlines()[1:]
+    result = subprocess.check_output(rsync_cmd)
+    lines = result.decode().splitlines()[1:]
     dirs = (m.group(1) for m in (line_re.match(line) for line in lines) if m)
     return sorted(list(filter(instance_name_new_re.match, dirs)))
 
@@ -736,6 +756,7 @@ def update_latest(opts: argparse.Namespace, mri: Optional[str] = None) -> None:
 
 def main() -> None:
     opts = parse_arguments()
+    _check_rsync_binary(opts)
 
     verbose_log_level = (
         logging.WARN if opts.verbose == 0 else logging.INFO if opts.verbose == 1 else logging.DEBUG
