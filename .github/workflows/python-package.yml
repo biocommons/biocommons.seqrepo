@@ -73,10 +73,17 @@ jobs:
         make test
 
   deploy:
+    # See https://github.com/pypa/gh-action-pypi-publish/tree/release/v1?tab=readme-ov-file#usage
     needs:
     # - cqa
     - test
     runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/biocommons.seqrepo
+    permissions:
+      id-token: write  # mandatory for trusted publishing
 
     steps:
     - name: Environment
@@ -104,8 +111,7 @@ jobs:
     - name: Build package
       run: python -m build
 
-    - name: Publish package
+    - name: Upload release to PyPI
+      # Depends on trusted publishing configuration at pypi
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
