@@ -23,6 +23,7 @@ dependencies = [
     "pysam ~= 0.22",
     "requests ~= 2.31",
     "tqdm ~= 4.66",
+    # "typing_extensions",
     "yoyo-migrations ~= 9.0",
 ]
 
@@ -36,14 +37,16 @@ dev = [
     "mypy-extensions ~= 1.0",
     "pre-commit ~= 3.4",
     "pylint ~= 2.14",
-    "pytest-cov ~= 4.1",
-    "pytest-optional-tests",
-    "pytest ~= 7.1",
     "pyright~=1.1",
     "requests_html ~= 0.10",
     "ruff == 0.4.4",
-    "tox ~= 3.25",
     "vcrpy",
+]
+tests = [
+    "tox ~= 3.25",
+    "pytest-cov ~= 4.1",
+    "pytest-optional-tests",
+    "pytest ~= 7.1",
 ]
 docs = ["mkdocs"]
 
