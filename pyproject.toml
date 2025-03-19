@@ -23,7 +23,7 @@ dependencies = [
     "pysam ~= 0.22",
     "requests ~= 2.31",
     "tqdm ~= 4.66",
-    # "typing_extensions",
+    "typing_extensions",
     "yoyo-migrations ~= 9.0",
 ]
 
