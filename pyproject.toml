@@ -40,13 +40,13 @@ dev = [
     "pyright~=1.1",
     "requests_html ~= 0.10",
     "ruff == 0.4.4",
-    "vcrpy",
 ]
 tests = [
     "tox ~= 3.25",
     "pytest-cov ~= 4.1",
     "pytest-optional-tests",
     "pytest ~= 7.1",
+    "vcrpy",
 ]
 docs = ["mkdocs"]
 
