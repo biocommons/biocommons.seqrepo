@@ -123,7 +123,7 @@ tested. Patches to get other systems working would be welcomed.
 
     $ python -m venv venv
     $ source venv/bin/activate
-    $ pip install seqrepo
+    $ pip install biocommons.seqrepo
     $ sudo mkdir -p /usr/local/share/seqrepo
     $ sudo chown $USER /usr/local/share/seqrepo
     $ seqrepo pull -i 2018-11-26
@@ -140,7 +140,9 @@ tested. Patches to get other systems working would be welcomed.
     >> sr["NC_000001.11"][780000:780020]
     'TGGTGGCACGCGCTTGTAGT'
 
-    # Or, use the seqrepo shell for even easier access
+    # Optional: Install with the `shell` dependency group
+    # and use the seqrepo shell
+    $ pip install "biocommons.seqrepo[shell]"
     $ seqrepo start-shell -i 2018-11-26
     In [1]: sr["NC_000001.11"][780000:780020]
     Out[1]: 'TGGTGGCACGCGCTTGTAGT'

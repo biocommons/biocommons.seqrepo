@@ -19,7 +19,6 @@ dynamic = ["version"]
 dependencies = [
     "bioutils > 0.4",
     "coloredlogs ~= 15.0",
-    "ipython ~= 8.4",
     "pysam ~= 0.22",
     "requests ~= 2.31",
     "tqdm ~= 4.66",
@@ -28,6 +27,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+shell = [
+    "ipython ~= 8.4",
+]
 dev = [
     "bandit ~= 1.7",
     "build ~= 0.8",
