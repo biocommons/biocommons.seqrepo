@@ -29,17 +29,16 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "bandit ~= 1.7",
-    "build ~= 0.8",
-    "flake8 ~= 4.0",
-    "ipython ~= 8.4",
-    "isort ~= 5.10",
-    "mypy-extensions ~= 1.0",
-    "pre-commit ~= 3.4",
-    "pylint ~= 2.14",
-    "pyright~=1.1",
-    "requests_html ~= 0.10",
-    "ruff == 0.4.4",
+    "bandit",
+    "build",
+    "flake8",
+    "ipython",
+    "isort",
+    "mypy-extensions",
+    "pre-commit",
+    "pylint",
+    "pyright",
+    "ruff",
 ]
 tests = [
     "tox ~= 3.25",
