@@ -64,13 +64,6 @@ build: %:
 #= TESTING
 # see test configuration in setup.cfg
 
-#=> cqa: execute code quality tests
-cqa:
-	flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
-	isort --profile black --check src
-	ruff format --check src tests
-	bandit -ll -r src
-
 #=> test: execute tests
 #=> test-code: test code (including embedded doctests)
 #=> test-docs: test example code in docs
@@ -107,14 +100,6 @@ reformat:
 
 ############################################################################
 #= UTILITY TARGETS
-
-#=> reformat: reformat code and commit
-.PHONY: reformat
-reformat:
-	@if ! git diff --cached --exit-code >/dev/null; then echo "Repository not clean" 1>&2; exit 1; fi
-	ruff src tests
-	isort src tests
-	git commit -a -m "reformatted with ruff and isort"
 
 #=> rename: rename files and substitute content for new repo name
 .PHONY: rename
