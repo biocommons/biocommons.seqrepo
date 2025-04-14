@@ -66,10 +66,11 @@ def _check_rsync_binary(opts: argparse.Namespace) -> None:
     result = subprocess.run(cmd, capture_output=True)
     result.check_returncode()
     if result.stdout.decode().startswith("openrsync"):
-        raise RuntimeError(
-            "openrsync (at {opts.rsync_exe}) is not supported; "
-            "on mac, consider `brew install rsync`"
+        _logger.critical(
+            f"openrsync ({opts.rsync_exe}) is not supported; "
+            "On a Mac, consider adding --rsync-exe or installing rsync (e.g., `brew install rsync`)"
         )
+        sys.exit(1)
 
 
 def _get_remote_instances(opts: argparse.Namespace) -> list[str]:
