@@ -17,17 +17,17 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "bioutils > 0.4",
-    "coloredlogs ~= 15.0",
-    "pysam ~= 0.22",
-    "requests ~= 2.31",
-    "tqdm ~= 4.66",
+    "bioutils >= 0.6",
+    "coloredlogs >= 15.0",
+    "pysam >= 0.23",
+    "requests >= 2.32",
+    "tqdm >= 4.67",
     "typing_extensions",
-    "yoyo-migrations ~= 9.0",
+    "yoyo-migrations >= 9.0",
 ]
 
 [project.optional-dependencies]
-shell = ["ipython ~= 8.4"]
+shell = ["ipython >= 8.33"]
 dev = [
     "bandit >= 1.8",
     "build >= 0.10",
@@ -41,11 +41,11 @@ dev = [
     "ruff >= 0.11",
 ]
 tests = [
-    "tox ~= 3.25",
-    "pytest-cov ~= 4.1",
-    "pytest-optional-tests",
-    "pytest ~= 7.1",
-    "vcrpy",
+    "tox >= 3.28",
+    "pytest-cov >= 6.1",
+    "pytest-optional-tests >= 0.1",
+    "pytest >= 7.1",
+    "vcrpy >= 7.0",
 ]
 docs = ["mkdocs"]
 
@@ -57,7 +57,7 @@ seqrepo = "biocommons.seqrepo.cli:main"
 "Bug Tracker" = "https://github.com/biocommons/biocommons.seqrepo/issues"
 
 [build-system]
-requires = ["setuptools ~= 69.0", "setuptools_scm[toml] ~= 8.0"]
+requires = ["setuptools >= 75", "setuptools_scm[toml] >= 8"]
 build-backend = "setuptools.build_meta"
 
 
