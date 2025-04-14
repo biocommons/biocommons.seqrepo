@@ -408,7 +408,7 @@ def add_assembly_names(opts: argparse.Namespace) -> None:
         sr.commit()
 
 
-def export(opts: argparse.Namespace) -> None:
+def export(opts: argparse.Namespace) -> None:  # noqa: C901
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
 
