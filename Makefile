@@ -46,7 +46,7 @@ ${VE_DIR}:
 #=> develop: install package in develop mode
 .PHONY: develop
 develop:
-	pip install -e .[dev]
+	pip install -e ".[dev,tests]"
 	pre-commit install
 
 #=> install: install package
@@ -63,13 +63,6 @@ build: %:
 ############################################################################
 #= TESTING
 # see test configuration in setup.cfg
-
-#=> cqa: execute code quality tests
-cqa:
-	flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
-	isort --profile black --check src
-	ruff format --check src tests
-	bandit -ll -r src
 
 #=> test: execute tests
 #=> test-code: test code (including embedded doctests)
@@ -93,12 +86,21 @@ tox:
 	tox
 
 #=> cqa: execute code quality tests
-cqa:
-	flake8 src --show-source --statistics
-	pyright
-	isort --check src --profile black
+cqa: cqa-flake8 cqa-pyright cqa-isort cqa-ruff-format cqa-bandit
+cqa-flake8:
+	# stop the build if there are Python syntax errors or undefined names
+	flake8 --count --select=E9,F63,F7,F82 --show-source --statistics src
+	# exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+	flake8 --count --exit-zero --max-complexity=10 --statistics src
+cqa-pyright:
+	pyright src
+cqa-isort:
+	isort --check --profile black src
+cqa-ruff-format:
 	ruff format --check src
+cqa-bandit:
 	bandit -ll -r src
+
 
 #=> reformat: reformat code
 .PHONY: reformat
@@ -107,14 +109,6 @@ reformat:
 
 ############################################################################
 #= UTILITY TARGETS
-
-#=> reformat: reformat code and commit
-.PHONY: reformat
-reformat:
-	@if ! git diff --cached --exit-code >/dev/null; then echo "Repository not clean" 1>&2; exit 1; fi
-	ruff src tests
-	isort src tests
-	git commit -a -m "reformatted with ruff and isort"
 
 #=> rename: rename files and substitute content for new repo name
 .PHONY: rename

@@ -11,8 +11,7 @@ def parse_caching_env_var(env_name: str, env_default: str) -> Optional[int]:
         caching_env_var_int = int(caching_env_var)
     except ValueError:
         raise ValueError(
-            f"{env_name} must be a valid int, none, or not set, "
-            "currently it is " + caching_env_var
+            f"{env_name} must be a valid int, none, or not set, currently it is " + caching_env_var
         )
     return caching_env_var_int
 

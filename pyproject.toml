@@ -22,27 +22,29 @@ dependencies = [
     "pysam ~= 0.22",
     "requests ~= 2.31",
     "tqdm ~= 4.66",
-    "yoyo-migrations ~= 8.2",
-    "setuptools",  # pin until yoyo-migrations doesn't use pkg_resources
+    "typing_extensions",
+    "yoyo-migrations ~= 9.0",
 ]
 
 [project.optional-dependencies]
 shell = ["ipython ~= 8.4"]
 dev = [
-    "bandit ~= 1.7",
-    "build ~= 0.8",
-    "flake8 ~= 4.0",
-    "isort ~= 5.10",
-    "mypy-extensions ~= 1.0",
-    "pre-commit ~= 3.4",
-    "pylint ~= 2.14",
+    "bandit >= 1.8",
+    "build >= 0.10",
+    "flake8 >= 7.2",
+    "ipython >= 8.33",
+    "isort >= 5.13",
+    "mypy-extensions >= 1.0",
+    "pre-commit >= 3.8",
+    "pylint >= 2.17",
+    "pyright >= 1.1",
+    "ruff >= 0.11",
+]
+tests = [
+    "tox ~= 3.25",
     "pytest-cov ~= 4.1",
     "pytest-optional-tests",
     "pytest ~= 7.1",
-    "pyright~=1.1",
-    "requests_html ~= 0.10",
-    "ruff == 0.4.4",
-    "tox ~= 3.25",
     "vcrpy",
 ]
 docs = ["mkdocs"]

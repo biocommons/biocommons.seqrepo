@@ -113,7 +113,7 @@ tested. Patches to get other systems working would be welcomed.
 
 ### OS X
 
-    brew install python libpq
+    brew install python htslib
 
 ### Ubuntu
 
@@ -176,7 +176,7 @@ will greatly increase performance of sequence retrieval.
 
 ### Developing on OS X
 
-    brew install python libpq bash
+    brew install python htslib
 
 If you get "xcrun: error: invalid active developer path", you need to install
 XCode. See this [StackOverflow answer](https://apple.stackexchange.com/questions/254380/why-am-i-getting-an-invalid-active-developer-path-when-attempting-to-use-git-a).
