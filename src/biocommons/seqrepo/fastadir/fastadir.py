@@ -236,7 +236,7 @@ class FastaDir(BaseReader, BaseWriter):
         backend.apply_migrations(migrations_to_apply)
 
     def _dump_aliases(self) -> None:
-        import prettytable
+        import prettytable  # type: ignore
 
         fields = "seq_id len alpha added relpath".split()
         pt = prettytable.PrettyTable(field_names=fields)

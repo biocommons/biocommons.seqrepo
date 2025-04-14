@@ -38,6 +38,7 @@ SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo"
 DEFAULT_INSTANCE_NAME_RW = "master"
 DEFAULT_INSTANCE_NAME_RO = "latest"
 
+
 instance_name_new_re = re.compile(
     r"^20[12]\d-\d\d-\d\d$"
 )  # smells like a new datestamp, 2017-01-17
@@ -49,10 +50,6 @@ instance_name_re = re.compile(
 _logger = logging.getLogger(__name__)
 
 
-class RsyncExeError(Exception):
-    """Raise for issues relating to rsync executable."""
-
-
 def _check_rsync_binary(opts: argparse.Namespace) -> None:
     """Check for rsync vs openrsync binary issue
 
@@ -62,14 +59,22 @@ def _check_rsync_binary(opts: argparse.Namespace) -> None:
     :param opts: CLI args
     :raise RsyncExeError: if provided binary appears to be openrsync not rsync
     """
-    result = subprocess.check_output([opts.rsync_exe, "--version"])
-    if result is not None and ("openrsync" in result.decode()):
-        msg = f"Binary located at {opts.rsync_exe} appears to be an `openrsync` instance, but the SeqRepo CLI requires `rsync` (NOT `openrsync`). Please install `rsync` and manually provide its location with the `--rsync-exe` option. See README for more information."  # noqa: E501
-        raise RsyncExeError(msg)
+    if not opts.rsync_exe.startswith("/"):
+        opts.rsync_exe = shutil.which(opts.rsync_exe)
+        _logger.info(f"Found rsync at {opts.rsync_exe}")
+    cmd = [opts.rsync_exe, "--version"]
+    result = subprocess.run(cmd, capture_output=True)
+    result.check_returncode()
+    if result.stdout.decode().startswith("openrsync"):
+        raise RuntimeError(
+            "openrsync (at {opts.rsync_exe}) is not supported; "
+            "on mac, consider `brew install rsync`"
+        )
 
 
 def _get_remote_instances(opts: argparse.Namespace) -> list[str]:
     line_re = re.compile(r"d[-rwx]{9}\s+[\d,]+ \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (.+)")
+    _check_rsync_binary(opts)
     rsync_cmd = [
         opts.rsync_exe,
         "--no-motd",
@@ -103,7 +108,7 @@ def parse_arguments() -> argparse.Namespace:
         "See https://github.com/biocommons/biocommons.seqrepo for more information"
     )
     top_p = argparse.ArgumentParser(
-        description=__doc__.split("\n\n")[0],
+        description=(__doc__ or "no description").split("\n\n")[0],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog=epilog,
     )
@@ -115,7 +120,9 @@ def parse_arguments() -> argparse.Namespace:
         default=SEQREPO_ROOT_DIR,
         help="seqrepo root directory (SEQREPO_ROOT_DIR)",
     )
-    top_p.add_argument("--rsync-exe", default="/usr/bin/rsync", help="path to rsync executable")
+    top_p.add_argument(
+        "--rsync-exe", default="rsync", help="rsync executable; found in PATH if not absolute"
+    )
     top_p.add_argument(
         "--verbose",
         "-v",
@@ -401,7 +408,7 @@ def add_assembly_names(opts: argparse.Namespace) -> None:
         sr.commit()
 
 
-def export(opts: argparse.Namespace) -> None:
+def export(opts: argparse.Namespace) -> None:  # noqa: C901
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
     sr = SeqRepo(seqrepo_dir)
 
@@ -583,6 +590,7 @@ def pull(opts: argparse.Namespace) -> None:
     tmp_dir = tempfile.mkdtemp(dir=opts.root_directory, prefix=instance_name + ".")
     os.rmdir(tmp_dir)  # let rsync create it the directory
 
+    _check_rsync_binary(opts)
     cmd = [opts.rsync_exe, "-rtHP", "--no-motd"]
     if local_instances:
         latest_local_instance = local_instances[-1]
@@ -643,7 +651,7 @@ def snapshot(opts: argparse.Namespace) -> None:
 
     if os.path.commonpath([src_dir, dst_dir]).startswith(src_dir):
         raise RuntimeError(
-            "Cannot nest seqrepo directories " "({} is within {})".format(dst_dir, src_dir)
+            "Cannot nest seqrepo directories ({} is within {})".format(dst_dir, src_dir)
         )
 
     if os.path.exists(dst_dir):
@@ -752,8 +760,6 @@ def update_latest(opts: argparse.Namespace, mri: Optional[str] = None) -> None:
 
 def main() -> None:
     opts = parse_arguments()
-    _check_rsync_binary(opts)
-
     verbose_log_level = (
         logging.WARN if opts.verbose == 0 else logging.INFO if opts.verbose == 1 else logging.DEBUG
     )

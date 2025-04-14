@@ -45,7 +45,7 @@ def test_schema_version():
     orig_schema_version = FastaDir.schema_version
 
     with pytest.raises(RuntimeError):
-        FastaDir.schema_version = lambda x: -1
+        FastaDir.schema_version = lambda self: -1
         fd = FastaDir(tmpdir, writeable=True)
 
     FastaDir.schema_version = orig_schema_version

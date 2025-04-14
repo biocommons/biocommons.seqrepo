@@ -86,12 +86,21 @@ tox:
 	tox
 
 #=> cqa: execute code quality tests
-cqa:
-	flake8 src --show-source --statistics
-	pyright
-	isort --check src --profile black
+cqa: cqa-flake8 cqa-pyright cqa-isort cqa-ruff-format cqa-bandit
+cqa-flake8:
+	# stop the build if there are Python syntax errors or undefined names
+	flake8 --count --select=E9,F63,F7,F82 --show-source --statistics src
+	# exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+	flake8 --count --exit-zero --max-complexity=10 --statistics src
+cqa-pyright:
+	pyright src
+cqa-isort:
+	isort --check --profile black src
+cqa-ruff-format:
 	ruff format --check src
+cqa-bandit:
 	bandit -ll -r src
+
 
 #=> reformat: reformat code
 .PHONY: reformat
