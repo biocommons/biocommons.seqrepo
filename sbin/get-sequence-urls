@@ -49,7 +49,7 @@ def get_test_urls():
         "http://dl.biocommons.org/.test/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz",
         ]
     return urls
-    
+
 def get_refseq_urls():
     def _is_sequence_file(fn):
         return any(fn.endswith(sfx) for sfx in (".faa.gz", ".fna.gz", ".fa.gz", ".fasta", ".fa"))
@@ -96,6 +96,5 @@ if __name__ == "__main__":
         urls = get_lrg_urls()
     elif sys.argv[1] == "test":
         urls = get_test_urls()
-        
+
     print("\n".join(sorted(urls)))
-    

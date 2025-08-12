@@ -2,7 +2,7 @@ Command line usage
 !!!!!!!!!!!!!!!!!!
 
 seqrepo includes a command line interface for loading, fetching, and exporting sequences.
-  
+
 This documentation assumes that the seqrepo base directory is::
 
   SEQREPO_ROOT=/usr/local/share/seqrepo
@@ -19,13 +19,13 @@ Loading
 ::
 
   $ seqrepo --root-directory $SEQREPO_ROOT/master init
-  
+
   $ seqrepo --root-directory $SEQREPO_ROOT/master load -n NCBI mirror/ftp.ncbi.nih.gov/refseq/H_sapiens/mRNA_Prot/human.*.gz
-  
+
   $ seqrepo --root-directory $SEQREPO_ROOT/master show-status
   seqrepo 0.1.0
   root directory: /usr/local/share/seqrepo/master, 0.2 GB
-  backends: fastadir (schema 1), seqaliasdb (schema 1) 
+  backends: fastadir (schema 1), seqaliasdb (schema 1)
   sequences: 3 files, 33080 sequences, 110419437 residues
   aliases: 165481 aliases, 165481 current, 5 namespaces, 33080 sequences
 
@@ -66,4 +66,3 @@ Configuration Notes
 
 * SEQREPO_BGZIP_PATH may be used to specify an alternative location
   for the bgzip binary. (Default: /usr/bin/bgzip)
-

@@ -11,7 +11,7 @@ Quick Start
 @@@@@@@@@@@
 
 First, create the data container and populate it::
-  
+
   $ docker pull biocommons/seqrepo
   $ docker run --name seqrepo biocommons/seqrepo
 
@@ -27,7 +27,7 @@ The ``biocommons/seqrepo`` image declares the volume
 ``/usr/local/share/seqrepo`` as sharable; containers may use
 ``volumes-from`` to have share seqrepo data like so::
 
-  $ docker run -it --volumes-from seqrepo:ro ubuntu 
+  $ docker run -it --volumes-from seqrepo:ro ubuntu
   root@1762eab78c3f:/# ls /usr/local/share/seqrepo/
   2016-10-04
 

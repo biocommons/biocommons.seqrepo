@@ -40,20 +40,20 @@ def parse_args(argv):
     opts = ap.parse_args(argv)
     return opts
 
-    
+
 
 if __name__ == "__main__":
     coloredlogs.install(level="INFO")
 
     opts = parse_args(sys.argv[1:])
-    
+
     fixes = yaml.load(open(opts.fixes_filename), Loader=yaml.SafeLoader)
     _logger.info(f"Read {len(fixes)} fixes from {opts.fixes_filename}")
 
     db = sqlite3.connect(opts.db_filename)
     _logger.info(f"Opened {opts.db_filename}")
 
-    
+
     fix_key = opts.fix
     fix = fixes[fix_key]
     commands = fix["sql"]

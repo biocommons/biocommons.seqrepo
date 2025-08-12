@@ -119,6 +119,7 @@ line-length = 100
 exclude = [
     "docs/",
     "misc/",
+    "fixes",
     "sbin/",
     "setup.py",
 ]

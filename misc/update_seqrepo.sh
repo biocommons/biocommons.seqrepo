@@ -45,4 +45,3 @@ fi
 NEW_RELEASE=$(ls -d $SEQREPO_ROOT/????-??-?? | tail -n 1 | rev | cut -f1 -d'/' | rev)
 
 rsync -aP --link-dest=$LATEST_RELEASE/ $SEQREPO_ROOT/$NEW_RELEASE/ $SEQREPO_RELEASE_DIR/$NEW_RELEASE/
-

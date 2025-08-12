@@ -1,13 +1,13 @@
 Example::
 
   $ seqrepo init
-  
+
   $ seqrepo -v load-fasta -n me fasta1.gz fasta2.gz fasta3.gz
-  
+
   $ seqrepo -v status
   seqrepo 0.1.0
   instance directory: /usr/local/share/seqrepo/master, 0.2 GB
-  backends: fastadir (schema 1), seqaliasdb (schema 1) 
+  backends: fastadir (schema 1), seqaliasdb (schema 1)
   sequences: 3 files, 33080 sequences, 110419437 residues
   aliases: 165481 aliases, 165481 current, 5 namespaces, 33080 sequences
 

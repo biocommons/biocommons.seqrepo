@@ -55,7 +55,7 @@ def read_log(flo):
 
 
 if __name__ == "__main__":
-    
+
     coloredlogs.install(level="INFO")
 
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # connects_ym = collections.defaultdict(lambda: list())
     # for crec in read_log(fileinput.input()):
     #     connects_ym[crec["ym"]].append(crec)
-    # 
+    #
     # summary_ym = {ym: summarize_connects(connects) for ym, connects in connects_ym.items()}
-    # 
+    #
     # pprint.pprint(summary_ym)

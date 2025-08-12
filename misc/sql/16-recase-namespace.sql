@@ -1,6 +1,6 @@
 -- fix case on namespaces
 -- issue #16
--- 
+--
 -- $ sqlite3 master/aliases.sqlite3
 -- sqlite> .read /home/reece/projects/biocommons/biocommons.seqrepo/sql/recase.sql
 

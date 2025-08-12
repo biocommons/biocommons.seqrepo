@@ -17,7 +17,7 @@ fix-ncbi:
       expected: 0
 
 drop-old-ensembl:
-  descr: Drop Ensembl releases before <= e84 
+  descr: Drop Ensembl releases before <= e84
   sql:
     - delete from seqalias where namespace like 'Ensembl-%' and namespace <= 'Ensembl-84'
   tests:
@@ -41,8 +41,8 @@ fix-spacey-aliases:
   descr: Drop buggy aliases that contain spaces
   sql:
     - >-
-      create view new_sa as 
-      select seqalias_id, namespace, 
+      create view new_sa as
+      select seqalias_id, namespace,
         coalesce(nullif(substr(alias,1,instr(alias,' ')-1),''),alias) as newalias,
         seq_id, added, is_current
         from seqalias
@@ -55,11 +55,11 @@ fix-spacey-aliases:
     - >-
       delete from seqalias where seqalias_id in (select seqalias_id from redundant_seqalias_ids)
     - >-
-      update seqalias set alias=coalesce(nullif(substr(alias,1,instr(alias,' ')-1),''),alias) 
+      update seqalias set alias=coalesce(nullif(substr(alias,1,instr(alias,' ')-1),''),alias)
         where alias like '% %'
     - drop view new_sa
     - drop view redundant_seqalias_ids
-      
+
 
   tests:
     -

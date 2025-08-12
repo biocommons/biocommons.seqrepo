@@ -1,5 +1,5 @@
 # seqrepo loading Makefile
-# 
+#
 
 SEQREPO_RELEASE_DIR=/biocommons/dl.biocommons.org/seqrepo
 SEQREPO_ROOT=${SEQREPO_RELEASE_DIR}
@@ -14,7 +14,7 @@ builddir: ${BUILD_DIR}/${BUILD_INSTANCE}
 loadlog: ${BUILD_DIR}/${BUILD_INSTANCE}.loadlog
 
 ${BUILD_DIR}/${BUILD_INSTANCE}: ${SEQREPO_RELEASE_DIR}/${LATEST_INSTANCE}
-	mkdir $@/sequences -p 
+	mkdir $@/sequences -p
 	cd $<; \
 	cp -av aliases.sqlite3 $@/; \
 	chmod u+w $@/aliases.sqlite3; \
@@ -29,4 +29,3 @@ ${BUILD_DIR}/${BUILD_INSTANCE}: ${SEQREPO_RELEASE_DIR}/${LATEST_INSTANCE}
     	/biocommons/mirrors-ncbi/latest/refseq/H_sapiens/RefSeqGene/refseqgene.*f[na]a.gz \
     	/biocommons/mirrors-ncbi/latest/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/*/GCF_*_genomic.f[na]a.gz \
 	| tee $@
-

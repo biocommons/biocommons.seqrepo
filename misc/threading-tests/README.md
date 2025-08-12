@@ -13,7 +13,7 @@ See https://github.com/biocommons/biocommons.seqrepo/issues/112
 ### single thread, without fd caching
 
 ```
-snafu$ ./threading-test -s /usr/local/share/seqrepo/2021-01-29/ -m 1000 -n 1 
+snafu$ ./threading-test -s /usr/local/share/seqrepo/2021-01-29/ -m 1000 -n 1
 2023-09-13 15:25:56 snafu biocommons.seqrepo.fastadir.fastadir[2274974] INFO File descriptor caching disabled
 2023-09-13 15:25:57 snafu root[2274974] INFO Queued 1000 accessions
 2023-09-13 15:25:57 snafu root[2274974] INFO Starting run with 1 threads
@@ -86,6 +86,6 @@ Traceback (most recent call last):
 # dynamic (/2s) list of open files in seqrepo instance directory
 watch lsof +D '/usr/local/share/seqrepo/'
 
-# arbitrarily 
+# arbitrarily
 (ulimit -n 200; ./threading-test -s /usr/local/share/seqrepo/2021-01-29/ -a archive/accessions.gz -f 128)
 ```

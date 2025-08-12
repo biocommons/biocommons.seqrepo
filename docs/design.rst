@@ -46,7 +46,7 @@ The biocommons.seqrepo package provides five classes:
 FabgzReader, FabgzWriter
 @@@@@@@@@@@@@@@@@@@@@@@@
 
-* Provides fast random access to to sequences using block gzipped format (BGZF) 
+* Provides fast random access to to sequences using block gzipped format (BGZF)
 * On commit, FabgzWriter closes file and creates indicies
 * FabgzReader is a thin wrapper around PySAM FastaFile (which provides bgzf reading)
 
@@ -110,5 +110,3 @@ FS Layout::
           │       │   └── 1472342403.26.fa.bgz.gzi
           │           └── 1472357923.36.fa
           └── db.sqlite3
-
-

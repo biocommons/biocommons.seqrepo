@@ -16,4 +16,4 @@ docker build -f seqrepo.df --rm=true \
        -t biocommons/seqrepo:$seqrepo_data_release .
 docker tag biocommons/seqrepo:$seqrepo_data_release biocommons/seqrepo
 docker push biocommons/seqrepo:$seqrepo_data_release
-docker push biocommons/seqrepo:latest 
+docker push biocommons/seqrepo:latest

@@ -6,16 +6,16 @@ achieve this.
 new layer.
 
 2) The sqlite databases need to be a separate layer "above" the
-sequence layers.  
+sequence layers.
 
 
 
 Conceptually, this will lead to a flow like the following:
 
-                                                      + t2     
-                                      + t1            + t2s    
-                      + t0            + t1s    ---->  t1s    
-                      + t0s    ---->  t0s      ---->  t0s    
+                                                      + t2
+                                      + t1            + t2s
+                      + t0            + t1s    ---->  t1s
+                      + t0s    ---->  t0s      ---->  t0s
       scratch  ---->  scratch  ---->  scratch  ---->  scratch
 
 Where s indicates a sequence layer, and the undecorated tag includes
@@ -43,7 +43,7 @@ This will be a data only image.
 In order to build t<i>, we'll build from t<i-1>
 
 Since this image is based on scratch, it will have no executables at
-all. And, since our update method will require 
+all. And, since our update method will require
 
 The only way to add data will be to attach it to a container that
 has an os.
