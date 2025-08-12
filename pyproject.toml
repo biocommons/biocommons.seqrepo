@@ -116,6 +116,12 @@ include = ["src", "tests"]
 [tool.ruff]
 src = ["src", "tests"]
 line-length = 100
+exclude = [
+    "docs/",
+    "misc/",
+    "sbin/",
+    "setup.py",
+]
 
 [tool.ruff.lint]
 select = [
