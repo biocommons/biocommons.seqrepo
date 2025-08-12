@@ -323,13 +323,17 @@ def add_assembly_names(opts: argparse.Namespace) -> None:
     refseq accessions
 
     ```
-    [{'aliases': ['chr19'],
-      'assembly_unit': 'Primary Assembly',
-      'length': 58617616,
-      'name': '19',
-      'refseq_ac': 'NC_000019.10',
-      'relationship': '=',
-      'sequence_role': 'assembled-molecule'}]
+    [
+        {
+            "aliases": ["chr19"],
+            "assembly_unit": "Primary Assembly",
+            "length": 58617616,
+            "name": "19",
+            "refseq_ac": "NC_000019.10",
+            "relationship": "=",
+            "sequence_role": "assembled-molecule",
+        }
+    ]
     ```
 
     For the above sample record, this function adds the following aliases:
@@ -643,7 +647,7 @@ def snapshot(opts: argparse.Namespace) -> None:
 
     if os.path.commonpath([src_dir, dst_dir]).startswith(src_dir):
         raise RuntimeError(
-            "Cannot nest seqrepo directories " "({} is within {})".format(dst_dir, src_dir)
+            "Cannot nest seqrepo directories ({} is within {})".format(dst_dir, src_dir)
         )
 
     if os.path.exists(dst_dir):

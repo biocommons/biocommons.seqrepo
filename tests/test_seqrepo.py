@@ -121,15 +121,15 @@ def test_namespace_translation(tmpdir_factory):
 
 
 def test_translation(seqrepo):
-    assert "MD5:8b2698fb0b0c93558a6adbb11edb1e4b" in seqrepo.translate_identifier(
-        "en:rose"
-    ), "failed fully-qualified identifier lookup"
-    assert "MD5:8b2698fb0b0c93558a6adbb11edb1e4b" in seqrepo.translate_identifier(
-        "rose"
-    ), "failed unqualified identifier lookup"
-    assert "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr" in seqrepo.translate_identifier(
-        "en:rose"
-    ), "failed to find expected identifier in returned identifiers"
+    assert "MD5:8b2698fb0b0c93558a6adbb11edb1e4b" in seqrepo.translate_identifier("en:rose"), (
+        "failed fully-qualified identifier lookup"
+    )
+    assert "MD5:8b2698fb0b0c93558a6adbb11edb1e4b" in seqrepo.translate_identifier("rose"), (
+        "failed unqualified identifier lookup"
+    )
+    assert "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr" in seqrepo.translate_identifier("en:rose"), (
+        "failed to find expected identifier in returned identifiers"
+    )
     assert ["VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr"] == seqrepo.translate_identifier(
         "en:rose", target_namespaces=["VMC"]
     ), "failed to rerieve exactly the expected identifier"

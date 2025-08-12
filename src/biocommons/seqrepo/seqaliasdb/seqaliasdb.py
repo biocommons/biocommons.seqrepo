@@ -57,7 +57,7 @@ class SeqAliasDB(object):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:  # pragma: no cover
             raise RuntimeError(
-                "Upgrade required: Database schema" "version is {} and code expects {}".format(
+                "Upgrade required: Database schemaversion is {} and code expects {}".format(
                     schema_version, expected_schema_version
                 )
             )
@@ -251,8 +251,8 @@ class SeqAliasDB(object):
             raise ImportError(msg)
         migration_dir = str(resources.files(__package__) / migration_path)
         migrations = yoyo.read_migrations(migration_dir)
-        assert (
-            len(migrations) > 0
-        ), f"no migration scripts found -- wrong migration path for {__package__}"
+        assert len(migrations) > 0, (
+            f"no migration scripts found -- wrong migration path for {__package__}"
+        )
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)
