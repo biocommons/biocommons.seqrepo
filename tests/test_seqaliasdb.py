@@ -11,7 +11,7 @@ def test_seqinfo():
     # PY2BAGGAGE: Switch to TemporaryDirectory
     tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_")
 
-    db_path = os.path.join(tmpdir, "aliases.sqlite3")
+    db_path = os.path.join(tmpdir, "aliases.sqlite3")  # noqa: PTH118
 
     db = SeqAliasDB(db_path, writeable=True)
 
@@ -35,7 +35,7 @@ def test_seqinfo():
     aid = db.store_alias("q2", "A", "1")
     assert aid == 4, "should have created a new alias_id on reassignment of new sequence"
 
-    alias_keys = "seqalias_id seq_id namespace alias is_current".split()
+    alias_keys = ["seqalias_id", "seq_id", "namespace", "alias", "is_current"]
     aliases = [{k: r[k] for k in alias_keys} for r in db.find_aliases(current_only=False)]
     aliases.sort(
         key=lambda r: (

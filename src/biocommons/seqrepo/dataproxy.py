@@ -10,7 +10,6 @@ import functools
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import Optional
 from urllib.parse import urlparse
 
 import requests
@@ -34,9 +33,9 @@ class _DataProxy(ABC):
 
     @abstractmethod
     def get_sequence(
-        self, identifier: str, start: Optional[int] = None, end: Optional[int] = None
+        self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
-        """return the specified sequence or subsequence
+        """Return the specified sequence or subsequence
 
         start and end are optional
 
@@ -49,7 +48,7 @@ class _DataProxy(ABC):
 
     @abstractmethod
     def get_metadata(self, identifier: str) -> dict:
-        """for a given identifier, return a structure (dict) containing
+        """For a given identifier, return a structure (dict) containing
         sequence length, aliases, and other optional info
 
         If the given sequence does not exist, KeyError is raised.
@@ -68,9 +67,9 @@ class _DataProxy(ABC):
         """
         raise NotImplementedError
 
-    @functools.lru_cache()
+    @functools.lru_cache
     def translate_sequence_identifier(
-        self, identifier: str, namespace: Optional[str] = None
+        self, identifier: str, namespace: str | None = None
     ) -> list[str]:
         """Translate given identifier to a list of identifiers in the
         specified namespace.
@@ -82,7 +81,6 @@ class _DataProxy(ABC):
         identifier isn't found.
 
         """
-
         try:
             md = self.get_metadata(identifier)
         except (ValueError, KeyError, IndexError) as e:
@@ -103,7 +101,7 @@ class _SeqRepoDataProxyBase(_DataProxy):
         md["aliases"] = list(a for a in md["aliases"])
         return md
 
-    def get_sequence(self, identifier: str, start: Optional[int] = None, end: Optional[int] = None):
+    def get_sequence(self, identifier: str, start: int | None = None, end: int | None = None):
         return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod
@@ -112,7 +110,7 @@ class _SeqRepoDataProxyBase(_DataProxy):
 
     @abstractmethod
     def _get_sequence(
-        self, identifier: str, start: Optional[int] = None, end: Optional[int] = None
+        self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:  # pragma: no cover
         raise NotImplementedError
 
@@ -125,7 +123,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         self.sr = sr
 
     def _get_sequence(
-        self, identifier: str, start: Optional[int] = None, end: Optional[int] = None
+        self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
         # fetch raises KeyError if not found
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
@@ -157,7 +155,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         self.base_url = f"{base_url}/{self.rest_version}/"
 
     def _get_sequence(
-        self, identifier: str, start: Optional[int] = None, end: Optional[int] = None
+        self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
         url = self.base_url + f"sequence/{identifier}"
         params = {"start": start, "end": end}
@@ -180,14 +178,13 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
 
 def _isoformat(o: datetime.datetime):
-    """convert datetime.datetime to iso formatted timestamp
+    """Convert datetime.datetime to iso formatted timestamp
 
     >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
     >>> _isoformat(dt)
     '2019-10-15T10:23:41.115927Z'
 
     """
-
     # stolen from connexion flask_app.py
     assert isinstance(o, datetime.datetime)
     if o.tzinfo:
@@ -206,7 +203,7 @@ def _isoformat(o: datetime.datetime):
 #         self.base_url = base_url
 
 
-def create_dataproxy(uri: Optional[str] = None) -> _DataProxy:
+def create_dataproxy(uri: str | None = None) -> _DataProxy:
     """Create a dataproxy from uri or SEQREPO_DATAPROXY_URI
 
     Currently accepted URI schemes:
@@ -217,7 +214,6 @@ def create_dataproxy(uri: Optional[str] = None) -> _DataProxy:
     * seqrepo+https://somewhere:5000/seqrepo
 
     """
-
     uri = uri or os.environ.get("SEQREPO_DATAPROXY_URI", None)
 
     if uri is None:

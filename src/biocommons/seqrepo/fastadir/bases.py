@@ -1,10 +1,9 @@
 import abc
-from typing import Optional
 
 
 class BaseReader(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def fetch(self, seq_id: str, start: Optional[int] = None, end: Optional[int] = None) -> str:
+    def fetch(self, seq_id: str, start: int | None = None, end: int | None = None) -> str:
         raise NotImplementedError
 
     def __getitem__(self, ac: str) -> str:

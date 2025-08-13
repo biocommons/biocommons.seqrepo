@@ -5,6 +5,7 @@ from biocommons.seqrepo.utils import parse_defline, validate_aliases
 
 def test_parse_defline():
     """Sample deflines:
+
     >NG_007107.2 Homo sapiens methyl-CpG binding protein 2 (MECP2), RefSeqGene on chromosome X
     >XR_928350.3 PREDICTED: Homo sapiens maestro heat like repeat family member 1 (MROH1), transcript variant X23, misc_RNA
     >1 dna:chromosome chromosome:GRCh38:1:1:248956422:1 REF
@@ -18,7 +19,6 @@ def test_parse_defline():
     >LRG_99p1 (protein translated from transcript t1 of LRG_99)
 
     """
-
     defline = (
         ">NG_007107.2 Homo sapiens methyl-CpG binding protein 2 (MECP2), RefSeqGene on chromosome X"
     )

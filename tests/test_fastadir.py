@@ -44,9 +44,9 @@ def test_schema_version():
     tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_")
     orig_schema_version = FastaDir.schema_version
 
-    with pytest.raises(RuntimeError):
-        FastaDir.schema_version = lambda x: -1
-        fd = FastaDir(tmpdir, writeable=True)
+    with pytest.raises(RuntimeError):  # noqa: PT012
+        FastaDir.schema_version = lambda _: -1
+        _ = FastaDir(tmpdir, writeable=True)
 
     FastaDir.schema_version = orig_schema_version
 
@@ -55,7 +55,7 @@ def test_writeability():
     tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_")
     fd = FastaDir(tmpdir, writeable=True)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError):  # noqa: PT012
         fd._writeable = False
         fd.store("NC_000001.11", "TGGTGGCACGCGCTTGTAGT")
 

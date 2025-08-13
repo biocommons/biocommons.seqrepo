@@ -10,9 +10,9 @@ def test_create(seqrepo):
 
 def test_seqrepo_dir_not_exist(tmpdir_factory):
     """Ensure that exception is raised for non-existent seqrepo directory"""
-    dir = str(tmpdir_factory.mktemp("seqrepo")) + "-IDONTEXIST"
-    with pytest.raises(OSError) as ex:
-        SeqRepo(dir, writeable=False)
+    seqrepo_dir = str(tmpdir_factory.mktemp("seqrepo")) + "-IDONTEXIST"
+    with pytest.raises(OSError) as ex:  # noqa: PT011
+        SeqRepo(seqrepo_dir, writeable=False)
 
     assert "Unable to open SeqRepo directory" in str(ex.value)
 
@@ -39,7 +39,7 @@ def test_fetch(seqrepo):
     assert seqrepo.fetch("rosa") == "SMELLASSWEET"
     assert "rosa" in seqrepo
 
-    assert len(list(rec for rec in seqrepo)) == 3
+    assert len(list(seqrepo)) == 3
 
     assert seqrepo.fetch("rosa", start=5, end=7) == "AS"
 
@@ -57,8 +57,7 @@ def test_fetch(seqrepo):
 
 
 def test_digests(seqrepo):
-    """tests one set of digests"""
-
+    """Tests one set of digests"""
     # to get aliases, add "import time; time.sleep(120)" above, then:
     # (3.5) snafu$ SEQREPO_ROOT_DIR=/tmp/pytest-of-reece/pytest-0/seqrepo0 seqrepo export -i .
     assert seqrepo.fetch_uri("fr:coin") == "ASINACORNER"
@@ -87,8 +86,8 @@ def test_refseq_lookup(seqrepo):
 
 
 def test_namespace_translation(tmpdir_factory):
-    dir = str(tmpdir_factory.mktemp("seqrepo"))
-    seqrepo = SeqRepo(dir, writeable=True)
+    tmpdir = str(tmpdir_factory.mktemp("seqrepo"))
+    seqrepo = SeqRepo(tmpdir, writeable=True)
 
     # store sequences
     seqrepo.store("NCBISEQUENCE", [{"namespace": "NCBI", "alias": "ncbiac"}])
@@ -130,9 +129,9 @@ def test_translation(seqrepo):
     assert "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr" in seqrepo.translate_identifier("en:rose"), (
         "failed to find expected identifier in returned identifiers"
     )
-    assert ["VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr"] == seqrepo.translate_identifier(
-        "en:rose", target_namespaces=["VMC"]
-    ), "failed to rerieve exactly the expected identifier"
+    assert seqrepo.translate_identifier("en:rose", target_namespaces=["VMC"]) == [
+        "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr"
+    ], "failed to rerieve exactly the expected identifier"
 
 
 def test_sequenceproxy(seqrepo):

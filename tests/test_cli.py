@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import io
 import os
 import tempfile
@@ -12,7 +11,7 @@ from biocommons.seqrepo.utils import parse_defline
 
 @pytest.fixture
 def opts():
-    class MockOpts(object):
+    class MockOpts:
         pass
 
     test_dir = os.path.dirname(__file__)
@@ -31,13 +30,11 @@ def test_00_init(opts):
     init(opts)
     assert os.path.exists(opts.root_directory)
 
-    with pytest.raises(IOError) as excinfo:
+    with pytest.raises(IOError) as excinfo:  # noqa: PT011
         init(opts)
 
     seqrepo_dir = os.path.join(opts.root_directory, opts.instance_name)
-    assert str(excinfo.value) == "{seqrepo_dir} exists and is not empty".format(
-        seqrepo_dir=seqrepo_dir
-    )
+    assert str(excinfo.value) == f"{seqrepo_dir} exists and is not empty"
 
 
 def test_20_load(opts):
@@ -56,11 +53,11 @@ def test_refseq_fasta(opts):
     opts.namespace = "refseq"
     old_fasta = (
         ">gi|295424141|ref|NM_000439.4| Homo sapiens proprotein convertase subtilisin/kexin type 1 "
-        + "(PCSK1), transcript variant 1, mRNA\nTTT"
+        "(PCSK1), transcript variant 1, mRNA\nTTT"
     )
     new_fasta = (
         ">NM_000439.4 Homo sapiens proprotein convertase subtilisin/kexin type 1 (PCSK1), "
-        + "transcript variant 1, mRNA\nTTT"
+        "transcript variant 1, mRNA\nTTT"
     )
 
     aliases = parse_defline(old_fasta, opts.namespace)

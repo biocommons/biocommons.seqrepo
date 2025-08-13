@@ -1,15 +1,13 @@
 import logging
 from types import TracebackType
-from typing import Optional, Type
 
 
 class DuplicateFilter:
-    """
-    Filters away duplicate log messages.
+    """Filters away duplicate log messages.
     Modified from https://stackoverflow.com/a/60462619/342839
     """
 
-    def __init__(self, logger: Optional[logging.Logger] = None) -> None:
+    def __init__(self, logger: logging.Logger | None = None) -> None:
         self.log_keys = set()
         self.logger = logger
 
@@ -27,6 +25,6 @@ class DuplicateFilter:
             )
         self.logger.addFilter(self)
 
-    def __exit__(self, exc_type: Type[Exception], exc_value: Exception, traceback: TracebackType):
+    def __exit__(self, exc_type: type[Exception], exc_value: Exception, traceback: TracebackType):
         if self.logger is not None:
             self.logger.removeFilter(self)

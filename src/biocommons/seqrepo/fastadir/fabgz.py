@@ -6,7 +6,6 @@ Files must be named as .fa.bgz to be recognized as blocked gzip compressed
 
 """
 
-import io
 import logging
 import os
 import re
@@ -15,7 +14,6 @@ import stat
 import subprocess
 import threading
 from types import TracebackType
-from typing import Optional, Type
 
 from pysam import FastaFile
 from typing_extensions import Self
@@ -28,7 +26,7 @@ min_bgzip_version_info = (1, 2, 1)
 
 
 def _get_bgzip_version(exe: str) -> str:
-    """return bgzip version as string"""
+    """Return bgzip version as string"""
     p = subprocess.Popen(
         [exe, "-h"],
         stdout=subprocess.PIPE,
@@ -44,35 +42,32 @@ def _get_bgzip_version(exe: str) -> str:
 
 
 def _find_bgzip() -> str:
-    """return path to bgzip if found and meets version requirements, else exception"""
+    """Return path to bgzip if found and meets version requirements, else exception"""
     min_bgzip_version = ".".join(map(str, min_bgzip_version_info))
     exe = os.environ.get("SEQREPO_BGZIP_PATH", shutil.which("bgzip") or "/usr/bin/bgzip")
 
     try:
         bgzip_version = _get_bgzip_version(exe)
     except AttributeError:
-        raise RuntimeError("Didn't find version string in bgzip executable ({exe})".format(exe=exe))
+        raise RuntimeError(f"Didn't find version string in bgzip executable ({exe})")
     except FileNotFoundError:
         raise RuntimeError(
-            "{exe} doesn't exist; you need to install htslib and tabix "
-            "(See https://github.com/biocommons/biocommons.seqrepo#requirements)".format(exe=exe)
+            f"{exe} doesn't exist; you need to install htslib and tabix "
+            "(See https://github.com/biocommons/biocommons.seqrepo#requirements)"
         )
     except Exception:
-        raise RuntimeError("Unknown error while executing {exe}".format(exe=exe))
+        raise RuntimeError(f"Unknown error while executing {exe}")
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
         raise RuntimeError(
-            "bgzip ({exe}) {ev} is too old; >= {rv} is required; please upgrade".format(
-                exe=exe, ev=bgzip_version, rv=min_bgzip_version
-            )
+            f"bgzip ({exe}) {bgzip_version} is too old; >= {min_bgzip_version} is required; please upgrade"
         )
-    _logger.info("Using bgzip {ev} ({exe})".format(ev=bgzip_version, exe=exe))
+    _logger.info(f"Using bgzip {bgzip_version} ({exe})")
     return exe
 
 
-class FabgzReader(object):
-    """
-    Class that implements ContextManager and wraps a FabgzReader.
+class FabgzReader:
+    """Class that implements ContextManager and wraps a FabgzReader.
     The FabgzReader is returned when acquired in a contextmanager with statement.
     """
 
@@ -88,17 +83,17 @@ class FabgzReader(object):
         return self
 
     def __exit__(
-        self, exc_type: Type[Exception], exc_value: Exception, traceback: TracebackType
+        self, exc_type: type[Exception], exc_value: Exception, traceback: TracebackType
     ) -> None:
         self.lock.release()
 
-    def fetch(self, seq_id: str, start: Optional[int] = None, end: Optional[int] = None):
+    def fetch(self, seq_id: str, start: int | None = None, end: int | None = None):
         return self._fh.fetch(seq_id.encode("ascii"), start, end)  # type: ignore
 
     def keys(self):
         return self._fh.references
 
-    def __len__(self) -> Optional[int]:
+    def __len__(self) -> int | None:
         return self._fh.nreferences
 
     def __getitem__(self, ac: str) -> str:
@@ -109,7 +104,7 @@ class FabgzReader(object):
         return self._fh.filename
 
 
-class FabgzWriter(object):
+class FabgzWriter:
     # TODO: Use temp filename until indexes are built and perms are set, then rename
     def __init__(self, filename: str) -> None:
         super(FabgzWriter, self).__init__()
@@ -133,7 +128,7 @@ class FabgzWriter(object):
                 "One or more target files already exists ({})".format(", ".join(files))
             )
 
-        self._fh = io.open(self._basepath, encoding="ascii", mode="w")
+        self._fh = open(self._basepath, encoding="ascii", mode="w")
         _logger.debug("opened " + self.filename + " for writing")
         self._added = set()
 
@@ -149,7 +144,7 @@ class FabgzWriter(object):
             for line in wrap_lines(seq, line_width):
                 self._fh.write(line + "\n")
             self._added.add(seq_id)
-            _logger.debug("added seq_id {i}; length {l}".format(i=seq_id, l=len(seq)))
+            _logger.debug(f"added seq_id {seq_id}; length {len(seq)}")
         return seq_id
 
     def close(self) -> None:
@@ -166,11 +161,11 @@ class FabgzWriter(object):
             os.chmod(self.filename + ".fai", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
             os.chmod(self.filename + ".gzi", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
-            _logger.info("{} written; added {} sequences".format(self.filename, len(self._added)))
+            _logger.info(f"{self.filename} written; added {len(self._added)} sequences")
 
     def __del__(self) -> None:
         if self._fh is not None:
             _logger.error(
-                "FabgzWriter({}) was not explicitly closed; data may be lost".format(self.filename)
+                f"FabgzWriter({self.filename}) was not explicitly closed; data may be lost"
             )
             self.close()

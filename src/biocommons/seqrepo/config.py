@@ -1,8 +1,7 @@
 import os
-from typing import Optional
 
 
-def parse_caching_env_var(env_name: str, env_default: str) -> Optional[int]:
+def parse_caching_env_var(env_name: str, env_default: str) -> int | None:
     caching_env_var = os.environ.get(env_name, env_default)
     if caching_env_var.lower() == "none":
         return None

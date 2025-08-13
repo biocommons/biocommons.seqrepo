@@ -20,22 +20,22 @@ def rest_dataproxy():
 
 @pytest.fixture(scope="session")
 def seqrepo(tmpdir_factory):
-    dir = str(tmpdir_factory.mktemp("seqrepo"))
-    return SeqRepo(dir, writeable=True)
+    seqrepo_dir = str(tmpdir_factory.mktemp("seqrepo"))
+    return SeqRepo(seqrepo_dir, writeable=True)
 
 
 @pytest.fixture(scope="session")
 def seqrepo_ro(tmpdir_factory):
-    dir = str(tmpdir_factory.mktemp("seqrepo"))
-    sr = SeqRepo(dir, writeable=True)
+    seqrepo_dir = str(tmpdir_factory.mktemp("seqrepo"))
+    sr = SeqRepo(seqrepo_dir, writeable=True)
     del sr  # close it
-    return SeqRepo(dir)
+    return SeqRepo(seqrepo_dir)
 
 
 @pytest.fixture(scope="session")
 def seqrepo_keepcase(tmpdir_factory):
-    dir = str(tmpdir_factory.mktemp("seqrepo"))
-    return SeqRepo(dir, upcase=False, writeable=True)
+    seqrepo_dir = str(tmpdir_factory.mktemp("seqrepo"))
+    return SeqRepo(seqrepo_dir, upcase=False, writeable=True)
 
 
 def test_create(seqrepo):
