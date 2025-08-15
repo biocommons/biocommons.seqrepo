@@ -1,3 +1,5 @@
+"""Provide DB-based access to aliases for sequences."""
+
 import datetime
 import logging
 import sqlite3
@@ -6,7 +8,7 @@ from importlib import resources
 
 import yoyo
 
-from .._internal.translate import translate_alias_records, translate_api2db
+from biocommons.seqrepo._internal.translate import translate_alias_records, translate_api2db
 
 _logger = logging.getLogger(__name__)
 # _logger.addFilter(DuplicateFilter())
@@ -34,6 +36,14 @@ class SeqAliasDB:
         translate_ncbi_namespace: str | None = None,
         check_same_thread: bool = True,
     ) -> None:
+        """Initialize SeqAliasDb.
+
+        :param db_path: location of sqlite DB file
+        :param writeable: whether to support writes to DB
+        :param translate_ncbi_namespace: (deprecated, don't use this)
+        :param check_same_thread: whether to use stdlib ``check_same_thread`` arg,
+            protecting against DB access from other threads
+        """
         self._db_path = db_path
         self._writeable = writeable
 
@@ -71,12 +81,13 @@ class SeqAliasDB:
             (seq_id,),
         )
         c = cursor.fetchone()
-        return True if c["ex"] else False
+        return bool(c["ex"])
 
     # ############################################################################
     # Public methods
 
     def commit(self) -> None:
+        """Trigger DB commit."""
         if self._writeable:
             self._db.commit()
 
@@ -102,7 +113,7 @@ class SeqAliasDB:
         current_only: bool = True,
         translate_ncbi_namespace: bool | None = None,
     ) -> Iterator[dict]:
-        """Returns iterator over alias annotation dicts that match criteria
+        """Return iterator over alias annotation dicts that match criteria
 
         The arguments, all optional, restrict the records that are
         returned.  Without arguments, all aliases are returned.
@@ -111,12 +122,11 @@ class SeqAliasDB:
 
         If arguments contain %, the `like` comparison operator is
         used.  Otherwise arguments must match exactly.
-
         """
         clauses = []
         params = []
 
-        def eq_or_like(s):
+        def eq_or_like(s: str) -> str:
             return "like" if "%" in s else "="
 
         if translate_ncbi_namespace is not None:
@@ -142,12 +152,12 @@ class SeqAliasDB:
 
         cols = ["seqalias_id", "seq_id", "alias", "added", "is_current"]
         cols += ["namespace"]
-        sql = "select {cols} from seqalias".format(cols=", ".join(cols))  # nosec
+        sql = f"select {', '.join(cols)} from seqalias"  # noqa: S608
         if clauses:
             sql += " where " + " and ".join("(" + c + ")" for c in clauses)
         sql += " order by seq_id, namespace, alias"
 
-        _logger.debug(f"Executing: {sql} with params {params}")
+        _logger.debug("Executing: %s with params %s", sql, params)
         cursor = self._db.cursor()
         cursor.execute(sql, params)
         return translate_alias_records(dict(r) for r in cursor)
@@ -159,6 +169,7 @@ class SeqAliasDB:
         return int(cursor.fetchone()[0])
 
     def stats(self) -> dict:
+        """Get DB stats"""
         sql = """select count(*) as n_aliases, sum(is_current) as n_current,
         count(distinct seq_id) as n_sequences, count(distinct namespace) as
         n_namespaces, min(added) as min_ts, max(added) as max_ts from
@@ -191,13 +202,13 @@ class SeqAliasDB:
                 (seq_id, namespace, alias),
             )
             # success => new record
-            return cursor.lastrowid
+            return cursor.lastrowid  # noqa: TRY300
         except Exception as ex:
             # Every driver has own class for IntegrityError so we have to
             # investigate if the exception class name contains 'IntegrityError'
             # which we can ignore
             if not type(ex).__name__.endswith("IntegrityError"):
-                raise (ex)
+                raise (ex)  # noqa: TRY201
         # IntegrityError fall-through
 
         # existing record is guaranteed to exist uniquely; fetchone() should always succeed
@@ -206,11 +217,11 @@ class SeqAliasDB:
         # if seq_id matches current record, it's a duplicate (seq_id, namespace, alias) tuple
         # and we return current record
         if current_rec["seq_id"] == seq_id:
-            _logger.debug(log_pfx + ": duplicate record")
+            _logger.debug("%s: duplicate record", log_pfx)
             return current_rec["seqalias_id"]
 
         # otherwise, we're reassigning; deprecate old record, then retry
-        _logger.debug(log_pfx + ": collision; deprecating {s1}".format(s1=current_rec["seq_id"]))
+        _logger.debug("%s: collision; deprecating %s", log_pfx, current_rec["seq_id"])
         cursor.execute(
             "update seqalias set is_current = 0 where seqalias_id = ?",
             [current_rec["seqalias_id"]],
@@ -221,7 +232,7 @@ class SeqAliasDB:
     # Internal methods
 
     def _dump_aliases(self) -> None:  # pragma: no cover
-        import prettytable
+        import prettytable  # noqa: PLC0415
 
         cursor = self._db.cursor()
         fields = ["seqalias_id", "seq_id", "namespace", "alias", "added", "is_current"]
@@ -229,7 +240,7 @@ class SeqAliasDB:
         cursor.execute("select * from seqalias")
         for r in cursor:
             pt.add_row([r[f] for f in fields])
-        print(pt)
+        print(pt)  # noqa: T201
 
     def _upgrade_db(self) -> None:
         """Upgrade db using scripts for specified (current) schema version"""
@@ -245,8 +256,9 @@ class SeqAliasDB:
             raise ImportError(msg)
         migration_dir = str(resources.files(__package__) / migration_path)
         migrations = yoyo.read_migrations(migration_dir)
-        assert len(migrations) > 0, (
-            f"no migration scripts found -- wrong migration path for {__package__}"
-        )
+        if len(migrations) > 0:
+            raise FileNotFoundError(
+                f"no migration scripts found -- wrong migration path for {__package__}"
+            )
         migrations_to_apply = backend.to_apply(migrations)
         backend.apply_migrations(migrations_to_apply)

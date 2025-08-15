@@ -103,7 +103,6 @@ exclude_lines = [
     "if self.debug",
 
     # Don't complain if tests don't hit defensive assertion code:
-    "raise AssertionError",
     "raise NotImplementedError",
 
     # Don't complain if non-runnable code isn't run:
@@ -122,6 +121,7 @@ exclude = [
     "fixes",
     "sbin/",
     "setup.py",
+    "src/biocommons/seqrepo/seqaliasdb/_data/**/*",
 ]
 
 [tool.ruff.lint]
@@ -221,6 +221,7 @@ ignore = [
     "D415",
     "TRY003",
     "B019",
+    "PGH003",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -236,8 +237,10 @@ ignore = [
 # N802 -
 # PTH110 -
 # PTH118 -
-"src/biocommons/seqrepo/seqrepo.py" = [
+"src/biocommons/**/*" = [
     "D105",
+]
+"src/biocommons/seqrepo/seqrepo.py" = [
     "PTH",
 ]
 "tests/*" = [
