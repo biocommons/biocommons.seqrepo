@@ -226,7 +226,7 @@ class SeqAliasDB(object):
     # Internal methods
 
     def _dump_aliases(self) -> None:  # pragma: no cover
-        import prettytable
+        import prettytable  # type: ignore
 
         cursor = self._db.cursor()
         fields = "seqalias_id seq_id namespace alias added is_current".split()
