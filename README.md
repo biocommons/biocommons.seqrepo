@@ -113,7 +113,7 @@ tested. Patches to get other systems working would be welcomed.
 
 ### OS X
 
-    $ brew install python libpq
+    $ brew install python htslib
 
 ### Ubuntu
 
@@ -126,35 +126,35 @@ tested. Patches to get other systems working would be welcomed.
     $ pip install seqrepo
     $ sudo mkdir -p /usr/local/share/seqrepo
     $ sudo chown $USER /usr/local/share/seqrepo
-    $ seqrepo pull -i 2018-11-26
-    $ seqrepo show-status -i 2018-11-26
-    seqrepo 0.2.3.post3.dev8+nb8298bd62283
-    root directory: /usr/local/share/seqrepo/2018-11-26, 7.9 GB
+    $ seqrepo pull -i 2024-12-20
+    $ seqrepo show-status -i 2024-12-20
+    seqrepo 0.6.12.dev7+gd311e3e.d20250730
+    instance directory: /usr/local/share/seqrepo/2024-12-20, 13.5 GB
     backends: fastadir (schema 1), seqaliasdb (schema 1)
-    sequences: 773587 sequences, 93051609959 residues, 192 files
-    aliases: 5579572 aliases, 5480085 current, 26 namespaces, 773587 sequences
+    sequences: 1144093 sequences, 128795051613 residues, 435 files
+    aliases: 5865328 aliases, 5865328 current, 35 namespaces, 1144093 sequences
 
     # Simple Pythonic interface to sequences
     >> from biocommons.seqrepo import SeqRepo
-    >> sr = SeqRepo("/usr/local/share/seqrepo/latest")
+    >> sr = SeqRepo("/usr/local/share/seqrepo/2024-12-20")
     >> sr["NC_000001.11"][780000:780020]
     'TGGTGGCACGCGCTTGTAGT'
 
     # Or, use the seqrepo shell for even easier access
-    $ seqrepo start-shell -i 2018-11-26
+    $ seqrepo start-shell -i 2024-12-20
     In [1]: sr["NC_000001.11"][780000:780020]
     Out[1]: 'TGGTGGCACGCGCTTGTAGT'
 
     # N.B. The following output is edited for simplicity
-    $ seqrepo export -i 2018-11-26 | head -n100
-    >SHA1:9a2acba3dd7603f... SEGUID:mirLo912A/MppLuS1cUyFMduLUQ Ensembl-85:GENSCAN00000003538 ...
+    $ seqrepo export -i 2024-12-20 | head -n100
+    >MD5:611ff0945aa9eeaaf9ef908d0e744cd0 SEGUID:mirLo912A/MppLuS1cUyFMduLUQ SHA1:9a2acba3dd7603f329a4bb92d5c53214c76e2d44 VMC:GS_---7nAwbv5Fs2Ml2-k3X6Zvj-6ZcjeD3 ga4gh:SQ.---7nAwbv5Fs2Ml2-k3X6Zvj-6ZcjeD3 sha512t24u:---7nAwbv5Fs2Ml2-k3X6Zvj-6ZcjeD3
     MDSPLREDDSQTCARLWEAEVKRHSLEGLTVFGTAVQIHNVQRRAIRAKGTQEAQAELLCRGPRLLDRFLEDACILKEGRGTDTGQHCRGDARISSHLEA
     SGTHIQLLALFLVSSSDTPPSLLRFCHALEHDIRYNSSFDSYYPLSPHSRHNDDLQTPSSHLGYIITVPDPTLPLTFASLYLGMAPCTSMGSSSMGIFQS
     QRIHAFMKGKNKWDEYEGRKESWKIRSNSQTGEPTF
-    >SHA1:ca996b263102b1... SEGUID:yplrJjECsVqQufeYy0HkDD16z58 NCBI:XR_001733142.1 gi:1034683989
-    TTTACGTCTTTCTGGGAATTTATACTGGAAGTATACTTACCTCTGTGCAAAATTGCAAATATATAAGGTAATTCATTCCAGCATTGCTTATATTAGGTTG
-    AACTATGTAACATTGACATTGATGTGAATCAAAAATGGTTGAAGGCTGGCAGTTTCATATGATTCAGCCTATAATAGCAAAAGATTGAAAAAATCCATTA
-    ATACAGTGTGGTTCAAAAAAATTTGTTGTATCAAGGTAAAATAATAGCCTGAATATAATTAAGATAGTCTGTGTATACATCGATGAAAACATTGCCAATA
+    >MD5:8ca1247fe64b17b9d40c2112a8bfc3a2 NCBI:XM_017008743.2 SEGUID:8cijSTmR/FOL+Gtq9gf6JlbRcvY SHA1:f1c8a3493991fc538bf86b6af607fa2656d172f6 VMC:GS_---BUlBwgZN_r5wSII-WCNDd9nn1Owj4 ga4gh:SQ.---BUlBwgZN_r5wSII-WCNDd9nn1Owj4 refseq:XM_017008743.2 sha512t24u:---BUlBwgZN_r5wSII-WCNDd9nn1Owj4
+    ACTTATGGAAAACAGTGTGGCATATTCTGCTGAGCTTCGCCCTGGAAGAAGCCTCTTTTATACATCTCTTCAGGGAAGAGAGAAGCAATGGGCATGTTAG
+    TATACAATGATCACAGCCACGCAGGCCTGCAAGCTGCCTTTTGGACAGGCTGTTGACTGCCGTTCCAATTAGCTGATTGGAGAATGTGGAATGCAGAGTG
+    ATAATGCTGCATATCTGCTATCAGGCAGCAGCAAAGGTTTTTGTCTTGGGAAGGCAAGCTTTCCCTGCAATATTATCTCAGCAGCTCCCTAGCTGCTTAC
 
 See [Installation](docs/installation.rst) and
 [Mirroring](docs/mirror.rst) for more information.
@@ -174,7 +174,7 @@ will greatly increase performance of sequence retrieval.
 
 ### Developing on OS X
 
-    brew install python libpq bash
+    brew install python htslib
 
 If you get "xcrun: error: invalid active developer path", you need to install
 XCode. See this [StackOverflow answer](https://apple.stackexchange.com/questions/254380/why-am-i-getting-an-invalid-active-developer-path-when-attempting-to-use-git-a).

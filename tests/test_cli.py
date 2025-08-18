@@ -12,17 +12,40 @@ from biocommons.seqrepo.utils import parse_defline
 @pytest.fixture
 def opts():
     class MockOpts:
-        pass
+        def __init__(
+            self,
+            root_directory: str | None = None,
+            fasta_files: list[str] | None = None,
+            namespace: str | None = None,
+            instance_name: str | None = None,
+            verbose: int = 0,
+        ):
+            """Mock class for options used in seqrepo tests.
+
+            Args:
+                root_directory: The root directory for the seqrepo instance.
+                fasta_files: List of FASTA file paths.
+                namespace: The namespace.
+                instance_name: The instance name.
+                verbose: Verbosity level.
+
+            """
+            self.root_directory = root_directory
+            self.fasta_files = fasta_files
+            self.namespace = namespace
+            self.instance_name = instance_name
+            self.verbose = verbose
 
     test_dir = os.path.dirname(__file__)
     test_data_dir = os.path.join(test_dir, "data")
 
-    opts = MockOpts()
-    opts.root_directory = os.path.join(tempfile.mkdtemp(prefix="seqrepo_pytest_"), "seqrepo")
-    opts.fasta_files = [os.path.join(test_data_dir, "sequences.fa.gz")]
-    opts.namespace = "test"
-    opts.instance_name = "test"
-    opts.verbose = 0
+    opts = MockOpts(
+        root_directory=os.path.join(tempfile.mkdtemp(prefix="seqrepo_pytest_"), "seqrepo"),
+        fasta_files=[os.path.join(test_data_dir, "sequences.fa.gz")],
+        namespace="test",
+        instance_name="test",
+        verbose=0,
+    )
     return opts
 
 
