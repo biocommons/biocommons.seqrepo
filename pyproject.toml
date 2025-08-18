@@ -116,6 +116,7 @@ include = ["src", "tests"]
 src = ["src", "tests"]
 line-length = 100
 exclude = [
+    "archive/",
     "docs/",
     "misc/",
     "fixes",
