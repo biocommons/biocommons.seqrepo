@@ -122,6 +122,8 @@ exclude = [
     "sbin/",
     "setup.py",
     "src/biocommons/seqrepo/seqaliasdb/_data/**/*",
+    "src/biocommons/seqrepo/fastadir/_data/**/*",
+    "src/biocommons/seqrepo/_internal/logging_support.py",
 ]
 
 [tool.ruff.lint]
@@ -242,6 +244,17 @@ ignore = [
 ]
 "src/biocommons/seqrepo/seqrepo.py" = [
     "PTH",
+]
+"src/biocommons/seqrepo/fastadir/fastadir.py" = [
+    "PTH",
+]
+"src/biocommons/seqrepo/fastadir/fabgz.py" = [
+    "PTH",
+]
+"src/biocommons/seqrepo/cli.py" = [
+    "D103",
+    "PTH",
+    "T201",
 ]
 "tests/*" = [
     "ANN001",

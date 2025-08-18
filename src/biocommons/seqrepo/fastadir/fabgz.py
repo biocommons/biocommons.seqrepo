@@ -13,6 +13,7 @@ import shutil
 import stat
 import subprocess
 import threading
+from collections.abc import Generator, Sequence
 from types import TracebackType
 
 from pysam import FastaFile
@@ -27,7 +28,7 @@ min_bgzip_version_info = (1, 2, 1)
 
 def _get_bgzip_version(exe: str) -> str:
     """Return bgzip version as string"""
-    p = subprocess.Popen(
+    p = subprocess.Popen(  # noqa: S603
         [exe, "-h"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -48,30 +49,32 @@ def _find_bgzip() -> str:
 
     try:
         bgzip_version = _get_bgzip_version(exe)
-    except AttributeError:
-        raise RuntimeError(f"Didn't find version string in bgzip executable ({exe})")
-    except FileNotFoundError:
+    except AttributeError as e:
+        raise RuntimeError(f"Didn't find version string in bgzip executable ({exe})") from e
+    except FileNotFoundError as e:
         raise RuntimeError(
             f"{exe} doesn't exist; you need to install htslib and tabix "
             "(See https://github.com/biocommons/biocommons.seqrepo#requirements)"
-        )
-    except Exception:
-        raise RuntimeError(f"Unknown error while executing {exe}")
+        ) from e
+    except Exception as e:
+        raise RuntimeError(f"Unknown error while executing {exe}") from e
     bgzip_version_info = tuple(map(int, bgzip_version.split(".")))
     if bgzip_version_info < min_bgzip_version_info:
         raise RuntimeError(
             f"bgzip ({exe}) {bgzip_version} is too old; >= {min_bgzip_version} is required; please upgrade"
         )
-    _logger.info(f"Using bgzip {bgzip_version} ({exe})")
+    _logger.info("Using bgzip %s (%s)", bgzip_version, exe)
     return exe
 
 
 class FabgzReader:
-    """Class that implements ContextManager and wraps a FabgzReader.
+    """Implement ContextManager and wrap a FabgzReader.
+
     The FabgzReader is returned when acquired in a contextmanager with statement.
     """
 
     def __init__(self, filename: str) -> None:
+        """Initialize reader instance."""
         self.lock = threading.Lock()
         self._fh = FastaFile(filename)
 
@@ -87,10 +90,12 @@ class FabgzReader:
     ) -> None:
         self.lock.release()
 
-    def fetch(self, seq_id: str, start: int | None = None, end: int | None = None):
+    def fetch(self, seq_id: str, start: int | None = None, end: int | None = None) -> str:
+        """Get a sequence slice"""
         return self._fh.fetch(seq_id.encode("ascii"), start, end)  # type: ignore
 
-    def keys(self):
+    def keys(self) -> Sequence[str]:
+        """Get known IDs"""
         return self._fh.references
 
     def __len__(self) -> int | None:
@@ -101,13 +106,17 @@ class FabgzReader:
 
     @property
     def filename(self) -> str:
+        """Get filename"""
         return self._fh.filename
 
 
 class FabgzWriter:
+    """Writer class for block-gzipped FASTA files"""
+
     # TODO: Use temp filename until indexes are built and perms are set, then rename
     def __init__(self, filename: str) -> None:
-        super(FabgzWriter, self).__init__()
+        """Initialize writer instance"""
+        super(FabgzWriter, self).__init__()  # noqa: UP008
 
         self.filename = filename
         self._fh = None
@@ -128,12 +137,14 @@ class FabgzWriter:
                 "One or more target files already exists ({})".format(", ".join(files))
             )
 
-        self._fh = open(self._basepath, encoding="ascii", mode="w")
-        _logger.debug("opened " + self.filename + " for writing")
+        self._fh = open(self._basepath, encoding="ascii", mode="w")  # noqa: SIM115
+        _logger.debug("opened %s for writing", self.filename)
         self._added = set()
 
     def store(self, seq_id: str, seq: str) -> str:
-        def wrap_lines(seq, line_width):
+        """Store sequence and ID"""
+
+        def wrap_lines(seq: str, line_width: int) -> Generator:
             for i in range(0, len(seq), line_width):
                 yield seq[i : i + line_width]
 
@@ -144,14 +155,15 @@ class FabgzWriter:
             for line in wrap_lines(seq, line_width):
                 self._fh.write(line + "\n")
             self._added.add(seq_id)
-            _logger.debug(f"added seq_id {seq_id}; length {len(seq)}")
+            _logger.debug("added seq_id %s; length %s", seq_id, len(seq))
         return seq_id
 
     def close(self) -> None:
+        """Close file"""
         if self._fh:
             self._fh.close()
             self._fh = None
-            subprocess.check_call([self._bgzip_exe, "--force", self._basepath])
+            subprocess.check_call([self._bgzip_exe, "--force", self._basepath])  # noqa: S603
             os.rename(self._basepath + ".gz", self.filename)
 
             # open file with FastaFile to create indexes, then make all read-only
@@ -161,11 +173,11 @@ class FabgzWriter:
             os.chmod(self.filename + ".fai", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
             os.chmod(self.filename + ".gzi", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
-            _logger.info(f"{self.filename} written; added {len(self._added)} sequences")
+            _logger.info("%s written; added %s sequences", self.filename, len(self._added))
 
     def __del__(self) -> None:
         if self._fh is not None:
             _logger.error(
-                f"FabgzWriter({self.filename}) was not explicitly closed; data may be lost"
+                "FabgzWriter(%s) was not explicitly closed; data may be lost", self.filename
             )
             self.close()

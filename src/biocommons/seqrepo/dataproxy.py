@@ -1,8 +1,14 @@
-"""provides an abstract class for all data access required for
-VRS, and a concrete implementation based on seqrepo.
+"""Provide an abstract class for all data access required for VRS, and a concrete implementation based on seqrepo.
 
 See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 
+>> dp1 = create_dataproxy("seqrepo+http://localhost:5000/seqrepo")
+>> dp2 = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
+>> ir = "refseq:NM_000551.3"
+>> print(f"dp1 = {dp1}")
+>> print(f"dp2 = {dp2}")
+>> assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
+>> assert dp1.get_sequence(ir) == dp2.get_sequence(ir)
 """
 
 import datetime
@@ -48,8 +54,10 @@ class _DataProxy(ABC):
 
     @abstractmethod
     def get_metadata(self, identifier: str) -> dict:
-        """For a given identifier, return a structure (dict) containing
-        sequence length, aliases, and other optional info
+        """Return associated metadata for an identifier.
+
+        For a given identifier, get a structure (dict) containing sequence length,
+        aliases, and other optional info
 
         If the given sequence does not exist, KeyError is raised.
 
@@ -71,15 +79,12 @@ class _DataProxy(ABC):
     def translate_sequence_identifier(
         self, identifier: str, namespace: str | None = None
     ) -> list[str]:
-        """Translate given identifier to a list of identifiers in the
-        specified namespace.
+        """Translate given identifier to a list of identifiers in the specified namespace.
 
-        `identifier` must be a string
-        `namespace` is case-sensitive
+        * `identifier` must be a string
+        * `namespace` is case-sensitive
 
-        On success, returns string identifier.  Raises KeyError if given
-        identifier isn't found.
-
+        On success, returns string identifier.  Raises KeyError if given identifier isn't found.
         """
         try:
             md = self.get_metadata(identifier)
@@ -98,10 +103,12 @@ class _SeqRepoDataProxyBase(_DataProxy):
 
     def get_metadata(self, identifier: str) -> dict:
         md = self._get_metadata(identifier)
-        md["aliases"] = list(a for a in md["aliases"])
+        md["aliases"] = list(md["aliases"])
         return md
 
-    def get_sequence(self, identifier: str, start: int | None = None, end: int | None = None):
+    def get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod
@@ -119,6 +126,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
     """DataProxy based on a local instance of SeqRepo"""
 
     def __init__(self, sr: SeqRepo) -> None:
+        """Initialize DP instance"""
         super().__init__()
         self.sr = sr
 
@@ -136,13 +144,12 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         seq_id = r[0]["seq_id"]
         seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
         aliases = self.sr.aliases.find_aliases(seq_id=seq_id)
-        md = {
+        return {
             "length": seqinfo["len"],
             "alphabet": seqinfo["alpha"],
             "added": _isoformat(seqinfo["added"]),
             "aliases": [f"{a['namespace']}:{a['alias']}" for a in aliases],
         }
-        return md
 
 
 class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
@@ -151,6 +158,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
     rest_version = "1"
 
     def __init__(self, base_url: str) -> None:
+        """Initialize REST-based DP"""
         super().__init__()
         self.base_url = f"{base_url}/{self.rest_version}/"
 
@@ -159,7 +167,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
     ) -> str:
         url = self.base_url + f"sequence/{identifier}"
         params = {"start": start, "end": end}
-        _logger.info(f"Fetching {url} {params if (start or end) else ''}")
+        _logger.info("Fetching %s %s", url, params if (start or end) else "")
         resp = requests.get(url, params=params, timeout=60)
         if resp.status_code == 404:
             raise KeyError(identifier)
@@ -173,11 +181,10 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         if resp.status_code == 404:
             raise KeyError(identifier)
         resp.raise_for_status()
-        data = resp.json()
-        return data
+        return resp.json()
 
 
-def _isoformat(o: datetime.datetime):
+def _isoformat(o: datetime.datetime) -> str:
     """Convert datetime.datetime to iso formatted timestamp
 
     >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
@@ -186,7 +193,8 @@ def _isoformat(o: datetime.datetime):
 
     """
     # stolen from connexion flask_app.py
-    assert isinstance(o, datetime.datetime)
+    if not isinstance(o, datetime.datetime):
+        raise TypeError
     if o.tzinfo:
         # eg: '2015-09-25T23:14:42.588601+00:00'
         return o.isoformat("T")
@@ -230,7 +238,7 @@ def create_dataproxy(uri: str | None = None) -> _DataProxy:
     if provider == "seqrepo":
         if proto in ("", "file"):
             # pylint: disable=import-error, import-outside-toplevel
-            from biocommons.seqrepo import SeqRepo
+            from biocommons.seqrepo import SeqRepo  # noqa: PLC0415
 
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
@@ -243,23 +251,3 @@ def create_dataproxy(uri: str | None = None) -> _DataProxy:
         raise ValueError(f"DataProxy provider {provider} not implemented")
 
     return dp
-
-
-if __name__ == "__main__":
-    # Before running, do something like this:
-    # snafu$ docker run \
-    # >   --name seqrepo-rest-service \
-    # >   --detach --rm -p 5000:5000 \
-    # >   -v /usr/local/share/seqrepo/:/usr/local/share/seqrepo/ \
-    # >   biocommons/seqrepo-rest-service
-
-    dp1 = create_dataproxy("seqrepo+http://localhost:5000/seqrepo")
-    dp2 = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
-
-    ir = "refseq:NM_000551.3"
-
-    print(f"dp1 = {dp1}")
-    print(f"dp2 = {dp2}")
-
-    assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
-    assert dp1.get_sequence(ir) == dp2.get_sequence(ir)

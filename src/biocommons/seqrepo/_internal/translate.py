@@ -19,7 +19,9 @@ from collections.abc import Iterable, Iterator
 
 
 def translate_db2api(namespace: str, alias: str) -> list[tuple[str, str | None]]:
-    """>>> translate_db2api("VMC", "GS_1234")
+    """Convert namespace to API standard
+
+    >>> translate_db2api("VMC", "GS_1234")
     [('sha512t24u', '1234'), ('ga4gh', 'SQ.1234')]
 
     """
@@ -38,7 +40,9 @@ def translate_db2api(namespace: str, alias: str) -> list[tuple[str, str | None]]
 
 
 def translate_api2db(namespace: str, alias: str | None) -> list[tuple[str, str | None]]:
-    """>>> translate_api2db("ga4gh", "SQ.1234")
+    """Convert namespace to internal use
+
+    >>> translate_api2db("ga4gh", "SQ.1234")
     [('VMC', 'GS_1234')]
 
     """
@@ -60,9 +64,7 @@ def translate_api2db(namespace: str, alias: str | None) -> list[tuple[str, str |
 
 
 def translate_alias_records(aliases_itr: Iterable[dict]) -> Iterator[dict]:
-    """Given an iterator of find_aliases results, return a stream with
-    translated records
-    """
+    """Given an iterator of find_aliases results, return a stream with translated records"""
     for arec in aliases_itr:
         yield arec
 
@@ -79,7 +81,7 @@ if __name__ == "__main__":
             "seqalias_id": 16,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "ncbiac/e",
-            "added": datetime.datetime(2020, 7, 6, 5, 27, 23),
+            "added": datetime.datetime(2020, 7, 6, 5, 27, 23, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "Ensembl",
         },
@@ -87,7 +89,7 @@ if __name__ == "__main__":
             "seqalias_id": 16,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "ncbiac/e",
-            "added": datetime.datetime(2020, 7, 6, 5, 27, 23),
+            "added": datetime.datetime(2020, 7, 6, 5, 27, 23, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "ensembl",
         },
@@ -95,7 +97,7 @@ if __name__ == "__main__":
             "seqalias_id": 3,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "be8a4c35767bb783a7b8b6dc04ba3718",
-            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "MD5",
         },
@@ -103,7 +105,7 @@ if __name__ == "__main__":
             "seqalias_id": 5,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "ncbiac",
-            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "NCBI",
         },
@@ -111,7 +113,7 @@ if __name__ == "__main__":
             "seqalias_id": 5,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "ncbiac",
-            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "refseq",
         },
@@ -119,7 +121,7 @@ if __name__ == "__main__":
             "seqalias_id": 4,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "5W5mCzikufDcezdNTGKLa9zricw",
-            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "SEGUID",
         },
@@ -127,7 +129,7 @@ if __name__ == "__main__":
             "seqalias_id": 2,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "e56e660b38a4b9f0dc7b374d4c628b6bdceb89cc",
-            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "SHA1",
         },
@@ -135,7 +137,7 @@ if __name__ == "__main__":
             "seqalias_id": 1,
             "seq_id": "9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
             "alias": "GS_9Sn3d56Fzds_c6ovS__sj1fbMd_Xd3J6",
-            "added": datetime.datetime(2020, 7, 6, 5, 10, 57),
+            "added": datetime.datetime(2020, 7, 6, 5, 10, 57, tzinfo=datetime.timezone.utc),
             "is_current": 1,
             "namespace": "VMC",
         },

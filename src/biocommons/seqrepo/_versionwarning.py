@@ -5,9 +5,9 @@ import sys
 
 __all__ = []
 
-version_warning = "This package is tested and supported only on Python >= 3.9."
+version_warning = "This package is tested and supported only on Python >= 3.10."
 
 _logger = logging.getLogger(__package__)
 
-if sys.version_info < (3, 9):
+if sys.version_info < (3, 10):  # noqa: UP036
     _logger.warning(version_warning)

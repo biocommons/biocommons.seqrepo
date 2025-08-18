@@ -1,17 +1,20 @@
+"""Configure SeqRepo."""
+
 import os
 
 
 def parse_caching_env_var(env_name: str, env_default: str) -> int | None:
+    """Get caching config value from env var."""
     caching_env_var = os.environ.get(env_name, env_default)
     if caching_env_var.lower() == "none":
         return None
 
     try:
         caching_env_var_int = int(caching_env_var)
-    except ValueError:
+    except ValueError as e:
         raise ValueError(
             f"{env_name} must be a valid int, none, or not set, currently it is " + caching_env_var
-        )
+        ) from e
     return caching_env_var_int
 
 

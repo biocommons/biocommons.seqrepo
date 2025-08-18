@@ -1,3 +1,5 @@
+"""Filesystem-based sequence lookup."""
+
 import datetime
 import functools
 import importlib.resources
@@ -10,9 +12,9 @@ from typing import Any
 
 import yoyo
 
-from ..config import SEQREPO_LRU_CACHE_MAXSIZE
-from .bases import BaseReader, BaseWriter
-from .fabgz import FabgzReader, FabgzWriter
+from biocommons.seqrepo.config import SEQREPO_LRU_CACHE_MAXSIZE
+from biocommons.seqrepo.fastadir.bases import BaseReader, BaseWriter
+from biocommons.seqrepo.fastadir.fabgz import FabgzReader, FabgzWriter
 
 _logger = logging.getLogger(__name__)
 
@@ -30,26 +32,22 @@ expected_schema_version = 1
 
 
 class FastaDir(BaseReader, BaseWriter):
-    """This class provides simple a simple key-value interface to a
-    directory of compressed fasta files.
+    """Provide a simple key-value interface to a directory of compressed fasta files.
 
-    Sequences are stored in dated fasta files. Dating the files
-    enables compact storage with multiple releases (using hard links)
-    and efficient incremental updates and transfers (e.g., via rsync).
-    The fasta files are compressed with block gzip, enabling fast
-    random access to arbitrary regions of even large (chromosome-size)
-    sequences (thanks to pysam.FastaFile).
+    Sequences are stored in dated fasta files. Dating the files enables compact storage
+    with multiple releases (using hard links) and efficient incremental updates and transfers
+    (e.g., via rsync). The fasta files are compressed with block gzip, enabling fast
+    random access to arbitrary regions of even large (chromosome-size) sequences
+    (thanks to pysam.FastaFile).
 
-    When the key is a hash based on sequence (e.g., SHA512), the
-    combination provides a convenient non-redundant storage of
-    sequences, with fast access to sequences and sequence slices,
-    compact storage and easy replication.
+    When the key is a hash based on sequence (e.g., SHA512), the combination provides a
+    convenient non-redundant storage of sequences, with fast access to sequences and sequence
+    slices, compact storage and easy replication.
 
     The two primary methods are:
 
         * seq_id <- store(seq, seq_id): store a sequence
         * seq <- fetch(seq_id, [s, e]): return sequence (slice)
-
     """
 
     def __init__(
@@ -59,7 +57,7 @@ class FastaDir(BaseReader, BaseWriter):
         check_same_thread: bool = True,
         fd_cache_size: int | None = 0,
     ) -> None:
-        """Creates a new sequence repository if necessary, and then opens it"""
+        """Create a new sequence repository if necessary, and then opens it"""
         self._root_dir = root_dir
         self._db_path = os.path.join(self._root_dir, "db.sqlite3")
         self._writing = None
@@ -87,12 +85,12 @@ class FastaDir(BaseReader, BaseWriter):
         if fd_cache_size == 0:
             _logger.info("File descriptor caching disabled")
         else:
-            _logger.warning(f"File descriptor caching enabled (size={fd_cache_size})")
+            _logger.warning("File descriptor caching enabled (size=%s)", fd_cache_size)
 
         @functools.lru_cache(maxsize=fd_cache_size)
-        def _open_for_reading(path):
+        def _open_for_reading(path: str) -> FabgzReader:
             if fd_cache_size == 0:
-                _logger.debug("Opening for reading uncached: " + path)
+                _logger.debug("Opening for reading uncached: %s", path)
             return FabgzReader(path)
 
         self._open_for_reading = _open_for_reading
@@ -109,7 +107,7 @@ class FastaDir(BaseReader, BaseWriter):
             (seq_id,),
         )
 
-        return True if c["ex"] else False
+        return bool(c["ex"])
 
     def __iter__(self) -> Iterator[dict]:
         sql = "select * from seqinfo order by seq_id"
@@ -128,6 +126,7 @@ class FastaDir(BaseReader, BaseWriter):
     # Public methods
 
     def commit(self) -> None:
+        """Trigger commit to storage backend"""
         if self._writing is not None:
             self._writing["fabgz"].close()
             self._db.commit()
@@ -139,16 +138,14 @@ class FastaDir(BaseReader, BaseWriter):
 
         if self._writing and self._writing["relpath"] == rec["relpath"]:
             _logger.warning(
-                """Fetching from file opened for writing;
-            closing first ({})""".format(rec["relpath"])
+                "Fetching from file opened for writing; closing first (%s)", rec["relpath"]
             )
             self.commit()
 
         path = os.path.join(self._root_dir, rec["relpath"])
 
         with self._open_for_reading(path) as fabgz:
-            seq = fabgz.fetch(seq_id, start, end)
-        return seq
+            return fabgz.fetch(seq_id, start, end)
 
     @functools.lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def fetch_seqinfo(self, seq_id: str) -> dict:
@@ -170,15 +167,17 @@ class FastaDir(BaseReader, BaseWriter):
             return None
 
     def stats(self) -> dict:
+        """Get stats for the directory instance"""
         sql = """select count(distinct seq_id) n_sequences, sum(len) tot_length,
               min(added) min_ts, max(added) as max_ts, count(distinct relpath) as
               n_files from seqinfo"""
         return dict(self._fetch_one(sql))
 
     def store(self, seq_id: str, seq: str) -> str:
-        """Store a sequence with key seq_id.  The sequence itself is stored in
-        a fasta file and a reference to it in the sqlite3 database.
+        """Store a sequence with key seq_id.
 
+        The sequence itself is stored in a fasta file and a reference to it in the sqlite3
+        database.
         """
         if not self._writeable:
             raise RuntimeError("Cannot write -- opened read-only")
@@ -214,7 +213,7 @@ class FastaDir(BaseReader, BaseWriter):
     # ############################################################################
     # Internal methods
 
-    def _fetch_one(self, sql: str, params: tuple[str, ...] = ()) -> Any:
+    def _fetch_one(self, sql: str, params: tuple[str, ...] = ()) -> Any:  # noqa: ANN401
         cursor = self._db.cursor()
         cursor.execute(sql, params)
         val = cursor.fetchone()
@@ -235,7 +234,7 @@ class FastaDir(BaseReader, BaseWriter):
         backend.apply_migrations(migrations_to_apply)
 
     def _dump_aliases(self) -> None:
-        import prettytable
+        import prettytable  # noqa: PLC0415
 
         fields = ["seq_id", "len", "alpha", "added", "relpath"]
         pt = prettytable.PrettyTable(field_names=fields)
@@ -243,5 +242,5 @@ class FastaDir(BaseReader, BaseWriter):
         cursor.execute("select * from seqinfo")
         for r in cursor:
             pt.add_row([r[f] for f in fields])
-            print(pt)
+            print(pt)  # noqa: T201
         cursor.close()
