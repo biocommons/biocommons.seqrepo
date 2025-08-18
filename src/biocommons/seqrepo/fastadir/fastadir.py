@@ -1,3 +1,5 @@
+"""Provide quick access a directory of block-gzipped FASTA files"""
+
 import datetime
 import functools
 import importlib.resources
@@ -5,13 +7,14 @@ import logging
 import os
 import sqlite3
 import time
-from typing import Any, Iterator, Optional
+from collections.abc import Iterator
+from typing import Any
 
 import yoyo
 
-from ..config import SEQREPO_LRU_CACHE_MAXSIZE
-from .bases import BaseReader, BaseWriter
-from .fabgz import FabgzReader, FabgzWriter
+from biocommons.seqrepo.config import SEQREPO_LRU_CACHE_MAXSIZE
+from biocommons.seqrepo.fastadir.bases import BaseReader, BaseWriter
+from biocommons.seqrepo.fastadir.fabgz import FabgzReader, FabgzWriter
 
 _logger = logging.getLogger(__name__)
 
@@ -29,8 +32,7 @@ expected_schema_version = 1
 
 
 class FastaDir(BaseReader, BaseWriter):
-    """This class provides simple a simple key-value interface to a
-    directory of compressed fasta files.
+    """Provide a simple key-value interface to a directory of compressed fasta files.
 
     Sequences are stored in dated fasta files. Dating the files
     enables compact storage with multiple releases (using hard links)
@@ -56,10 +58,9 @@ class FastaDir(BaseReader, BaseWriter):
         root_dir: str,
         writeable: bool = False,
         check_same_thread: bool = True,
-        fd_cache_size: Optional[int] = 0,
+        fd_cache_size: int | None = 0,
     ) -> None:
-        """Creates a new sequence repository if necessary, and then opens it"""
-
+        """Create a new sequence repository if necessary, and then open it"""
         self._root_dir = root_dir
         self._db_path = os.path.join(self._root_dir, "db.sqlite3")
         self._writing = None
@@ -80,19 +81,19 @@ class FastaDir(BaseReader, BaseWriter):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:
             raise RuntimeError(
-                """Upgrade required: Database schema
-            version is {} and code expects {}""".format(schema_version, expected_schema_version)
+                f"""Upgrade required: Database schema
+            version is {schema_version} and code expects {expected_schema_version}"""
             )
 
         if fd_cache_size == 0:
             _logger.info("File descriptor caching disabled")
         else:
-            _logger.warning(f"File descriptor caching enabled (size={fd_cache_size})")
+            _logger.warning("File descriptor caching enabled (size=%s)", fd_cache_size)
 
         @functools.lru_cache(maxsize=fd_cache_size)
-        def _open_for_reading(path):
+        def _open_for_reading(path: str) -> FabgzReader:
             if fd_cache_size == 0:
-                _logger.debug("Opening for reading uncached: " + path)
+                _logger.debug("Opening for reading uncached: %s", path)
             return FabgzReader(path)
 
         self._open_for_reading = _open_for_reading
@@ -109,7 +110,7 @@ class FastaDir(BaseReader, BaseWriter):
             (seq_id,),
         )
 
-        return True if c["ex"] else False
+        return bool(c["ex"])
 
     def __iter__(self) -> Iterator[dict]:
         sql = "select * from seqinfo order by seq_id"
@@ -128,31 +129,30 @@ class FastaDir(BaseReader, BaseWriter):
     # Public methods
 
     def commit(self) -> None:
+        """Commit changes to DB"""
         if self._writing is not None:
             self._writing["fabgz"].close()
             self._db.commit()
             self._writing = None
 
-    def fetch(self, seq_id: str, start: Optional[int] = None, end: Optional[int] = None) -> str:
-        """fetch sequence by seq_id, optionally with start, end bounds"""
+    def fetch(self, seq_id: str, start: int | None = None, end: int | None = None) -> str:
+        """Fetch sequence by seq_id, optionally with start, end bounds"""
         rec = self.fetch_seqinfo(seq_id)
 
         if self._writing and self._writing["relpath"] == rec["relpath"]:
             _logger.warning(
-                """Fetching from file opened for writing;
-            closing first ({})""".format(rec["relpath"])
+                "Fetching from file opened for writing; closing first (%s)", (rec["relpath"])
             )
             self.commit()
 
         path = os.path.join(self._root_dir, rec["relpath"])
 
         with self._open_for_reading(path) as fabgz:
-            seq = fabgz.fetch(seq_id, start, end)
-        return seq
+            return fabgz.fetch(seq_id, start, end)
 
     @functools.lru_cache(maxsize=SEQREPO_LRU_CACHE_MAXSIZE)
     def fetch_seqinfo(self, seq_id: str) -> dict:
-        """fetch sequence info by seq_id"""
+        """Fetch sequence info by seq_id"""
         rec = self._fetch_one(
             """select * from seqinfo where seq_id = ? order by added desc""", (seq_id,)
         )
@@ -161,8 +161,8 @@ class FastaDir(BaseReader, BaseWriter):
             raise KeyError(seq_id)
         return dict(rec)
 
-    def schema_version(self) -> Optional[int]:
-        """return schema version as integer"""
+    def schema_version(self) -> int | None:
+        """Return schema version as integer"""
         try:
             rec = self._fetch_one("select value from meta where key = 'schema version'")
             return int(rec[0])
@@ -170,17 +170,17 @@ class FastaDir(BaseReader, BaseWriter):
             return None
 
     def stats(self) -> dict:
+        """Get stats for stored sequences"""
         sql = """select count(distinct seq_id) n_sequences, sum(len) tot_length,
               min(added) min_ts, max(added) as max_ts, count(distinct relpath) as
               n_files from seqinfo"""
         return dict(self._fetch_one(sql))
 
     def store(self, seq_id: str, seq: str) -> str:
-        """store a sequence with key seq_id.  The sequence itself is stored in
-        a fasta file and a reference to it in the sqlite3 database.
+        """Store a sequence with key seq_id.
 
+        The sequence itself is stored in a fasta file and a reference to it in the sqlite3 database.
         """
-
         if not self._writeable:
             raise RuntimeError("Cannot write -- opened read-only")
 
@@ -215,7 +215,7 @@ class FastaDir(BaseReader, BaseWriter):
     # ############################################################################
     # Internal methods
 
-    def _fetch_one(self, sql: str, params: tuple[str, ...] = ()) -> Any:
+    def _fetch_one(self, sql: str, params: tuple[str, ...] = ()) -> Any:  # noqa: ANN401
         cursor = self._db.cursor()
         cursor.execute(sql, params)
         val = cursor.fetchone()
@@ -223,7 +223,7 @@ class FastaDir(BaseReader, BaseWriter):
         return val
 
     def _upgrade_db(self) -> None:
-        """upgrade db using scripts for specified (current) schema version"""
+        """Upgrade db using scripts for specified (current) schema version"""
         migration_path = "_data/migrations"
         sqlite3.connect(self._db_path).close()  # ensure that it exists
         db_url = "sqlite:///" + self._db_path
@@ -236,13 +236,13 @@ class FastaDir(BaseReader, BaseWriter):
         backend.apply_migrations(migrations_to_apply)
 
     def _dump_aliases(self) -> None:
-        import prettytable  # type: ignore
+        import prettytable  # noqa: PLC0415
 
-        fields = "seq_id len alpha added relpath".split()
+        fields = ["seq_id", "len", "alpha", "added", "relpath"]
         pt = prettytable.PrettyTable(field_names=fields)
         cursor = self._db.cursor()
         cursor.execute("select * from seqinfo")
         for r in cursor:
             pt.add_row([r[f] for f in fields])
-            print(pt)
+            print(pt)  # noqa: T201
         cursor.close()

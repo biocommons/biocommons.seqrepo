@@ -39,14 +39,13 @@ def opts():
     test_dir = os.path.dirname(__file__)
     test_data_dir = os.path.join(test_dir, "data")
 
-    opts = MockOpts(
+    return MockOpts(
         root_directory=os.path.join(tempfile.mkdtemp(prefix="seqrepo_pytest_"), "seqrepo"),
         fasta_files=[os.path.join(test_data_dir, "sequences.fa.gz")],
         namespace="test",
         instance_name="test",
         verbose=0,
     )
-    return opts
 
 
 def test_00_init(opts):
