@@ -43,7 +43,6 @@ dev = [
 tests = [
     "tox >= 3.28",
     "pytest-cov >= 6.1",
-    "pytest-optional-tests >= 0.1",
     "pytest >= 7.1",
     "vcrpy >= 7.0",
 ]

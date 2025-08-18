@@ -9,7 +9,6 @@ import yoyo
 from .._internal.translate import translate_alias_records, translate_api2db
 
 _logger = logging.getLogger(__name__)
-# _logger.addFilter(DuplicateFilter())
 
 
 expected_schema_version = 1
@@ -57,7 +56,7 @@ class SeqAliasDB(object):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:  # pragma: no cover
             raise RuntimeError(
-                "Upgrade required: Database schemaversion is {} and code expects {}".format(
+                "Upgrade required: Database schema version is {} and code expects {}".format(
                     schema_version, expected_schema_version
                 )
             )
