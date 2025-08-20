@@ -164,41 +164,11 @@ select = [
     "PLC",  # https://docs.astral.sh/ruff/rules/#convention-c
     "PLE",  # https://docs.astral.sh/ruff/rules/#error-e_1
     "PLW",  # https://docs.astral.sh/ruff/rules/#warning-plw
+    "PLR",  # https://docs.astral.sh/ruff/rules/#refactor-plr
     "UP",  # https://docs.astral.sh/ruff/rules/#pyupgrade-up
     "FURB",  # https://docs.astral.sh/ruff/rules/#refurb-furb
     "RUF",  # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
     "TRY",  # https://docs.astral.sh/ruff/rules/#tryceratops-try
-]
-fixable = [
-    "ANN",
-    "ASYNC",
-    "B",
-    "C4",
-    "ISC",
-    "ICN",
-    "LOG",
-    "G",
-    "PIE",
-    "PT",
-    "RSE",
-    "RET",
-    "SIM",
-    "TID",
-    "PTH",
-    "I",
-    "N",
-    "PERF",
-    "D",
-    "F401",
-    "F541",
-    "PGH",
-    "PLC",
-    "PLE",
-    "PLW",
-    "UP",
-    "FURB",
-    "RUF",
-    "TRY"
 ]
 ignore = [
     # ignore for compatibility with formatter
@@ -212,18 +182,27 @@ ignore = [
     "W191",
     "S321",
     "COM812",
-    # other
+    # don't require types on *args, **kwargs
     "ANN002",
     "ANN003",
-    "PLR0913",
-    "PLC0206",
-    "D213",
+    # subjective pylint thresholds
+    "PLR0904",
+    "PLR091",
+    "PLR1702",
+    # excessive docstring requirements
+    "D105",
+    "D205",
     "D203",
+    "D213",  # conflicts with D212
     "D400",
+    "D401",
     "D415",
+    # excessive exception message requirements
     "TRY003",
-    "B019",
+    # excessive type ignore requirements
     "PGH003",
+    # lru_cache on class methods -- this should probably be fixed eventually
+    "B019",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -232,13 +211,16 @@ ignore = [
 # D100 - undocumented-public-module
 # D102 - undocumented-public-class
 # D103 - undocumented-public-function
+# D105 - undocumented-magic-method
 # S101 - assert
 # B011 - assert-false
+# B019 - cached-instance-method
 # INP001 - implicit-namespace-package
-# SLF001 -
-# N802 -
-# PTH110 -
-# PTH118 -
+# SLF001 - private-member-access
+# N802 - invalid-function-name
+# PTH - flake8-use-pathlib this should be implemented eventually but requires non-trivial runtime changes
+# T201 - print
+# PLR2004 - magic-value-comparison
 "src/biocommons/**/*" = [
     "D105",
 ]
@@ -266,6 +248,7 @@ ignore = [
     "B011",
     "INP001",
     "SLF001",
+    "PLR2004",
 ]
 "tests/test_config.py" = [
     "N802",

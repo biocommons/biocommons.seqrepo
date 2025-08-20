@@ -17,9 +17,8 @@ def FastaIter(handle: StringIO) -> Iterator[tuple[str, str]]:  # noqa: N802
                 yield header, "".join(seq_lines)
             seq_lines = []
             header = line[1:].rstrip()
-        else:
-            if header is not None and seq_lines is not None:  # not the first record
-                seq_lines.append(line.strip())
+        elif header is not None and seq_lines is not None:  # not the first record
+            seq_lines.append(line.strip())
 
     if header is not None and seq_lines is not None:
         yield header, "".join(seq_lines)
