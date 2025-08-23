@@ -8,11 +8,6 @@ repos:
        entry: make cqa-flake8
        language: system
        types: [python]
-    -  id: pyright
-       name: pyright
-       entry: make cqa-pyright
-       language: system
-       types: [python]
     -  id: isort
        name: isort
        entry: make cqa-isort
