@@ -127,6 +127,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
+select = ["ALL"]
 ignore = [
     # not used
     "AIR",
