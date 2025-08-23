@@ -543,7 +543,7 @@ def load(opts: argparse.Namespace) -> None:
         fn_bar.set_description(os.path.basename(fn))
         if fn == "-":
             fh = sys.stdin
-        elif fn.endswith(".gz", ".bgz"):
+        elif fn.endswith((".gz", ".bgz")):
             fh = gzip.open(fn, mode="rt", encoding="ascii")  # noqa: SIM115
         else:
             fh = open(fn, encoding="ascii")  # noqa: SIM115
