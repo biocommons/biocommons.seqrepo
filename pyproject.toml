@@ -179,6 +179,8 @@ ignore = [
     "TRY003",
     # excessive type ignore requirements
     "PGH003",
+    # misc unnecessary readability requirements
+    "RET504",
     # lru_cache on class methods -- this should probably be fixed eventually
     "B019",
 ]
@@ -196,7 +198,7 @@ ignore = [
 # INP001 - implicit-namespace-package
 # SLF001 - private-member-access
 # N802 - invalid-function-name
-# PTH - flake8-use-pathlib this should be implemented eventually but requires non-trivial runtime changes
+# PTH - flake8-use-pathlib -- this should be implemented eventually but requires nontrivial API-breaking changes
 # T201 - print
 # PLR2004 - magic-value-comparison
 "src/biocommons/**/*" = [
