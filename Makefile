@@ -85,20 +85,16 @@ test-%:
 tox:
 	tox
 
-
 #=> cqa: execute code quality tests
 cqa:
 	ruff format --check
 	ruff check
-cqa-pyright:
-	pyright src
 
 #=> reformat: reformat code
 .PHONY: reformat
 reformat:
 	ruff check --fix
 	ruff format
-
 
 ############################################################################
 #= UTILITY TARGETS

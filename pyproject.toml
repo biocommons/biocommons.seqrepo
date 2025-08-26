@@ -32,8 +32,6 @@ dev = [
     "build ~= 0.8",
     "ipython ~= 8.4",
     "pre-commit >= 4.2.0",
-    "pyright~=1.1",
-    "mypy-extensions ~= 1.0",
     "ruff == 0.12.8",
     "requests_html ~= 0.10",
 ]

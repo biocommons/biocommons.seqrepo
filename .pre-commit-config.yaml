@@ -1,13 +1,4 @@
-# All hooks use makefile targets in order to ensure
-# consistency with command line and git workflows
 repos:
-- repo: local
-  hooks:
-    -  id: pyright
-       name: pyright
-       entry: pyright
-       language: system
-       types: [python]
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v5.0.0
   hooks:
