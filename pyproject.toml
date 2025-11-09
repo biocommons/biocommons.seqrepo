@@ -1,21 +1,45 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 75.0", "setuptools_scm[toml] >= 8"]
+
+
+[dependency-groups]
+dev = [
+  "deptry>=0.23",
+  "ipython",
+  "jupyter",
+  "mkdocs-awesome-nav>=3.1.2",
+  "mkdocs-material>=9.6",
+  "mkdocs>=1.6",
+  "mkdocstrings[python]>=0.30",
+  "mypy>=1.17",
+  "pre-commit>=3.8",
+  "pytest-cov>=4.1",
+  "pytest-recording",
+  "pytest~=7.4",
+  "ruff>=0.12",
+  "toml-sort",
+  "tox-uv>=1.28",
+  "vcrpy"
+]
+docs = ["mkdocs"]
+
 [project]
-name = "biocommons.seqrepo"
 authors = [
-    { name = "biocommons contributors", email = "biocommons-dev@googlegroups.com" },
+  {email = "biocommons-dev@googlegroups.com", name = "biocommons contributors"}
 ]
-description = "Non-redundant, compressed, journalled, file-based storage for biological sequences"
-readme = "README.md"
-license = { file = "LICENSE.txt" }
-requires-python = ">=3.10"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+  "Topic :: Software Development :: Libraries :: Python Modules"
 ]
-dynamic = ["version"]
 dependencies = [
     "bioutils >= 0.6",
     "coloredlogs >= 15.0",
@@ -25,80 +49,37 @@ dependencies = [
     "typing_extensions",
     "yoyo-migrations >= 9.0",
 ]
+description = "Non-redundant, compressed, journalled, file-based storage for biological sequences"
+dynamic = ["version"]
+keywords = [
+  "biocommons",
+  "bioinformatics",
+  "computational biology",
+  "genome variation",
+  "genomics",
+  "hgvs",
+  "variation"
+]
+license = "Apache-2.0"
+name = "biocommons.seqrepo"
+readme = "README.md"
+requires-python = ">=3.11"
 
 [project.optional-dependencies]
 shell = ["ipython >= 8.33"]
-dev = [
-    "bandit >= 1.8",
-    "build >= 0.10",
-    "flake8 >= 7.2",
-    "ipython >= 8.33",
-    "isort >= 5.13",
-    "pre-commit >= 3.8",
-    "pylint >= 2.17",
-    "ruff >= 0.11",
-]
-tests = [
-    "tox >= 3.28",
-    "pytest-cov >= 6.1",
-    "pytest >= 7.1",
-    "vcrpy >= 7.0",
-]
-docs = ["mkdocs"]
 
 [project.scripts]
 seqrepo = "biocommons.seqrepo.cli:main"
 
 [project.urls]
-"Homepage" = "https://github.com/biocommons/biocommons.seqrepo"
-"Bug Tracker" = "https://github.com/biocommons/biocommons.seqrepo/issues"
+Documentation = "https://biocommons.github.io/biocommons.seqrepo/"
+Homepage = "https://github.com/biocommons/biocommons.seqrepo/"
+Issues = "https://github.com/biocommons/biocommons.seqrepo/issues/"
+Repository = "https://github.com/biocommons/biocommons.seqrepo/"
 
-[build-system]
-requires = ["setuptools >= 75", "setuptools_scm[toml] >= 8"]
-build-backend = "setuptools.build_meta"
-
-
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["src"]
-exclude = ["__pycache__", "*.pyc"]
-namespaces = true
-
-[tool.setuptools.package-data]
-"biocommons.seqrepo.fastadir" = ["_data/migrations/*"]
-"biocommons.seqrepo.seqaliasdb" = ["_data/migrations/*"]
-
-
-[tool.setuptools_scm]
-
-
-# https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
-[tool.pytest.ini_options]
-addopts = "-s -v -x --strict-markers -m 'not extra' --doctest-modules --cov=src"
-doctest_optionflags = [
-    "ALLOW_BYTES",
-    "ALLOW_UNICODE",
-    "ELLIPSIS",
-    "IGNORE_EXCEPTION_DETAIL",
-    "NORMALIZE_WHITESPACE",
-]
-markers = [
-    "network: tests that require network connectivity",
-    "slow: slow tests that should be run infrequently",
-    "vcr: tests with cached data",
-]
-
-
-[tool.coverage.run]
-branch = true
-source = ["biocommons.seqrepo"]
-omit = ["*_test.py", "*/test/*", "*/tests/*"]
-
+[tool.coverage]
 
 [tool.coverage.report]
-show_missing = true
 exclude_lines = [
     # Have to re-enable the standard pragma
     "pragma: no cover",
@@ -114,22 +95,136 @@ exclude_lines = [
     # Don't complain if non-runnable code isn't run:
     "if __name__ == .__main__.:",
 ]
+show_missing = true
+skip_empty = true
 
-[tool.isort]
-profile = "black"
-src_paths = ["src", "tests"]
+[tool.coverage.run]
+branch = true
+omit = [
+  "*_test.py",
+  "*/test/*",
+  "*/tests/*",
+]
+source = ["src"]
 
-[tool.pyright]
-include = ["src", "tests"]
+[tool.deptry]
 
+[tool.deptry.package_module_name_map]
+# map package name to import name
+# Making this explicit suppresses deptry notices
+coloredlogs = "coloredlogs"
+mkdocs = "mkdocs"
+mkdocs-material = "mkdocs_material"
+mkdocstrings = "mkdocstrings"
+mypy = "mypy"
+pre-commit = "pre_commit"
+pytest = "pytest"
+pytest-cov = "pytest_cov"
+pyyaml = "yaml"
+ruff = "ruff"
+tox-uv = "tox_uv"
+ty = "ty"
 
-[tool.pylint.'MESSAGES CONTROL']
-disable = "R0913"
-
-
-[tool.pylint.format]
-max-line-length = 100
+[tool.pytest.ini_options]
+addopts = "-s -v -x --strict-markers -m 'not extra' --doctest-modules --cov=src"
+doctest_optionflags = [
+  "ALLOW_BYTES",
+  "ALLOW_UNICODE",
+  "ELLIPSIS",
+  "IGNORE_EXCEPTION_DETAIL",
+  "NORMALIZE_WHITESPACE"
+]
+markers = [
+  "network: tests that require network connectivity",
+  "slow: slow tests that should be run infrequently"
+]
+testpaths = ["tests"]
 
 [tool.ruff]
-src = ["src", "tests"]
+fix = true
 line-length = 100
+src = ["src", "tests"]
+target-version = "py39"
+
+[tool.ruff.format]
+docstring-code-format = true
+preview = true
+quote-style = "double"
+
+[tool.ruff.lint]
+fixable = [
+  "B",
+  "C4",
+  "D",
+  "EM",
+  "F401",
+  "F541",
+  "I",
+  "PERF",
+  "PIE",
+  "PT",
+  "RET",
+  "RSE",
+  "RUF",
+  "SIM",
+  "UP"
+]
+ignore = [
+  "E111",
+  "E114",
+  "E117",
+  "E501",
+  "E731",
+  "PLR0913",
+  "S321",
+  "W191"
+]
+select = [
+  "A", # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
+  "ARG", # https://docs.astral.sh/ruff/rules/#flake8-unused-arguments-arg
+  "B", # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+  "C4", # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+  "DTZ", # https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
+  "E",
+  "EM", # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
+  "F", # https://docs.astral.sh/ruff/rules/#pyflakes-f
+  "G", # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g
+  "I", # https://docs.astral.sh/ruff/rules/#isort-i
+  "LOG", # https://docs.astral.sh/ruff/rules/#flake8-logging-log
+  "N", # https://docs.astral.sh/ruff/rules/#pep8-naming-n
+  "PERF", # https://docs.astral.sh/ruff/rules/#perflint-perf
+  "PIE", # https://docs.astral.sh/ruff/rules/#flake8-pie-pie
+  "PL", # https://docs.astral.sh/ruff/rules/#pylint-pl
+  "PT", # https://docs.astral.sh/ruff/rules/#flake8-pytest-style-pt
+  "PTH", # https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
+  "RET", # https://docs.astral.sh/ruff/rules/#flake8-return-ret
+  "RSE", # https://docs.astral.sh/ruff/rules/#flake8-raise-rse
+  "RUF", # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
+  "S", # https://docs.astral.sh/ruff/rules/#flake8-bandit-s
+  "SIM", # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
+  "TRY", # https://docs.astral.sh/ruff/rules/#tryceratops-try
+  "UP", # https://docs.astral.sh/ruff/rules/#pyupgrade-up
+  "W", # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+  "YTT" # https://docs.astral.sh/ruff/rules/#flake8-2020-ytt
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests" = ["S101"]
+
+[tool.setuptools]
+include-package-data = true
+package-dir = {"" = "src"}
+zip-safe = true
+
+[tool.setuptools.package-data]
+# "*" = ["_data/*/*.json.gz"]
+# "*" = ["*.gz", "*.json", "*.yaml"]
+"*" = ["_data/*"]
+"biocommons.seqrepo.fastadir" = ["_data/migrations/*"]
+"biocommons.seqrepo.seqaliasdb" = ["_data/migrations/*"]
+
+[tool.setuptools.packages.find]
+exclude = ["*.pyc", "__pycache__"]
+where = ["src"]
+
+[tool.setuptools_scm]
