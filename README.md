@@ -113,17 +113,17 @@ tested. Patches to get other systems working would be welcomed.
 
 ### OS X
 
-    $ brew install python htslib
+    brew install python htslib
 
 ### Ubuntu
 
-    $ sudo apt install -y python3-dev gcc zlib1g-dev tabix
+    sudo apt install -y python3-dev gcc zlib1g-dev tabix
 
 ### All platforms
 
     $ python -m venv venv
     $ source venv/bin/activate
-    $ pip install seqrepo
+    $ pip install biocommons.seqrepo
     $ sudo mkdir -p /usr/local/share/seqrepo
     $ sudo chown $USER /usr/local/share/seqrepo
     $ seqrepo pull -i 2024-12-20
@@ -140,8 +140,10 @@ tested. Patches to get other systems working would be welcomed.
     >> sr["NC_000001.11"][780000:780020]
     'TGGTGGCACGCGCTTGTAGT'
 
-    # Or, use the seqrepo shell for even easier access
-    $ seqrepo start-shell -i 2024-12-20
+    # Optional: Install with the `shell` dependency group
+    # e.g., `uv pip install biocommons.seqrepo[shell]`
+    # and use the seqrepo shell
+    $ seqrepo start-shell -i 2018-11-26
     In [1]: sr["NC_000001.11"][780000:780020]
     Out[1]: 'TGGTGGCACGCGCTTGTAGT'
 
@@ -200,7 +202,7 @@ Install pre-commit hook:
 
 ## Building a docker image
 
-Docker images are available at https://hub.docker.com/r/biocommons/seqrepo.
+Docker images are available at <https://hub.docker.com/r/biocommons/seqrepo>.
 Tags correspond to the version of data, not the version of seqrepo, because the
 intent is to make it easy to depend on a local version of seqrepo *files*.  Each
 docker image is an installation of seqrepo that downloads the corresponding
