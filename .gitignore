@@ -21,6 +21,7 @@
 .Python
 .abstra/
 .cache
+.claude
 .coverage
 .coverage.*
 .cursorignore
