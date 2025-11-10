@@ -130,9 +130,9 @@ def test_translation(seqrepo):
     assert "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr" in seqrepo.translate_identifier("en:rose"), (
         "failed to find expected identifier in returned identifiers"
     )
-    assert ["VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr"] == seqrepo.translate_identifier(
-        "en:rose", target_namespaces=["VMC"]
-    ), "failed to rerieve exactly the expected identifier"
+    assert seqrepo.translate_identifier("en:rose", target_namespaces=["VMC"]) == [
+        "VMC:GS_bsoUMlD3TrEtlh9Dt1iT29mzfkwwFUDr"
+    ], "failed to rerieve exactly the expected identifier"
 
 
 def test_sequenceproxy(seqrepo):
@@ -142,3 +142,56 @@ def test_sequenceproxy(seqrepo):
     sp = SequenceProxy(seqrepo, namespace=None, alias="rosa")
     assert sp  # __bool__ dunder method
     assert sp[5:7] == "AS"  # __eq__ and __getitem__
+
+
+def test_context_manager(tmpdir_factory):
+    """Test SeqRepo context manager support"""
+    dir = str(tmpdir_factory.mktemp("seqrepo_ctx"))
+
+    # Test with statement for resource cleanup
+    with SeqRepo(dir, writeable=True) as sr:
+        sr.store("ATCGATCGATCG", [{"namespace": "test", "alias": "test_alias"}])
+        sr.commit()
+        assert "test_alias" in sr
+
+    # After exiting context, database should be closed
+    # (We can't directly test closure, but we can verify it doesn't error on re-open)
+    sr_reopened = SeqRepo(dir, writeable=False)
+    assert "test_alias" in sr_reopened
+    sr_reopened.close()
+
+
+def test_explicit_close(tmpdir_factory):
+    """Test explicit close() method"""
+    dir = str(tmpdir_factory.mktemp("seqrepo_close"))
+
+    sr = SeqRepo(dir, writeable=True)
+    sr.store("GCTAGCTAGCTA", [{"namespace": "test", "alias": "test_alias2"}])
+    sr.commit()
+
+    # Explicitly close the repository
+    sr.close()
+
+    # Verify we can reopen without issues
+    sr_reopened = SeqRepo(dir, writeable=False)
+    assert "test_alias2" in sr_reopened
+    sr_reopened.close()
+
+
+def test_close_multiple_times(tmpdir_factory):
+    """Test that close() is safe to call multiple times"""
+    dir = str(tmpdir_factory.mktemp("seqrepo_multi_close"))
+
+    sr = SeqRepo(dir, writeable=True)
+    sr.store("TTAACCGGTTAA", [{"namespace": "test", "alias": "test_alias3"}])
+    sr.commit()
+
+    # Should be safe to call close() multiple times
+    sr.close()
+    sr.close()  # Should not raise an exception
+    sr.close()  # And again for good measure
+
+    # Verify we can still reopen after multiple closes
+    sr_reopened = SeqRepo(dir, writeable=False)
+    assert "test_alias3" in sr_reopened
+    sr_reopened.close()

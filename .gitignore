@@ -109,3 +109,4 @@ var/
 venv.bak/
 venv/
 wheels/
+.claude

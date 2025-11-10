@@ -194,10 +194,18 @@ class SeqRepo:
 
         This method is safe to call multiple times.
         """
-        if hasattr(self, "sequences") and self.sequences:
-            self.sequences.close()
-        if hasattr(self, "aliases") and self.aliases:
-            self.aliases.close()
+        if hasattr(self, "sequences"):
+            try:
+                self.sequences.close()
+            except Exception:
+                # Database may already be closed, ignore errors
+                pass
+        if hasattr(self, "aliases"):
+            try:
+                self.aliases.close()
+            except Exception:
+                # Database may already be closed, ignore errors
+                pass
 
     def commit(self) -> None:
         self.sequences.commit()
