@@ -5,7 +5,8 @@ import logging
 import os
 import sqlite3
 import time
-from typing import Any, Iterator, Optional
+from collections.abc import Iterator
+from typing import Any, Optional
 
 import yoyo
 
@@ -80,8 +81,8 @@ class FastaDir(BaseReader, BaseWriter):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:
             raise RuntimeError(
-                """Upgrade required: Database schema
-            version is {} and code expects {}""".format(schema_version, expected_schema_version)
+                f"""Upgrade required: Database schema
+            version is {schema_version} and code expects {expected_schema_version}"""
             )
 
         if fd_cache_size == 0:
@@ -98,7 +99,35 @@ class FastaDir(BaseReader, BaseWriter):
         self._open_for_reading = _open_for_reading
 
     def __del__(self) -> None:
-        self._db.close()
+        self.close()
+
+    def __enter__(self) -> "FastaDir":
+        """Enter context manager; returns self for use in `with` statement."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        """Exit context manager; closes database connection.
+
+        Args:
+            exc_type: Exception type (if raised within context)
+            exc_val: Exception value (if raised within context)
+            exc_tb: Exception traceback (if raised within context)
+
+        Returns:
+            False to propagate any exceptions that occurred within the context.
+        """
+        self.close()
+        return False
+
+    def close(self) -> None:
+        """Explicitly close the database connection and any open file.
+
+        This method is safe to call multiple times.
+        """
+        if self._writing is not None:
+            self.commit()
+        if hasattr(self, "_db") and self._db:
+            self._db.close()
 
     # ############################################################################
     # Special methods
@@ -238,7 +267,7 @@ class FastaDir(BaseReader, BaseWriter):
     def _dump_aliases(self) -> None:
         import prettytable  # type: ignore
 
-        fields = "seq_id len alpha added relpath".split()
+        fields = ["seq_id", "len", "alpha", "added", "relpath"]
         pt = prettytable.PrettyTable(field_names=fields)
         cursor = self._db.cursor()
         cursor.execute("select * from seqinfo")

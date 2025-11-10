@@ -3,9 +3,9 @@ from __future__ import annotations
 import logging
 import os
 import re
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from functools import lru_cache
-from typing import Iterator, Optional, Union
+from typing import Optional, Union
 
 import bioutils.digests
 from bioutils.digests import seq_seqhash as sha512t24u
@@ -78,7 +78,7 @@ class SequenceProxy(Sequence):
         return aliases
 
 
-class SeqRepo(object):
+class SeqRepo:
     """Implements a filesystem-backed non-redundant repository of
     sequences and sequence aliases.
 
@@ -120,7 +120,7 @@ class SeqRepo(object):
             os.makedirs(self._root_dir, exist_ok=True)
 
         if not os.path.exists(self._root_dir):
-            raise OSError("Unable to open SeqRepo directory {}".format(self._root_dir))
+            raise OSError(f"Unable to open SeqRepo directory {self._root_dir}")
 
         self.sequences = FastaDir(
             self._seq_path,
@@ -157,8 +157,7 @@ class SeqRepo(object):
         ns, a = nsa.split(nsa_sep) if nsa_sep in nsa else (None, nsa)
         if self.use_sequenceproxy:
             return SequenceProxy(self, alias=a, namespace=ns)
-        else:
-            return self.fetch(alias=a, namespace=ns)
+        return self.fetch(alias=a, namespace=ns)
 
     def __iter__(self) -> Iterator:
         """iterate over all sequences, yielding tuples of (sequence_record, [alias_records])
@@ -170,18 +169,50 @@ class SeqRepo(object):
             yield (srec, arecs)
 
     def __str__(self) -> str:
-        return "SeqRepo(root_dir={self._root_dir}, writeable={self._writeable})".format(self=self)
+        return f"SeqRepo(root_dir={self._root_dir}, writeable={self._writeable})"
+
+    def __enter__(self) -> SeqRepo:
+        """Enter context manager; returns self for use in `with` statement."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        """Exit context manager; closes all database connections.
+
+        Args:
+            exc_type: Exception type (if raised within context)
+            exc_val: Exception value (if raised within context)
+            exc_tb: Exception traceback (if raised within context)
+
+        Returns:
+            False to propagate any exceptions that occurred within the context.
+        """
+        self.close()
+        return False
+
+    def close(self) -> None:
+        """Close all database connections and resources.
+
+        This method is safe to call multiple times.
+        """
+        if hasattr(self, "sequences"):
+            try:
+                self.sequences.close()
+            except Exception:
+                # Database may already be closed, ignore errors
+                pass
+        if hasattr(self, "aliases"):
+            try:
+                self.aliases.close()
+            except Exception:
+                # Database may already be closed, ignore errors
+                pass
 
     def commit(self) -> None:
         self.sequences.commit()
         self.aliases.commit()
         if self._pending_sequences + self._pending_aliases > 0:
             _logger.info(
-                "Committed {} sequences ({} residues) and {} aliases".format(
-                    self._pending_sequences,
-                    self._pending_sequences_len,
-                    self._pending_aliases,
-                )
+                f"Committed {self._pending_sequences} sequences ({self._pending_sequences_len} residues) and {self._pending_aliases} aliases"
             )
         self._pending_sequences = 0
         self._pending_sequences_len = 0
@@ -240,7 +271,7 @@ class SeqRepo(object):
             l=len(seq),
             na=len(nsaliases),
             nsa_sep=nsa_sep,
-            aliases=", ".join("{nsa[namespace]}:{nsa[alias]}".format(nsa=nsa) for nsa in nsaliases),
+            aliases=", ".join(f"{nsa['namespace']}:{nsa['alias']}" for nsa in nsaliases),
         )
         if seq_id not in self.sequences:
             _logger.info("Storing " + msg)
@@ -262,21 +293,19 @@ class SeqRepo(object):
         new_tuples = [(seq_id, r["namespace"], r["alias"]) for r in nsaliases]
         upd_tuples = set(new_tuples) - set(ea_tuples)
         if upd_tuples:
-            _logger.info("{} new aliases for {}".format(len(upd_tuples), msg))
+            _logger.info(f"{len(upd_tuples)} new aliases for {msg}")
             for _, namespace, alias in upd_tuples:
                 self.aliases.store_alias(seq_id=seq_id, namespace=namespace, alias=alias)
             self._pending_aliases += len(upd_tuples)
             n_aliases_added += len(upd_tuples)
         if (
             self._pending_sequences > ct_n_seqs
-            or self._pending_aliases > ct_n_aliases  # noqa: W503
-            or self._pending_sequences_len > ct_n_residues  # noqa: W503
+            or self._pending_aliases > ct_n_aliases
+            or self._pending_sequences_len > ct_n_residues
         ):  # pragma: no cover
             _logger.info(
-                "Hit commit thresholds ({self._pending_sequences} sequences, "
-                "{self._pending_aliases} aliases, {self._pending_sequences_len} residues)".format(
-                    self=self
-                )
+                f"Hit commit thresholds ({self._pending_sequences} sequences, "
+                f"{self._pending_aliases} aliases, {self._pending_sequences_len} residues)"
             )
             self.commit()
         return n_seqs_added, n_aliases_added
@@ -342,10 +371,10 @@ class SeqRepo(object):
         recs = self.aliases.find_aliases(alias=alias, namespace=namespace)
         seq_ids = set(r["seq_id"] for r in recs)
         if len(seq_ids) == 0:
-            raise KeyError("Alias {} (namespace: {})".format(alias, namespace))
+            raise KeyError(f"Alias {alias} (namespace: {namespace})")
         if len(seq_ids) > 1:
             # This should only happen when namespace is None
-            raise KeyError("Alias {} (namespace: {}): not unique".format(alias, namespace))
+            raise KeyError(f"Alias {alias} (namespace: {namespace}): not unique")
         return seq_ids.pop()
 
     def _update_digest_aliases(self, seq_id: str, seq: str) -> int:

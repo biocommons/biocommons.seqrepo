@@ -1,8 +1,9 @@
 import datetime
 import logging
 import sqlite3
+from collections.abc import Iterator
 from importlib import resources
-from typing import Iterator, Optional, Union
+from typing import Optional, Union
 
 import yoyo
 
@@ -16,16 +17,14 @@ expected_schema_version = 1
 min_sqlite_version_info = (3, 8, 0)
 if sqlite3.sqlite_version_info < min_sqlite_version_info:  # pragma: no cover
     min_sqlite_version = ".".join(map(str, min_sqlite_version_info))
-    msg = "{} requires sqlite3 >= {} but {} is installed".format(
-        __package__, min_sqlite_version, sqlite3.sqlite_version
-    )
+    msg = f"{__package__} requires sqlite3 >= {min_sqlite_version} but {sqlite3.sqlite_version} is installed"
     raise ImportError(msg)
 
 
 sqlite3.register_converter("timestamp", lambda val: datetime.datetime.fromisoformat(val.decode()))
 
 
-class SeqAliasDB(object):
+class SeqAliasDB:
     """Implements a sqlite database of sequence aliases"""
 
     def __init__(
@@ -56,16 +55,40 @@ class SeqAliasDB(object):
         # if we're not at the expected schema version for this code, bail
         if schema_version != expected_schema_version:  # pragma: no cover
             raise RuntimeError(
-                "Upgrade required: Database schema version is {} and code expects {}".format(
-                    schema_version, expected_schema_version
-                )
+                f"Upgrade required: Database schema version is {schema_version} and code expects {expected_schema_version}"
             )
 
     # ############################################################################
     # Special methods
 
     def __del__(self) -> None:
-        self._db.close()
+        self.close()
+
+    def __enter__(self) -> "SeqAliasDB":
+        """Enter context manager; returns self for use in `with` statement."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        """Exit context manager; closes database connection.
+
+        Args:
+            exc_type: Exception type (if raised within context)
+            exc_val: Exception value (if raised within context)
+            exc_tb: Exception traceback (if raised within context)
+
+        Returns:
+            False to propagate any exceptions that occurred within the context.
+        """
+        self.close()
+        return False
+
+    def close(self) -> None:
+        """Explicitly close the database connection.
+
+        This method is safe to call multiple times.
+        """
+        if hasattr(self, "_db") and self._db:
+            self._db.close()
 
     def __contains__(self, seq_id: str) -> bool:
         cursor = self._db.cursor()
@@ -133,13 +156,13 @@ class SeqAliasDB(object):
             ns_api2db = translate_api2db(namespace, alias)
             if ns_api2db:
                 namespace, alias = ns_api2db[0]
-            clauses += ["namespace {} ?".format(eq_or_like(namespace))]
+            clauses += [f"namespace {eq_or_like(namespace)} ?"]
             params += [namespace]
         if alias is not None:
-            clauses += ["alias {} ?".format(eq_or_like(alias))]
+            clauses += [f"alias {eq_or_like(alias)} ?"]
             params += [alias]
         if seq_id is not None:
-            clauses += ["seq_id {} ?".format(eq_or_like(seq_id))]
+            clauses += [f"seq_id {eq_or_like(seq_id)} ?"]
             params += [seq_id]
         if current_only:
             clauses += ["is_current = 1"]
@@ -151,7 +174,7 @@ class SeqAliasDB(object):
             sql += " where " + " and ".join("(" + c + ")" for c in clauses)
         sql += " order by seq_id, namespace, alias"
 
-        _logger.debug("Executing: {} with params {}".format(sql, params))
+        _logger.debug(f"Executing: {sql} with params {params}")
         cursor = self._db.cursor()
         cursor.execute(sql, params)
         return translate_alias_records(dict(r) for r in cursor)
@@ -188,7 +211,7 @@ class SeqAliasDB(object):
             if new_alias is not None:
                 alias = new_alias
 
-        log_pfx = "store({q},{n},{a})".format(n=namespace, a=alias, q=seq_id)
+        log_pfx = f"store({seq_id},{namespace},{alias})"
         cursor = self._db.cursor()
         try:
             cursor.execute(
@@ -229,7 +252,7 @@ class SeqAliasDB(object):
         import prettytable  # type: ignore
 
         cursor = self._db.cursor()
-        fields = "seqalias_id seq_id namespace alias added is_current".split()
+        fields = ["seqalias_id", "seq_id", "namespace", "alias", "added", "is_current"]
         pt = prettytable.PrettyTable(field_names=fields)
         cursor.execute("select * from seqalias")
         for r in cursor:

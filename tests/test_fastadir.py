@@ -60,3 +60,62 @@ def test_writeability():
         fd.store("NC_000001.11", "TGGTGGCACGCGCTTGTAGT")
 
     fd._writeable = True
+
+
+def test_context_manager():
+    """Test FastaDir context manager support"""
+    tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_ctx_")
+
+    # Test with statement for resource cleanup
+    with FastaDir(tmpdir, writeable=True) as fd:
+        fd.store("seq1", "ATCGATCG")
+        fd.store("seq2", "GCTAGCTA")
+        fd.commit()
+        assert fd.fetch("seq1") == "ATCGATCG"
+
+    # After exiting context, database should be closed
+    # We can verify by reopening the directory
+    fd_reopened = FastaDir(tmpdir, writeable=False)
+    assert fd_reopened.fetch("seq1") == "ATCGATCG"
+    assert fd_reopened.fetch("seq2") == "GCTAGCTA"
+    fd_reopened.close()
+
+    shutil.rmtree(tmpdir)
+
+
+def test_explicit_close():
+    """Test explicit close() method on FastaDir"""
+    tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_close_")
+
+    fd = FastaDir(tmpdir, writeable=True)
+    fd.store("seq1", "ATCGATCG")
+    fd.commit()
+
+    # Explicitly close the directory
+    fd.close()
+
+    # Verify we can reopen without issues
+    fd_reopened = FastaDir(tmpdir, writeable=False)
+    assert fd_reopened.fetch("seq1") == "ATCGATCG"
+    fd_reopened.close()
+
+    shutil.rmtree(tmpdir)
+
+
+def test_close_multiple_times():
+    """Test that close() is safe to call multiple times on FastaDir"""
+    tmpdir = tempfile.mkdtemp(prefix="seqrepo_pytest_multi_")
+
+    fd = FastaDir(tmpdir, writeable=True)
+    fd.store("seq1", "ATCGATCG")
+    fd.commit()
+
+    # Should be safe to call close() multiple times
+    fd.close()
+    fd.close()  # Should not raise an exception
+
+    fd_reopened = FastaDir(tmpdir, writeable=False)
+    assert fd_reopened.fetch("seq1") == "ATCGATCG"
+    fd_reopened.close()
+
+    shutil.rmtree(tmpdir)
