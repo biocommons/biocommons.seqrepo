@@ -42,7 +42,6 @@ classifiers = [
 ]
 dependencies = [
     "bioutils >= 0.6",
-    "coloredlogs >= 15.0",
     "pysam >= 0.23",
     "requests >= 2.32",
     "tqdm >= 4.67",

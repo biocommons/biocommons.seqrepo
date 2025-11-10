@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 import requests
 from bioutils.accessions import coerce_namespace
 
-from biocommons.seqrepo.seqrepo import SeqRepo
+from .seqrepo import SeqRepo
 
 _logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class _DataProxy(ABC):
         """
         raise NotImplementedError
 
-    @functools.lru_cache()
+    @functools.lru_cache
     def translate_sequence_identifier(
         self, identifier: str, namespace: Optional[str] = None
     ) -> list[str]:
@@ -233,9 +233,6 @@ def create_dataproxy(uri: Optional[str] = None) -> _DataProxy:
 
     if provider == "seqrepo":
         if proto in ("", "file"):
-            # pylint: disable=import-error, import-outside-toplevel
-            from biocommons.seqrepo import SeqRepo
-
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
