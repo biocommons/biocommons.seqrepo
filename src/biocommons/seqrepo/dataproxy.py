@@ -10,6 +10,7 @@ import functools
 import logging
 import os
 from abc import ABC, abstractmethod
+from http import HTTPStatus
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -68,7 +69,7 @@ class _DataProxy(ABC):
         """
         raise NotImplementedError
 
-    @functools.lru_cache
+    @functools.lru_cache(maxsize=128)  # noqa: B019
     def translate_sequence_identifier(
         self, identifier: str, namespace: Optional[str] = None
     ) -> list[str]:
@@ -100,7 +101,7 @@ class _SeqRepoDataProxyBase(_DataProxy):
 
     def get_metadata(self, identifier: str) -> dict:
         md = self._get_metadata(identifier)
-        md["aliases"] = list(a for a in md["aliases"])
+        md["aliases"] = list(md["aliases"])
         return md
 
     def get_sequence(self, identifier: str, start: Optional[int] = None, end: Optional[int] = None):
@@ -161,9 +162,9 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
     ) -> str:
         url = self.base_url + f"sequence/{identifier}"
         params = {"start": start, "end": end}
-        _logger.info(f"Fetching {url} {params if (start or end) else ''}")
+        _logger.info("Fetching %s %s", url, params if (start or end) else "")
         resp = requests.get(url, params=params, timeout=60)
-        if resp.status_code == 404:
+        if resp.status_code == HTTPStatus.NOT_FOUND:
             raise KeyError(identifier)
         resp.raise_for_status()
         return resp.text
@@ -172,7 +173,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         url = self.base_url + f"metadata/{identifier}"
         _logger.info("Fetching %s", url)
         resp = requests.get(url, timeout=60)
-        if resp.status_code == 404:
+        if resp.status_code == HTTPStatus.NOT_FOUND:
             raise KeyError(identifier)
         resp.raise_for_status()
         data = resp.json()
@@ -189,7 +190,9 @@ def _isoformat(o: datetime.datetime):
     """
 
     # stolen from connexion flask_app.py
-    assert isinstance(o, datetime.datetime)
+    if not isinstance(o, datetime.datetime):
+        msg = f"Expected datetime.datetime, got {type(o).__name__}"
+        raise TypeError(msg)
     if o.tzinfo:
         # eg: '2015-09-25T23:14:42.588601+00:00'
         return o.isoformat("T")
@@ -221,13 +224,15 @@ def create_dataproxy(uri: Optional[str] = None) -> _DataProxy:
     uri = uri or os.environ.get("SEQREPO_DATAPROXY_URI", None)
 
     if uri is None:
-        raise ValueError("No data proxy URI provided or found in SEQREPO_DATAPROXY_URI")
+        msg = "No data proxy URI provided or found in SEQREPO_DATAPROXY_URI"
+        raise ValueError(msg)
 
     parsed_uri = urlparse(uri)
     scheme = parsed_uri.scheme
 
     if "+" not in scheme:
-        raise ValueError("create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)")
+        msg = "create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)"
+        raise ValueError(msg)
 
     provider, proto = scheme.split("+")
 
@@ -238,29 +243,11 @@ def create_dataproxy(uri: Optional[str] = None) -> _DataProxy:
         elif proto in ("http", "https"):
             dp = SeqRepoRESTDataProxy(uri[len(provider) + 1 :])
         else:
-            raise ValueError(f"SeqRepo URI scheme {parsed_uri.scheme} not implemented")
+            msg = f"SeqRepo URI scheme {parsed_uri.scheme} not implemented"
+            raise ValueError(msg)
 
     else:
-        raise ValueError(f"DataProxy provider {provider} not implemented")
+        msg = f"DataProxy provider {provider} not implemented"
+        raise ValueError(msg)
 
     return dp
-
-
-if __name__ == "__main__":
-    # Before running, do something like this:
-    # snafu$ docker run \
-    # >   --name seqrepo-rest-service \
-    # >   --detach --rm -p 5000:5000 \
-    # >   -v /usr/local/share/seqrepo/:/usr/local/share/seqrepo/ \
-    # >   biocommons/seqrepo-rest-service
-
-    dp1 = create_dataproxy("seqrepo+http://localhost:5000/seqrepo")
-    dp2 = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
-
-    ir = "refseq:NM_000551.3"
-
-    print(f"dp1 = {dp1}")
-    print(f"dp2 = {dp2}")
-
-    assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
-    assert dp1.get_sequence(ir) == dp2.get_sequence(ir)
