@@ -2,15 +2,17 @@
 *.bak
 *.cover
 *.egg
+*.egg-info
 *.egg-info/
+*.enc
 *.log
 *.manifest
 *.mo
 *.orig
 *.pot
 *.py.cover
-*.py[cod]
 *.py[codz]
+*.rej
 *.sage.py
 *.so
 *.spec
@@ -21,7 +23,7 @@
 .Python
 .abstra/
 .cache
-.claude
+.claude/
 .coverage
 .coverage.*
 .cursorignore
@@ -34,6 +36,7 @@
 .idea
 .installed.cfg
 .ipynb_checkpoints
+.keys
 .mypy_cache/
 .nox/
 .pdm-build/
@@ -106,8 +109,8 @@ profile_default/
 sdist/
 share/python-wheels/
 target/
+tmp/
 var/
 venv.bak/
 venv/
 wheels/
-.claude
