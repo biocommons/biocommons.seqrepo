@@ -101,7 +101,6 @@ lib64/
 local_settings.py
 marimo/_lsp/
 marimo/_static/
-misc
 nosetests.xml
 parts/
 pip-delete-this-directory.txt

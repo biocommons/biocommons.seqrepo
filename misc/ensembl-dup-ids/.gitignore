@@ -1,0 +1,5 @@
+# downloads and generated data
+ftp.ensembl.org/
+*.duckdb
+.remember/
+changed-*.tsv
